@@ -9,20 +9,20 @@
 body{margin:0;font-family:Arial,sans-serif;background:#eefaf8;color:#123}
 button{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:700}
 .hidden{display:none!important}
-.app{max-width:1000px;margin:auto;min-height:100vh;background:white}
-header{background:#13b8a6;color:white;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.app{max-width:1000px;margin:auto;min-height:100vh;background:#fff}
+header{background:#13b8a6;color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:25px;font-weight:800;letter-spacing:1px}
 .badge{font-size:12px;background:rgba(255,255,255,.2);padding:6px 9px;border-radius:20px}
 main{padding:22px}
 .card{border:1px solid #d9efeb;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #0000000b}
 input{width:100%;padding:14px;border:1px solid #c9e5e1;border-radius:12px;font-size:16px;margin:8px 0 12px}
-.primary{background:#13b8a6;color:white}
+.primary{background:#13b8a6;color:#fff}
 .secondary{background:#e5f7f4;color:#087d72}
 .danger{background:#ffe9e9;color:#b22}
 .users{display:flex;flex-wrap:wrap;gap:10px}
 .user{background:#f0faf8;padding:10px 13px;border-radius:20px}
 .chat{height:55vh;overflow:auto;background:#f6fbfa;border-radius:15px;padding:15px}
-.msg{max-width:75%;padding:10px 13px;margin:8px 0;border-radius:15px;background:white}
+.msg{max-width:75%;padding:10px 13px;margin:8px 0;border-radius:15px;background:#fff;white-space:pre-wrap;overflow-wrap:anywhere}
 .msg.mine{margin-left:auto;background:#d8f7f2}
 .time{font-size:10px;opacity:.55;margin-top:4px}
 .row{display:flex;gap:8px;align-items:center}
@@ -30,292 +30,1407 @@ input{width:100%;padding:14px;border:1px solid #c9e5e1;border-radius:12px;font-s
 .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .status{font-size:13px;color:#087d72;margin-top:8px}
 small{opacity:.7}
+#callPanel{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+.callBox{width:min(900px,100%);background:#fff;border-radius:20px;padding:20px;text-align:center}
+.videos{position:relative;background:#111;border-radius:16px;overflow:hidden;min-height:280px}
+video{display:block;width:100%;max-height:65vh;object-fit:contain;background:#111}
+#localVideo{position:absolute;right:12px;bottom:12px;width:150px;max-height:180px;border:2px solid #fff;border-radius:12px}
+@media(max-width:600px){
+main{padding:14px}.card{padding:16px}
+.row{align-items:stretch}.row button{white-space:nowrap}
+.msg{max-width:88%}
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
+
 <header>
   <div class="logo">ZIQVONA</div>
   <div id="statusBadge" class="badge">Offline</div>
 </header>
 
 <main>
+
 <section id="loginScreen" class="card">
   <h1>Byenveni sou ZIQVONA</h1>
   <p>Chat an tan reyèl, apèl vwa ak videyo.</p>
-  <input id="username" maxlength="30" placeholder="Ekri non ou" autocomplete="off">
+
+  <input
+    id="username"
+    maxlength="30"
+    placeholder="Ekri non ou"
+    autocomplete="off"
+  >
+
   <button id="loginBtn" class="primary">Konekte</button>
+
   <div id="loginStatus" class="status"></div>
 </section>
 
+
 <section id="homeScreen" class="hidden">
+
   <div class="card">
-    <h2>👋 Bonjou, <span id="me"></span></h2>
-    <p><small>Chwazi yon moun ki konekte pou kòmanse chat.</small></p>
+
+    <h2>
+      👋 Bonjou, <span id="me"></span>
+    </h2>
+
+    <p>
+      <small>
+        Chwazi yon moun ki konekte pou kòmanse chat.
+      </small>
+    </p>
+
     <div id="users" class="users"></div>
+
   </div>
 
+
   <div id="chatCard" class="card hidden">
-    <h2>💬 Chat ak <span id="chatWith"></span></h2>
+
+    <h2>
+      💬 Chat ak <span id="chatWith"></span>
+    </h2>
+
     <div id="chat" class="chat"></div>
+
     <div class="row" style="margin-top:10px">
-      <input id="messageInput" placeholder="Ekri mesaj ou..." autocomplete="off">
-      <button id="sendBtn" class="primary">Voye</button>
+
+      <input
+        id="messageInput"
+        placeholder="Ekri mesaj ou..."
+        autocomplete="off"
+        maxlength="4000"
+      >
+
+      <button id="sendBtn" class="primary">
+        Voye
+      </button>
+
     </div>
+
     <div id="typing" class="status"></div>
+
     <div class="controls">
-      <button id="voiceBtn" class="secondary">📞 Apèl vwa</button>
-      <button id="videoBtn" class="secondary">📹 Videyo</button>
-      <button id="endBtn" class="danger">✕ Fini apèl</button>
+
+      <button id="voiceBtn" class="secondary">
+        📞 Apèl vwa
+      </button>
+
+      <button id="videoBtn" class="secondary">
+        📹 Videyo
+      </button>
+
+      <button id="endBtn" class="danger">
+        ✕ Fini apèl
+      </button>
+
     </div>
+
   </div>
+
 </section>
+
 </main>
 </div>
 
+
+<div id="callPanel" class="hidden">
+
+  <div class="callBox">
+
+    <h2 id="callTitle">
+      Apèl
+    </h2>
+
+    <p id="callStatus">
+      Koneksyon...
+    </p>
+
+    <div id="videoArea" class="videos hidden">
+
+      <video
+        id="remoteVideo"
+        autoplay
+        playsinline
+      ></video>
+
+      <video
+        id="localVideo"
+        autoplay
+        muted
+        playsinline
+      ></video>
+
+    </div>
+
+    <div
+      class="controls"
+      style="justify-content:center"
+    >
+
+      <button id="muteBtn" class="secondary">
+        🎤
+      </button>
+
+      <button id="cameraBtn" class="secondary">
+        📷
+      </button>
+
+      <button id="hangupBtn" class="danger">
+        ✕ Fini
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
 <script>
 (function(){
-  let ws = null;
-  let me = "";
-  let selectedUser = "";
-  let localStream = null;
-  let peer = null;
-  let typingTimer = null;
 
-  const $ = id => document.getElementById(id);
+"use strict";
 
-  function setStatus(text){
-    $("statusBadge").textContent = text;
-  }
 
-  function show(id){
-    $(id).classList.remove("hidden");
-  }
+let ws = null;
+let me = "";
+let selectedUser = "";
+let localStream = null;
+let peer = null;
+let pendingCandidates = [];
+let typingTimer = null;
+let isVideoCall = false;
+let muted = false;
+let cameraOff = false;
 
-  function hide(id){
-    $(id).classList.add("hidden");
-  }
 
-  function escapeText(text){
-    const div = document.createElement("div");
-    div.textContent = String(text);
-    return div.innerHTML;
-  }
+const $ = id => document.getElementById(id);
 
-  function addMessage(m){
-    const d = document.createElement("div");
-    d.className = "msg" + (m.from === me ? " mine" : "");
-    d.innerHTML = escapeText(m.text) +
-      '<div class="time">' +
-      new Date(m.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}) +
-      "</div>";
-    $("chat").appendChild(d);
-    $("chat").scrollTop = $("chat").scrollHeight;
-  }
 
-  function renderUsers(list){
-    const box = $("users");
-    box.innerHTML = "";
-    list.filter(u => u !== me).forEach(u => {
-      const b = document.createElement("button");
+function setStatus(text){
+  $("statusBadge").textContent = text;
+}
+
+
+function show(id){
+  $(id).classList.remove("hidden");
+}
+
+
+function hide(id){
+  $(id).classList.add("hidden");
+}
+
+
+function setLoginStatus(text){
+  $("loginStatus").textContent = text || "";
+}
+
+
+function escapeText(text){
+
+  const div = document.createElement("div");
+
+  div.textContent = String(
+    text == null ? "" : text
+  );
+
+  return div.innerHTML;
+}
+
+
+function addMessage(m){
+
+  const d = document.createElement("div");
+
+  d.className =
+    "msg" +
+    (m.from === me ? " mine" : "");
+
+
+  const safeText =
+    escapeText(m.text);
+
+
+  const rawTime =
+    m.time
+      ? new Date(m.time)
+      : new Date();
+
+
+  const time =
+    Number.isNaN(rawTime.getTime())
+      ? new Date().toLocaleTimeString(
+          [],
+          {
+            hour:"2-digit",
+            minute:"2-digit"
+          }
+        )
+      : rawTime.toLocaleTimeString(
+          [],
+          {
+            hour:"2-digit",
+            minute:"2-digit"
+          }
+        );
+
+
+  d.innerHTML =
+    safeText +
+    '<div class="time">' +
+    escapeText(time) +
+    "</div>";
+
+
+  $("chat").appendChild(d);
+
+  $("chat").scrollTop =
+    $("chat").scrollHeight;
+}
+
+
+function renderUsers(list){
+
+  const box = $("users");
+
+  box.innerHTML = "";
+
+
+  const users =
+    Array.isArray(list)
+      ? list
+      : [];
+
+
+  users
+    .filter(u => u && u !== me)
+    .forEach(u => {
+
+      const b =
+        document.createElement("button");
+
       b.className = "user";
-      b.textContent = "🟢 " + u;
-      b.onclick = () => selectUser(u);
+
+      b.textContent =
+        "🟢 " + u;
+
+      b.addEventListener(
+        "click",
+        () => selectUser(u)
+      );
+
       box.appendChild(b);
+
     });
-    if(!box.children.length){
-      box.innerHTML = "<small>Pa gen lòt itilizatè konekte pou kounye a.</small>";
-    }
+
+
+  if(!box.children.length){
+
+    box.innerHTML =
+      "<small>" +
+      "Pa gen lòt itilizatè konekte " +
+      "pou kounye a." +
+      "</small>";
+
+  }
+}
+
+
+function selectUser(u){
+
+  selectedUser = u;
+
+  $("chatWith").textContent = u;
+
+  $("chat").innerHTML = "";
+
+  $("typing").textContent = "";
+
+  show("chatCard");
+
+  loadHistory(u);
+
+  $("messageInput").focus();
+}
+
+
+function sendJson(payload){
+
+  if(
+    !ws ||
+    ws.readyState !== WebSocket.OPEN
+  ){
+    return false;
   }
 
-  function selectUser(u){
-    selectedUser = u;
-    $("chatWith").textContent = u;
-    $("chat").innerHTML = "";
-    $("typing").textContent = "";
-    show("chatCard");
-    $("messageInput").focus();
+  ws.send(
+    JSON.stringify(payload)
+  );
+
+  return true;
+}
+
+
+function loadHistory(user){
+
+  sendJson({
+    type:"history",
+    with:user
+  });
+
+}
+
+
+function connect(){
+
+  const name =
+    $("username").value.trim();
+
+
+  if(!name){
+
+    setLoginStatus(
+      "Tanpri mete yon non."
+    );
+
+    $("username").focus();
+
+    return;
   }
 
-  function connect(){
-    me = $("username").value.trim();
-    if(!me){
-      $("loginStatus").textContent = "Tanpri mete yon non.";
-      return;
-    }
 
-    $("loginStatus").textContent = "Koneksyon...";
-    const protocol = location.protocol === "https:" ? "wss" : "ws";
+  if(name.length < 2){
+
+    setLoginStatus(
+      "Non an dwe gen omwen 2 karaktè."
+    );
+
+    return;
+  }
+
+
+  if(
+    ws &&
+    (
+      ws.readyState === WebSocket.OPEN ||
+      ws.readyState === WebSocket.CONNECTING
+    )
+  ){
+    return;
+  }
+
+
+  me = name;
+
+  setLoginStatus(
+    "Koneksyon..."
+  );
+
+  setStatus(
+    "Connecting..."
+  );
+
+
+  const protocol =
+    location.protocol === "https:"
+      ? "wss"
+      : "ws";
+
+
+  const wsUrl =
+    protocol +
+    "://" +
+    location.host;
+
+
+  try{
+
+    ws =
+      new WebSocket(wsUrl);
+
+  }catch(e){
+
+    setLoginStatus(
+      "Koneksyon an pa mache."
+    );
+
+    setStatus(
+      "Offline"
+    );
+
+    return;
+  }
+
+
+  ws.onopen = function(){
+
+    sendJson({
+      type:"login",
+      username:me
+    });
+
+  };
+
+
+  ws.onmessage = function(event){
+
+    let m;
+
 
     try{
-      ws = new WebSocket(protocol + "://" + location.host);
+
+      m =
+        JSON.parse(event.data);
+
     }catch(e){
-      $("loginStatus").textContent = "Koneksyon an pa mache.";
+
       return;
     }
 
-    ws.onopen = function(){
-      ws.send(JSON.stringify({type:"login",username:me}));
-    };
 
-    ws.onmessage = function(event){
-      let m;
-      try{ m = JSON.parse(event.data); }catch(e){ return; }
+    if(m.type === "login_ok"){
 
-      if(m.type === "login_ok"){
-        hide("loginScreen");
-        show("homeScreen");
-        $("me").textContent = me;
-        setStatus("Online");
-        renderUsers(m.online || []);
+      hide("loginScreen");
+
+      show("homeScreen");
+
+      $("me").textContent = me;
+
+      setLoginStatus("");
+
+      setStatus("Online");
+
+      renderUsers(
+        m.online || []
+      );
+
+      return;
+    }
+
+
+    if(m.type === "presence"){
+
+      renderUsers(
+        m.online || []
+      );
+
+      return;
+    }
+
+
+    if(m.type === "message"){
+
+      if(
+        m.from === selectedUser ||
+        m.to === selectedUser
+      ){
+
+        addMessage(m);
+
       }
 
-      if(m.type === "presence"){
-        renderUsers(m.online || []);
+      return;
+    }
+
+
+    if(m.type === "history"){
+
+      const messages =
+        Array.isArray(m.messages)
+          ? m.messages
+          : (
+              Array.isArray(m.history)
+                ? m.history
+                : []
+            );
+
+
+      if(
+        m.with &&
+        m.with !== selectedUser
+      ){
+        return;
       }
 
-      if(m.type === "message"){
-        if(m.from === selectedUser || m.to === selectedUser){
-          addMessage(m);
-        }
+
+      $("chat").innerHTML = "";
+
+
+      messages.forEach(
+        addMessage
+      );
+
+      return;
+    }
+
+
+    if(m.type === "typing"){
+
+      if(m.from === selectedUser){
+
+        $("typing").textContent =
+          m.from +
+          " ap ekri...";
+
+
+        clearTimeout(
+          typingTimer
+        );
+
+
+        typingTimer =
+          setTimeout(
+            function(){
+
+              $("typing").textContent =
+                "";
+
+            },
+            1200
+          );
+
       }
 
-      if(m.type === "typing"){
-        if(m.from === selectedUser){
-          $("typing").textContent = m.from + " ap ekri...";
-          clearTimeout(typingTimer);
-          typingTimer = setTimeout(() => $("typing").textContent = "", 1200);
-        }
+      return;
+    }
+
+
+    if(m.type === "error"){
+
+      const message =
+        m.message ||
+        "Gen yon erè.";
+
+
+      if(
+        $("loginScreen")
+          .classList
+          .contains("hidden") === false
+      ){
+
+        setLoginStatus(
+          message
+        );
+
+      }else{
+
+        alert(message);
+
       }
 
-      if(m.type === "error"){
-        $("loginStatus").textContent = m.message || "Gen yon erè.";
-      }
+      return;
+    }
 
-      if(m.type === "call-offer") handleOffer(m);
-      if(m.type === "call-answer") handleAnswer(m);
-      if(m.type === "ice") handleIce(m);
-      if(m.type === "call-end") endCall(false);
-    };
 
-    ws.onclose = function(){
-      setStatus("Offline");
-    };
+    if(m.type === "call-offer"){
 
-    ws.onerror = function(){
-      $("loginStatus").textContent = "Pa kapab konekte ak sèvè a.";
-    };
+      handleOffer(m);
+
+      return;
+    }
+
+
+    if(m.type === "call-answer"){
+
+      handleAnswer(m);
+
+      return;
+    }
+
+
+    if(m.type === "ice"){
+
+      handleIce(m);
+
+      return;
+    }
+
+
+    if(m.type === "call-end"){
+
+      endCall(false);
+
+    }
+
+  };
+
+
+  ws.onclose = function(){
+
+    setStatus(
+      "Offline"
+    );
+
+    ws = null;
+
+  };
+
+
+  ws.onerror = function(){
+
+    setLoginStatus(
+      "Pa kapab konekte ak sèvè a. " +
+      "Verifye Render."
+    );
+
+    setStatus(
+      "Offline"
+    );
+
+  };
+
+}
+
+
+function sendMessage(){
+
+  const text =
+    $("messageInput")
+      .value
+      .trim();
+
+
+  if(
+    !text ||
+    !selectedUser
+  ){
+    return;
   }
 
-  function sendMessage(){
-    const text = $("messageInput").value.trim();
-    if(!text || !selectedUser || !ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({
+
+  if(
+    !sendJson({
       type:"message",
       to:selectedUser,
       text:text
-    }));
-    $("messageInput").value = "";
+    })
+  ){
+
+    setLoginStatus(
+      "Ou pa konekte ak sèvè a."
+    );
+
+    return;
   }
 
-  function sendTyping(){
-    if(!selectedUser || !ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({type:"typing",to:selectedUser}));
+
+  $("messageInput").value = "";
+
+}
+
+
+function sendTyping(){
+
+  if(selectedUser){
+
+    sendJson({
+      type:"typing",
+      to:selectedUser
+    });
+
   }
 
-  async function startCall(video){
-    if(!selectedUser) return alert("Chwazi yon moun anvan.");
-    try{
-      localStream = await navigator.mediaDevices.getUserMedia({
-        audio:true,
-        video:video
-      });
-      peer = new RTCPeerConnection();
-      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
+}
 
-      peer.onicecandidate = function(e){
-        if(e.candidate){
-          ws.send(JSON.stringify({type:"ice",to:selectedUser,candidate:e.candidate}));
+
+function createPeer(){
+
+  peer =
+    new RTCPeerConnection({
+
+      iceServers:[
+        {
+          urls:
+            "stun:stun.l.google.com:19302"
         }
-      };
+      ]
 
-      const offer = await peer.createOffer();
-      await peer.setLocalDescription(offer);
-      ws.send(JSON.stringify({
-        type:"call-offer",
-        to:selectedUser,
-        offer:offer
-      }));
-      alert(video ? "Apèl videyo voye." : "Apèl vwa voye.");
-    }catch(e){
-      alert("Kamera/mikwo pa disponib. Sou telefòn, sèvi ak HTTPS.");
-    }
-  }
+    });
 
-  async function handleOffer(m){
-    if(!confirm(m.from + " ap rele ou. Aksepte?")) return;
-    selectedUser = m.from;
-    $("chatWith").textContent = selectedUser;
-    show("chatCard");
 
-    try{
-      localStream = await navigator.mediaDevices.getUserMedia({
-        audio:true,
-        video:!!(m.offer && m.offer.sdp && m.offer.sdp.indexOf("m=video") >= 0)
+  peer.onicecandidate =
+    function(e){
+
+      if(
+        e.candidate &&
+        selectedUser
+      ){
+
+        sendJson({
+
+          type:"ice",
+
+          to:selectedUser,
+
+          candidate:
+            e.candidate
+
+        });
+
+      }
+
+    };
+
+
+  peer.ontrack =
+    function(e){
+
+      if(
+        e.streams &&
+        e.streams[0]
+      ){
+
+        $("remoteVideo").srcObject =
+          e.streams[0];
+
+      }
+
+    };
+
+
+  peer.onconnectionstatechange =
+    function(){
+
+      if(!peer){
+        return;
+      }
+
+
+      if(
+        peer.connectionState ===
+        "connected"
+      ){
+
+        $("callStatus").textContent =
+          "Konekte";
+
+      }else if(
+
+        peer.connectionState ===
+        "failed" ||
+
+        peer.connectionState ===
+        "disconnected"
+
+      ){
+
+        $("callStatus").textContent =
+          "Koneksyon an koupe.";
+
+      }
+
+    };
+
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(function(track){
+
+        peer.addTrack(
+          track,
+          localStream
+        );
+
       });
-      peer = new RTCPeerConnection();
-      localStream.getTracks().forEach(track => peer.addTrack(track, localStream));
-      peer.onicecandidate = function(e){
-        if(e.candidate){
-          ws.send(JSON.stringify({type:"ice",to:m.from,candidate:e.candidate}));
-        }
-      };
-      await peer.setRemoteDescription(m.offer);
-      const answer = await peer.createAnswer();
-      await peer.setLocalDescription(answer);
-      ws.send(JSON.stringify({type:"call-answer",to:m.from,answer:answer}));
-    }catch(e){
-      alert("Apèl la pa disponib sou aparèy sa a.");
-    }
+
   }
 
-  async function handleAnswer(m){
-    if(peer) await peer.setRemoteDescription(m.answer);
+
+  return peer;
+}
+
+
+async function startCall(video){
+
+  if(!selectedUser){
+
+    alert(
+      "Chwazi yon moun anvan."
+    );
+
+    return;
   }
 
-  async function handleIce(m){
-    if(peer && m.candidate){
-      try{ await peer.addIceCandidate(m.candidate); }catch(e){}
-    }
+
+  if(
+    !ws ||
+    ws.readyState !== WebSocket.OPEN
+  ){
+
+    alert(
+      "Ou pa konekte ak sèvè a."
+    );
+
+    return;
   }
 
-  function endCall(sendSignal){
-    if(sendSignal && selectedUser && ws && ws.readyState === 1){
-      ws.send(JSON.stringify({type:"call-end",to:selectedUser}));
-    }
-    if(localStream){
-      localStream.getTracks().forEach(t => t.stop());
-      localStream = null;
-    }
-    if(peer){
-      peer.close();
-      peer = null;
-    }
+
+  try{
+
+    isVideoCall = !!video;
+
+
+    localStream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          audio:true,
+
+          video:isVideoCall
+
+        });
+
+
+    $("localVideo").srcObject =
+      localStream;
+
+
+    show("callPanel");
+
+
+    $("callTitle").textContent =
+      isVideoCall
+        ? "📹 Apèl videyo"
+        : "📞 Apèl vwa";
+
+
+    $("callStatus").textContent =
+      "Apèl ap sòti...";
+
+
+    $("videoArea")
+      .classList
+      .toggle(
+        "hidden",
+        !isVideoCall
+      );
+
+
+    createPeer();
+
+
+    const offer =
+      await peer.createOffer();
+
+
+    await peer.setLocalDescription(
+      offer
+    );
+
+
+    sendJson({
+
+      type:"call-offer",
+
+      to:selectedUser,
+
+      offer:offer,
+
+      mode:
+        isVideoCall
+          ? "video"
+          : "voice"
+
+    });
+
+
+  }catch(e){
+
+    endCall(false);
+
+
+    alert(
+      "Kamera/mikwo pa disponib. " +
+      "Sou Render, sèvi ak HTTPS " +
+      "epi bay pèmisyon yo."
+    );
+
   }
 
-  $("loginBtn").addEventListener("click", connect);
-  $("username").addEventListener("keydown", e => {
-    if(e.key === "Enter") connect();
-  });
-  $("sendBtn").addEventListener("click", sendMessage);
-  $("messageInput").addEventListener("keydown", e => {
-    if(e.key === "Enter") sendMessage();
-  });
-  $("messageInput").addEventListener("input", sendTyping);
-  $("voiceBtn").addEventListener("click", () => startCall(false));
-  $("videoBtn").addEventListener("click", () => startCall(true));
-  $("endBtn").addEventListener("click", () => endCall(true));
+}
+
+
+async function handleOffer(m){
+
+  if(
+    !m ||
+    !m.from ||
+    !m.offer
+  ){
+    return;
+  }
+
+
+  const accepted =
+    confirm(
+      m.from +
+      " ap rele ou. Aksepte?"
+    );
+
+
+  if(!accepted){
+
+    sendJson({
+      type:"call-end",
+      to:m.from
+    });
+
+    return;
+  }
+
+
+  selectedUser =
+    m.from;
+
+
+  $("chatWith").textContent =
+    selectedUser;
+
+
+  show("chatCard");
+
+
+  try{
+
+    isVideoCall =
+      m.mode === "video" ||
+      !!(
+        m.offer.sdp &&
+        m.offer.sdp.indexOf(
+          "m=video"
+        ) >= 0
+      );
+
+
+    localStream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          audio:true,
+
+          video:isVideoCall
+
+        });
+
+
+    $("localVideo").srcObject =
+      localStream;
+
+
+    show("callPanel");
+
+
+    $("callTitle").textContent =
+      isVideoCall
+        ? "📹 Apèl videyo"
+        : "📞 Apèl vwa";
+
+
+    $("callStatus").textContent =
+      "Konekte...";
+
+
+    $("videoArea")
+      .classList
+      .toggle(
+        "hidden",
+        !isVideoCall
+      );
+
+
+    createPeer();
+
+
+    await peer.setRemoteDescription(
+      m.offer
+    );
+
+
+    for(
+      const candidate
+      of pendingCandidates
+    ){
+
+      try{
+
+        await peer.addIceCandidate(
+          candidate
+        );
+
+      }catch(e){}
+
+    }
+
+
+    pendingCandidates = [];
+
+
+    const answer =
+      await peer.createAnswer();
+
+
+    await peer.setLocalDescription(
+      answer
+    );
+
+
+    sendJson({
+
+      type:"call-answer",
+
+      to:m.from,
+
+      answer:answer
+
+    });
+
+
+  }catch(e){
+
+    endCall(false);
+
+
+    alert(
+      "Apèl la pa disponib " +
+      "sou aparèy sa a."
+    );
+
+  }
+
+}
+
+
+async function handleAnswer(m){
+
+  if(
+    !peer ||
+    !m.answer
+  ){
+    return;
+  }
+
+
+  try{
+
+    await peer.setRemoteDescription(
+      m.answer
+    );
+
+
+    for(
+      const candidate
+      of pendingCandidates
+    ){
+
+      try{
+
+        await peer.addIceCandidate(
+          candidate
+        );
+
+      }catch(e){}
+
+    }
+
+
+    pendingCandidates = [];
+
+
+  }catch(e){}
+
+}
+
+
+async function handleIce(m){
+
+  if(!m.candidate){
+    return;
+  }
+
+
+  if(
+    !peer ||
+    !peer.remoteDescription
+  ){
+
+    pendingCandidates.push(
+      m.candidate
+    );
+
+    return;
+  }
+
+
+  try{
+
+    await peer.addIceCandidate(
+      m.candidate
+    );
+
+  }catch(e){}
+
+}
+
+
+function endCall(sendSignal){
+
+  if(
+    sendSignal &&
+    selectedUser
+  ){
+
+    sendJson({
+
+      type:"call-end",
+
+      to:selectedUser
+
+    });
+
+  }
+
+
+  if(peer){
+
+    peer.onicecandidate =
+      null;
+
+    peer.close();
+
+    peer = null;
+
+  }
+
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(function(track){
+
+        track.stop();
+
+      });
+
+    localStream = null;
+
+  }
+
+
+  pendingCandidates = [];
+
+
+  $("localVideo").srcObject =
+    null;
+
+
+  $("remoteVideo").srcObject =
+    null;
+
+
+  $("callPanel")
+    .classList
+    .add("hidden");
+
+
+  $("videoArea")
+    .classList
+    .add("hidden");
+
+
+  $("callStatus").textContent =
+    "Koneksyon...";
+
+
+  muted = false;
+
+  cameraOff = false;
+
+
+  $("muteBtn").textContent =
+    "🎤";
+
+
+  $("cameraBtn").textContent =
+    "📷";
+
+}
+
+
+function toggleMute(){
+
+  muted = !muted;
+
+
+  if(localStream){
+
+    localStream
+      .getAudioTracks()
+      .forEach(function(track){
+
+        track.enabled =
+          !muted;
+
+      });
+
+  }
+
+
+  $("muteBtn").textContent =
+    muted
+      ? "🔇"
+      : "🎤";
+
+}
+
+
+function toggleCamera(){
+
+  if(!isVideoCall){
+    return;
+  }
+
+
+  cameraOff =
+    !cameraOff;
+
+
+  if(localStream){
+
+    localStream
+      .getVideoTracks()
+      .forEach(function(track){
+
+        track.enabled =
+          !cameraOff;
+
+      });
+
+  }
+
+
+  $("cameraBtn").textContent =
+    cameraOff
+      ? "🚫📷"
+      : "📷";
+
+}
+
+
+$("loginBtn")
+  .addEventListener(
+    "click",
+    connect
+  );
+
+
+$("username")
+  .addEventListener(
+    "keydown",
+    function(e){
+
+      if(e.key === "Enter"){
+        connect();
+      }
+
+    }
+  );
+
+
+$("sendBtn")
+  .addEventListener(
+    "click",
+    sendMessage
+  );
+
+
+$("messageInput")
+  .addEventListener(
+    "keydown",
+    function(e){
+
+      if(e.key === "Enter"){
+
+        e.preventDefault();
+
+        sendMessage();
+
+      }
+
+    }
+  );
+
+
+$("messageInput")
+  .addEventListener(
+    "input",
+    sendTyping
+  );
+
+
+$("voiceBtn")
+  .addEventListener(
+    "click",
+    function(){
+      startCall(false);
+    }
+  );
+
+
+$("videoBtn")
+  .addEventListener(
+    "click",
+    function(){
+      startCall(true);
+    }
+  );
+
+
+$("endBtn")
+  .addEventListener(
+    "click",
+    function(){
+      endCall(true);
+    }
+  );
+
+
+$("hangupBtn")
+  .addEventListener(
+    "click",
+    function(){
+      endCall(true);
+    }
+  );
+
+
+$("muteBtn")
+  .addEventListener(
+    "click",
+    toggleMute
+  );
+
+
+$("cameraBtn")
+  .addEventListener(
+    "click",
+    toggleCamera
+  );
+
+
 })();
 </script>
+
 </body>
 </html>
