@@ -1,58 +1,931 @@
 <!DOCTYPE html>
 <html lang="ht">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZIQVONA</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZIQVONA</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eefaf8;color:#123}button{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:700}.hidden{display:none!important}.app{max-width:1000px;margin:auto;min-height:100vh;background:#fff}header{background:#13b8a6;color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}.logo{font-size:25px;font-weight:800;letter-spacing:1px}.badge{font-size:12px;background:rgba(255,255,255,.2);padding:6px 9px;border-radius:20px}main{padding:22px}.card{border:1px solid #d9efeb;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #0000000b}input{width:100%;padding:14px;border:1px solid #c9e5e1;border-radius:12px;font-size:16px;margin:8px 0 12px}.primary{background:#13b8a6;color:#fff}.secondary{background:#e5f7f4;color:#087d72}.danger{background:#ffe9e9;color:#b22}.users{display:flex;flex-wrap:wrap;gap:10px}.user{background:#f0faf8;padding:10px 13px;border-radius:20px}.chat{height:55vh;overflow:auto;background:#f6fbfa;border-radius:15px;padding:15px}.msg{max-width:75%;padding:10px 13px;margin:8px 0;border-radius:15px;background:#fff;white-space:pre-wrap;overflow-wrap:anywhere}.msg.mine{margin-left:auto;background:#d8f7f2}.time{font-size:10px;opacity:.55;margin-top:4px}.row{display:flex;gap:8px;align-items:center}.row input{margin:0}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.status{font-size:13px;color:#087d72;margin-top:8px}small{opacity:.7}.profile-grid{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:center}.avatar{width:100px;height:100px;border-radius:50%;background:#d8f7f2;color:#087d72;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}.search-results{display:flex;flex-direction:column;gap:8px;margin-top:10px}.search-result{width:100%;display:flex;align-items:center;gap:10px;background:#f0faf8;text-align:left}.search-avatar{width:42px;height:42px;border-radius:50%;background:#d8f7f2;color:#087d72;display:flex;align-items:center;justify-content:center;font-weight:800;overflow:hidden;flex:none}.search-avatar img{width:100%;height:100%;object-fit:cover}.search-name{font-weight:800}.search-status{font-size:12px;opacity:.65;margin-top:3px}#callPanel{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}.callBox{width:min(900px,100%);background:#fff;border-radius:20px;padding:20px;text-align:center}.videos{position:relative;background:#111;border-radius:16px;overflow:hidden;min-height:280px}video{display:block;width:100%;max-height:65vh;object-fit:contain;background:#111}#localVideo{position:absolute;right:12px;bottom:12px;width:150px;max-height:180px;border:2px solid #fff;border-radius:12px}@media(max-width:600px){main{padding:14px}.card{padding:16px}.row{align-items:stretch}.row button{white-space:nowrap}.msg{max-width:88%}.profile-grid{grid-template-columns:1fr;text-align:center}.avatar{margin:auto}}
-</style></head>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eefaf8;color:#123}
+button{cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-weight:700}
+.hidden{display:none!important}
+.app{max-width:1000px;margin:auto;min-height:100vh;background:#fff}
+header{background:#13b8a6;color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:25px;font-weight:800;letter-spacing:1px}
+.badge{font-size:12px;background:rgba(255,255,255,.2);padding:6px 9px;border-radius:20px}
+main{padding:22px}
+.card{border:1px solid #d9efeb;border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #0000000b}
+input{width:100%;padding:14px;border:1px solid #c9e5e1;border-radius:12px;font-size:16px;margin:8px 0 12px}
+.primary{background:#13b8a6;color:#fff}
+.secondary{background:#e5f7f4;color:#087d72}
+.danger{background:#ffe9e9;color:#b22}
+.users{display:flex;flex-wrap:wrap;gap:10px}
+.user{background:#f0faf8;padding:10px 13px;border-radius:20px}
+.chat{height:55vh;overflow:auto;background:#f6fbfa;border-radius:15px;padding:15px}
+.msg{max-width:75%;padding:10px 13px;margin:8px 0;border-radius:15px;background:#fff;white-space:pre-wrap;overflow-wrap:anywhere}
+.msg.mine{margin-left:auto;background:#d8f7f2}
+.time{font-size:10px;opacity:.55;margin-top:4px}
+.row{display:flex;gap:8px;align-items:center}
+.row input{margin:0}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.status{font-size:13px;color:#087d72;margin-top:8px}
+small{opacity:.7}
+.profile-grid{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:center}
+.avatar{width:100px;height:100px;border-radius:50%;background:#d8f7f2;color:#087d72;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.search-results{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.search-result{width:100%;display:flex;align-items:center;gap:10px;background:#f0faf8;text-align:left}
+.search-avatar{width:42px;height:42px;border-radius:50%;background:#d8f7f2;color:#087d72;display:flex;align-items:center;justify-content:center;font-weight:800;overflow:hidden;flex:none}
+.search-avatar img{width:100%;height:100%;object-fit:cover}
+.search-name{font-weight:800}
+.search-status{font-size:12px;opacity:.65;margin-top:3px}
+#callPanel,#incomingPanel{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.callBox{width:min(900px,100%);background:#fff;border-radius:20px;padding:20px;text-align:center}
+.incomingBox{width:min(430px,100%);background:#fff;border-radius:22px;padding:28px;text-align:center;box-shadow:0 15px 50px #0008}
+.incomingIcon{width:80px;height:80px;margin:0 auto 15px;border-radius:50%;background:#d8f7f2;color:#087d72;display:flex;align-items:center;justify-content:center;font-size:38px}
+.incomingButtons{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.incomingButtons button{min-width:120px}
+.videos{position:relative;background:#111;border-radius:16px;overflow:hidden;min-height:280px}
+video{display:block;width:100%;max-height:65vh;object-fit:contain;background:#111}
+#localVideo{position:absolute;right:12px;bottom:12px;width:150px;max-height:180px;border:2px solid #fff;border-radius:12px}
+@media(max-width:600px){
+main{padding:14px}.card{padding:16px}.row{align-items:stretch}.row button{white-space:nowrap}
+.msg{max-width:88%}.profile-grid{grid-template-columns:1fr;text-align:center}.avatar{margin:auto}
+}
+</style>
+</head>
 <body>
-<div class="app"><header><div class="logo">ZIQVONA</div><div id="statusBadge" class="badge">Offline</div></header><main>
-<section id="loginScreen" class="card"><h1>Byenveni sou ZIQVONA</h1><p>Chat an tan reyèl, apèl vwa ak videyo.</p><input id="username" maxlength="30" placeholder="Ekri non ou" autocomplete="off"><button id="loginBtn" class="primary">Konekte</button><div id="loginStatus" class="status"></div></section>
-<section id="homeScreen" class="hidden"><div class="card"><div class="row" style="justify-content:space-between;flex-wrap:wrap"><div><h2 style="margin:0">👋 Bonjou, <span id="me"></span></h2><p style="margin-bottom:0"><small>Chèche yon moun oswa chwazi yon moun ki konekte.</small></p></div><button id="profileBtn" class="secondary">👤 Pwofil mwen</button></div><input id="userSearch" placeholder="🔎 Chèche yon itilizatè..." autocomplete="off" maxlength="30"><div id="searchResults" class="search-results"></div><h3>🟢 Moun ki konekte</h3><div id="users" class="users"></div></div>
-<div id="profileCard" class="card hidden"><h2>👤 Pwofil mwen</h2><div class="profile-grid"><div id="profileAvatar" class="avatar">Z</div><div><label>Non</label><input id="profileName" maxlength="30" placeholder="Non ou"><label>Status</label><input id="profileStatus" maxlength="80" placeholder="Ekri yon ti status..."></div></div><div class="controls"><button id="saveProfileBtn" class="primary">💾 Sove pwofil</button><button id="closeProfileBtn" class="secondary">Fèmen</button></div><div id="profileMessage" class="status"></div></div>
-<div id="chatCard" class="card hidden"><h2>💬 Chat ak <span id="chatWith"></span></h2><div id="chat" class="chat"></div><div class="row" style="margin-top:10px"><input id="messageInput" placeholder="Ekri mesaj ou..." autocomplete="off" maxlength="4000"><button id="sendBtn" class="primary">Voye</button></div><div id="typing" class="status"></div><div class="controls"><button id="voiceBtn" class="secondary">📞 Apèl vwa</button><button id="videoBtn" class="secondary">📹 Videyo</button><button id="endBtn" class="danger">✕ Fini apèl</button></div></div></section>
-</main></div>
-<div id="callPanel" class="hidden"><div class="callBox"><h2 id="callTitle">Apèl</h2><p id="callStatus">Koneksyon...</p><div id="callDebug" style="font-size:12px;opacity:.7;min-height:18px;margin-top:6px"></div><div id="videoArea" class="videos hidden"><video id="remoteVideo" autoplay playsinline></video><audio id="remoteAudio" autoplay playsinline></audio><video id="localVideo" autoplay muted playsinline></video></div><div class="controls" style="justify-content:center"><button id="muteBtn" class="secondary">🎤</button><button id="cameraBtn" class="secondary">📷</button><button id="hangupBtn" class="danger">✕ Fini</button></div></div></div>
+<div class="app">
+<header>
+<div class="logo">ZIQVONA</div>
+<div id="statusBadge" class="badge">Offline</div>
+</header>
+<main>
+<section id="loginScreen" class="card">
+<h1>Byenveni sou ZIQVONA</h1>
+<p>Chat an tan reyèl, apèl vwa ak videyo.</p>
+<input id="username" maxlength="30" placeholder="Ekri non ou" autocomplete="off">
+<button id="loginBtn" class="primary">Konekte</button>
+<div id="loginStatus" class="status"></div>
+</section>
+
+<section id="homeScreen" class="hidden">
+<div class="card">
+<div class="row" style="justify-content:space-between;flex-wrap:wrap">
+<div>
+<h2 style="margin:0">👋 Bonjou, <span id="me"></span></h2>
+<p style="margin-bottom:0"><small>Chèche yon moun oswa chwazi yon moun ki konekte.</small></p>
+</div>
+<button id="profileBtn" class="secondary">👤 Pwofil mwen</button>
+</div>
+<input id="userSearch" placeholder="🔎 Chèche yon itilizatè..." autocomplete="off" maxlength="30">
+<div id="searchResults" class="search-results"></div>
+<h3>🟢 Moun ki konekte</h3>
+<div id="users" class="users"></div>
+</div>
+
+<div id="profileCard" class="card hidden">
+<h2>👤 Pwofil mwen</h2>
+<div class="profile-grid">
+<div id="profileAvatar" class="avatar">Z</div>
+<div>
+<label>Non</label>
+<input id="profileName" maxlength="30" placeholder="Non ou">
+<label>Status</label>
+<input id="profileStatus" maxlength="80" placeholder="Ekri yon ti status...">
+</div>
+</div>
+<div class="controls">
+<button id="saveProfileBtn" class="primary">💾 Sove pwofil</button>
+<button id="closeProfileBtn" class="secondary">Fèmen</button>
+</div>
+<div id="profileMessage" class="status"></div>
+</div>
+
+<div id="chatCard" class="card hidden">
+<h2>💬 Chat ak <span id="chatWith"></span></h2>
+<div id="chat" class="chat"></div>
+<div class="row" style="margin-top:10px">
+<input id="messageInput" placeholder="Ekri mesaj ou..." autocomplete="off" maxlength="4000">
+<button id="sendBtn" class="primary">Voye</button>
+</div>
+<div id="typing" class="status"></div>
+<div class="controls">
+<button id="voiceBtn" class="secondary">📞 Apèl vwa</button>
+<button id="videoBtn" class="secondary">📹 Videyo</button>
+<button id="endBtn" class="danger">✕ Fini apèl</button>
+</div>
+</div>
+</section>
+</main>
+</div>
+
+<!-- Incoming call -->
+<div id="incomingPanel" class="hidden">
+<div class="incomingBox">
+<div class="incomingIcon" id="incomingIcon">📞</div>
+<h2 id="incomingTitle">Apèl k ap antre</h2>
+<p id="incomingText">Yon moun ap rele ou.</p>
+<div class="incomingButtons">
+<button id="rejectBtn" class="danger">❌ Refize</button>
+<button id="acceptBtn" class="primary">✅ Aksepte</button>
+</div>
+</div>
+</div>
+
+<!-- Active call -->
+<div id="callPanel" class="hidden">
+<div class="callBox">
+<h2 id="callTitle">Apèl</h2>
+<p id="callStatus">Koneksyon...</p>
+<div id="callDebug" style="font-size:12px;opacity:.7;min-height:18px;margin-top:6px"></div>
+<div id="videoArea" class="videos hidden">
+<video id="remoteVideo" autoplay playsinline></video>
+<video id="localVideo" autoplay muted playsinline></video>
+</div>
+<div class="controls" style="justify-content:center">
+<button id="muteBtn" class="secondary">🎤</button>
+<button id="cameraBtn" class="secondary">📷</button>
+<button id="hangupBtn" class="danger">✕ Fini</button>
+</div>
+</div>
+</div>
+
+<!-- Audio MUST NOT be inside hidden videoArea -->
+<audio id="remoteAudio" autoplay playsinline></audio>
+
 <script>
-(function(){"use strict";
-let ws=null,me="",selectedUser="",localStream=null,peer=null,pendingCandidates=[],typingTimer=null,searchTimer=null,isVideoCall=false,muted=false,cameraOff=false,profiles={};
+(function(){
+"use strict";
+
+let ws=null;
+let me="";
+let selectedUser="";
+let localStream=null;
+let peer=null;
+let pendingCandidates=[];
+let remoteDescriptionReady=false;
+let typingTimer=null;
+let searchTimer=null;
+let isVideoCall=false;
+let muted=false;
+let cameraOff=false;
+let profiles={};
+let incomingOffer=null;
+let incomingCaller="";
+
 const $=id=>document.getElementById(id);
-function setStatus(t){$("statusBadge").textContent=t}function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).classList.add("hidden")}function setLoginStatus(t){$("loginStatus").textContent=t||""}
-function escapeText(t){const d=document.createElement("div");d.textContent=String(t==null?"":t);return d.innerHTML}function initials(n){const s=String(n||"?").trim();return s?s.charAt(0).toUpperCase():"?"}function profileData(n){return profiles[n]||{username:n,status:"",avatar:""}}
-function renderAvatar(el,p){el.innerHTML="";if(p&&p.avatar){const img=document.createElement("img");img.src=p.avatar;img.alt="";img.onerror=()=>{el.textContent=initials(p.username)};el.appendChild(img)}else el.textContent=initials(p&&p.username)}
-function addMessage(m){const d=document.createElement("div");d.className="msg"+(m.from===me?" mine":"");const dt=m.time?new Date(m.time):new Date();const tm=Number.isNaN(dt.getTime())?new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):dt.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});d.innerHTML=escapeText(m.text)+'<div class="time">'+escapeText(tm)+"</div>";$('chat').appendChild(d);$('chat').scrollTop=$('chat').scrollHeight}
-function renderUsers(list){const box=$("users");box.innerHTML="";(Array.isArray(list)?list:[]).filter(u=>u&&u!==me).forEach(u=>{const b=document.createElement("button");b.className="user";b.textContent="🟢 "+(profileData(u).username||u);b.onclick=()=>selectUser(u);box.appendChild(b)});if(!box.children.length)box.innerHTML="<small>Pa gen lòt itilizatè konekte pou kounye a.</small>"}
-function renderSearchResults(list){const box=$("searchResults");box.innerHTML="";(Array.isArray(list)?list:[]).filter(p=>p&&p.username&&p.username!==me).slice(0,30).forEach(p=>{profiles[p.username]=p;const b=document.createElement("button");b.className="search-result";const av=document.createElement("span");av.className="search-avatar";renderAvatar(av,p);const info=document.createElement("span");const n=document.createElement("div");n.className="search-name";n.textContent=p.username;const s=document.createElement("div");s.className="search-status";s.textContent=p.status||"ZIQVONA";info.append(n,s);b.append(av,info);b.onclick=()=>selectUser(p.username);box.appendChild(b)});if(!box.children.length&&$("userSearch").value.trim())box.innerHTML="<small>Pa jwenn itilizatè sa a.</small>"}
-function searchUsers(){const q=$("userSearch").value.trim();clearTimeout(searchTimer);if(!q){$("searchResults").innerHTML="";return}searchTimer=setTimeout(()=>{if(!sendJson({type:"search_users",query:q})){renderSearchResults(Object.values(profiles).filter(p=>p.username&&p.username.toLowerCase().includes(q.toLowerCase()))) }},250)}
-function selectUser(u){selectedUser=u;$("chatWith").textContent=u;$("chat").innerHTML="";$("typing").textContent="";show("chatCard");loadHistory(u);$("messageInput").focus()}
-function sendJson(p){if(!ws||ws.readyState!==WebSocket.OPEN)return false;ws.send(JSON.stringify(p));return true}function loadHistory(u){sendJson({type:"history",with:u})}
-function showProfile(){const p=profileData(me);$("profileName").value=p.username||me;$("profileStatus").value=p.status||"";renderAvatar($("profileAvatar"),p);$("profileMessage").textContent="";show("profileCard")}
-function saveProfile(){const status=$("profileStatus").value.trim();if(!sendJson({type:"profile_update",status:status})){$("profileMessage").textContent="Ou pa konekte ak sèvè a.";return}profiles[me]=Object.assign({},profiles[me]||{},{username:me,status:status});renderAvatar($("profileAvatar"),profiles[me]);$("profileMessage").textContent="Pwofil la sove."}
-function connect(){const name=$("username").value.trim();if(!name){setLoginStatus("Tanpri mete yon non.");$("username").focus();return}if(name.length<2){setLoginStatus("Non an dwe gen omwen 2 karaktè.");return}if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;me=name;setLoginStatus("Koneksyon...");setStatus("Connecting...");const protocol=location.protocol==="https:"?"wss":"ws",wsUrl=protocol+"://"+location.host;try{ws=new WebSocket(wsUrl)}catch(e){setLoginStatus("Koneksyon an pa mache.");setStatus("Offline");return}
-ws.onopen=()=>sendJson({type:"login",username:me});ws.onmessage=event=>{let m;try{m=JSON.parse(event.data)}catch(e){return}
-if(m.type==="login_ok"){hide("loginScreen");show("homeScreen");$("me").textContent=me;setLoginStatus("");setStatus("Online");if(m.profiles&&typeof m.profiles==="object")profiles=m.profiles;if(m.profile)profiles[me]=m.profile;renderUsers(m.online||[]);return}
-if(m.type==="presence"){if(m.profiles&&typeof m.profiles==="object")profiles=m.profiles;renderUsers(m.online||[]);return}
-if(m.type==="profiles"){if(m.profiles&&typeof m.profiles==="object")profiles=Object.assign(profiles,m.profiles);return}
-if(m.type==="search_results"){renderSearchResults(m.users||m.results||[]);return}
-if(m.type==="profile"){if(m.profile&&m.profile.username)profiles[m.profile.username]=m.profile;return}
-if(m.type==="message"){if(m.from===selectedUser||m.to===selectedUser)addMessage(m);return}
-if(m.type==="history"){const a=Array.isArray(m.messages)?m.messages:(Array.isArray(m.history)?m.history:[]);if(m.with&&m.with!==selectedUser)return;$("chat").innerHTML="";a.forEach(addMessage);return}
-if(m.type==="typing"){if(m.from===selectedUser){$("typing").textContent=m.from+" ap ekri...";clearTimeout(typingTimer);typingTimer=setTimeout(()=>{$("typing").textContent=""},1200)}return}
-if(m.type==="error"){const x=m.message||"Gen yon erè.";if(!$('loginScreen').classList.contains("hidden"))setLoginStatus(x);else alert(x);return}
-if(m.type==="call-offer"){handleOffer(m);return}if(m.type==="call-answer"){handleAnswer(m);return}if(m.type==="ice"){handleIce(m);return}if(m.type==="call-end")endCall(false)};
-ws.onclose=()=>{setStatus("Offline");ws=null};ws.onerror=()=>{setLoginStatus("Pa kapab konekte ak sèvè a. Verifye Render.");setStatus("Offline")}}
-function sendMessage(){const text=$("messageInput").value.trim();if(!text||!selectedUser)return;if(!sendJson({type:"message",to:selectedUser,text:text})){$("typing").textContent="Ou pa konekte ak sèvè a.";return}$("messageInput").value=""}function sendTyping(){if(selectedUser)sendJson({type:"typing",to:selectedUser})}
-function getIceServers(){return [{urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302"]}];}
-function resetPeer(){if(peer){try{peer.onicecandidate=null;peer.ontrack=null;peer.close()}catch(e){}}peer=null;pendingCandidates=[];remoteDescriptionReady=false}
-function createPeer(){resetPeer();const pc=new RTCPeerConnection({iceServers:getIceServers(),iceCandidatePoolSize:10});peer=pc;pc.onicecandidate=e=>{if(e.candidate&&selectedUser)sendJson({type:"ice",to:selectedUser,candidate:e.candidate})};pc.onicecandidateerror=e=>console.warn("ZIQVONA ICE error",e);pc.ontrack=e=>{if(!e.streams||!e.streams[0])return;const stream=e.streams[0];$("remoteVideo").srcObject=stream;$("remoteAudio").srcObject=stream;$("remoteVideo").play().catch(()=>{});$("remoteAudio").play().catch(()=>{})};pc.onconnectionstatechange=()=>{if(peer!==pc)return;const state=pc.connectionState;if(state==="connected"){$("callStatus").textContent="Konekte";$("callDebug").textContent=""}else if(state==="connecting"){$("callStatus").textContent="Koneksyon...";$("callDebug").textContent="Ap etabli koneksyon an..."}else if(state==="disconnected"){$("callStatus").textContent="Koneksyon an koupe...";$("callDebug").textContent="WebRTC disconnected"}else if(state==="failed"){$("callStatus").textContent="Apèl la pa rive konekte.";$("callDebug").textContent="ICE echwe. TURN ap nesesè sou kèk rezo."}};pc.oniceconnectionstatechange=()=>{if(peer!==pc)return;const state=pc.iceConnectionState;if(state==="checking")$("callDebug").textContent="Ap chèche yon koneksyon rezo...";else if(state==="connected"||state==="completed")$("callDebug").textContent="Koneksyon rezo etabli.";else if(state==="failed")$("callDebug").textContent="ICE echwe. TURN ap nesesè sou kèk rezo."};if(localStream)localStream.getTracks().forEach(t=>{try{pc.addTrack(t,localStream)}catch(e){}});return pc}
-async function flushCandidates(){if(!peer||!peer.remoteDescription)return;const list=pendingCandidates.splice(0);for(const c of list){try{await peer.addIceCandidate(c)}catch(e){}}}
-async function startCall(video){if(!selectedUser){alert("Chwazi yon moun anvan.");return}if(!ws||ws.readyState!==WebSocket.OPEN){alert("Ou pa konekte ak sèvè a.");return}try{isVideoCall=!!video;muted=false;cameraOff=false;localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:isVideoCall?{width:{ideal:1280},height:{ideal:720},facingMode:"user"}:false});$("localVideo").srcObject=localStream;$("localVideo").play().catch(()=>{});show("callPanel");$("callTitle").textContent=isVideoCall?"📹 Apèl videyo":"📞 Apèl vwa";$("callStatus").textContent="Apèl ap sòti...";$("callDebug").textContent="Ap prepare koneksyon an...";$("videoArea").classList.toggle("hidden",!isVideoCall);createPeer();const offer=await peer.createOffer({offerToReceiveAudio:true,offerToReceiveVideo:isVideoCall});await peer.setLocalDescription(offer);if(!sendJson({type:"call-offer",to:selectedUser,offer:peer.localDescription,mode:isVideoCall?"video":"voice"}))throw new Error("SIGNALING_OFFLINE")}catch(e){console.error("ZIQVONA startCall",e);endCall(false);if(e.name==="NotAllowedError")alert("Bay ZIQVONA pèmisyon pou mikwo/kamera a, epi eseye ankò.");else if(e.name==="NotFoundError")alert("Mikwo oswa kamera pa jwenn sou aparèy sa a.");else alert("Apèl la pa ka kòmanse. Verifye pèmisyon mikwo/kamera a.")}}
-async function handleOffer(m){if(!m||!m.from||!m.offer)return;const caller=m.from;if(!confirm(caller+" ap rele ou. Aksepte?")){sendJson({type:"call-end",to:caller});return}selectedUser=caller;$("chatWith").textContent=selectedUser;show("chatCard");try{isVideoCall=m.mode==="video"||!!(m.offer.sdp&&m.offer.sdp.includes("m=video"));muted=false;cameraOff=false;localStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:isVideoCall?{width:{ideal:1280},height:{ideal:720},facingMode:"user"}:false});$("localVideo").srcObject=localStream;$("localVideo").play().catch(()=>{});show("callPanel");$("callTitle").textContent=isVideoCall?"📹 Apèl videyo":"📞 Apèl vwa";$("callStatus").textContent="Koneksyon...";$("callDebug").textContent="M ap prepare repons lan...";$("videoArea").classList.toggle("hidden",!isVideoCall);createPeer();await peer.setRemoteDescription(new RTCSessionDescription(m.offer));remoteDescriptionReady=true;await flushCandidates();const answer=await peer.createAnswer({offerToReceiveAudio:true,offerToReceiveVideo:isVideoCall});await peer.setLocalDescription(answer);if(!sendJson({type:"call-answer",to:caller,answer:peer.localDescription}))throw new Error("SIGNALING_OFFLINE")}catch(e){console.error("ZIQVONA handleOffer",e);endCall(false);alert("Apèl la pa disponib sou aparèy sa a.")}}
-async function handleAnswer(m){if(!peer||!m.answer)return;try{if(peer.signalingState!=="have-local-offer")return;await peer.setRemoteDescription(new RTCSessionDescription(m.answer));remoteDescriptionReady=true;await flushCandidates();$("callStatus").textContent="Koneksyon...";$("callDebug").textContent="Repons resevwa. Ap etabli koneksyon rezo a..."}catch(e){console.error("ZIQVONA handleAnswer",e);$("callStatus").textContent="Erè nan koneksyon apèl la."}}
-async function handleIce(m){if(!m||!m.candidate)return;if(!peer||!peer.remoteDescription){pendingCandidates.push(m.candidate);return}try{await peer.addIceCandidate(m.candidate)}catch(e){pendingCandidates.push(m.candidate)}}
-function endCall(signal){if(signal&&selectedUser)sendJson({type:"call-end",to:selectedUser});resetPeer();if(localStream){localStream.getTracks().forEach(t=>{try{t.stop()}catch(e){}});localStream=null}$("localVideo").srcObject=null;$("remoteVideo").srcObject=null;$("remoteAudio").srcObject=null;hide("callPanel");hide("videoArea");muted=false;cameraOff=false;$("muteBtn").textContent="🎤";$("cameraBtn").textContent="📷"}
-function toggleMute(){muted=!muted;if(localStream)localStream.getAudioTracks().forEach(t=>t.enabled=!muted);$("muteBtn").textContent=muted?"🔇":"🎤"}
-function toggleCamera(){if(!isVideoCall)return;cameraOff=!cameraOff;if(localStream)localStream.getVideoTracks().forEach(t=>t.enabled=!cameraOff);$("cameraBtn").textContent=cameraOff?"🚫📷":"📷"}
-$("loginBtn").onclick=connect;$("username").onkeydown=e=>{if(e.key==="Enter")connect()};$("sendBtn").onclick=sendMessage;$("messageInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();sendMessage()}};$("messageInput").oninput=sendTyping;$("voiceBtn").onclick=()=>startCall(false);$("videoBtn").onclick=()=>startCall(true);$("endBtn").onclick=()=>endCall(true);$("hangupBtn").onclick=()=>endCall(true);$("muteBtn").onclick=toggleMute;$("cameraBtn").onclick=toggleCamera;$("profileBtn").onclick=showProfile;$("closeProfileBtn").onclick=()=>hide("profileCard");$("saveProfileBtn").onclick=saveProfile;$("userSearch").oninput=searchUsers;$("userSearch").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();searchUsers()}};
+
+function setStatus(t){$("statusBadge").textContent=t}
+function show(id){$(id).classList.remove("hidden")}
+function hide(id){$(id).classList.add("hidden")}
+function setLoginStatus(t){$("loginStatus").textContent=t||""}
+
+function escapeText(t){
+const d=document.createElement("div");
+d.textContent=String(t==null?"":t);
+return d.innerHTML;
+}
+
+function initials(n){
+const s=String(n||"?").trim();
+return s?s.charAt(0).toUpperCase():"?";
+}
+
+function profileData(n){
+return profiles[n]||{username:n,status:"",avatar:""};
+}
+
+function renderAvatar(el,p){
+el.innerHTML="";
+if(p&&p.avatar){
+const img=document.createElement("img");
+img.src=p.avatar;
+img.alt="";
+img.onerror=()=>{el.textContent=initials(p.username)};
+el.appendChild(img);
+}else{
+el.textContent=initials(p&&p.username);
+}
+}
+
+function addMessage(m){
+const d=document.createElement("div");
+d.className="msg"+(m.from===me?" mine":"");
+const dt=m.time?new Date(m.time):new Date();
+const tm=Number.isNaN(dt.getTime())
+?new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})
+:dt.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+d.innerHTML=escapeText(m.text)+'<div class="time">'+escapeText(tm)+"</div>";
+$("chat").appendChild(d);
+$("chat").scrollTop=$("chat").scrollHeight;
+}
+
+function renderUsers(list){
+const box=$("users");
+box.innerHTML="";
+(Array.isArray(list)?list:[])
+.filter(u=>u&&u!==me)
+.forEach(u=>{
+const b=document.createElement("button");
+b.className="user";
+b.textContent="🟢 "+(profileData(u).username||u);
+b.onclick=()=>selectUser(u);
+box.appendChild(b);
+});
+if(!box.children.length){
+box.innerHTML="<small>Pa gen lòt itilizatè konekte pou kounye a.</small>";
+}
+}
+
+function renderSearchResults(list){
+const box=$("searchResults");
+box.innerHTML="";
+(Array.isArray(list)?list:[])
+.filter(p=>p&&p.username&&p.username!==me)
+.slice(0,30)
+.forEach(p=>{
+profiles[p.username]=p;
+const b=document.createElement("button");
+b.className="search-result";
+const av=document.createElement("span");
+av.className="search-avatar";
+renderAvatar(av,p);
+const info=document.createElement("span");
+const n=document.createElement("div");
+n.className="search-name";
+n.textContent=p.username;
+const s=document.createElement("div");
+s.className="search-status";
+s.textContent=p.status||"ZIQVONA";
+info.append(n,s);
+b.append(av,info);
+b.onclick=()=>selectUser(p.username);
+box.appendChild(b);
+});
+if(!box.children.length&&$("userSearch").value.trim()){
+box.innerHTML="<small>Pa jwenn itilizatè sa a.</small>";
+}
+}
+
+function searchUsers(){
+const q=$("userSearch").value.trim();
+clearTimeout(searchTimer);
+if(!q){
+$("searchResults").innerHTML="";
+return;
+}
+searchTimer=setTimeout(()=>{
+if(!sendJson({type:"search_users",query:q})){
+renderSearchResults(
+Object.values(profiles).filter(
+p=>p.username&&p.username.toLowerCase().includes(q.toLowerCase())
+)
+);
+}
+},250);
+}
+
+function selectUser(u){
+selectedUser=u;
+$("chatWith").textContent=u;
+$("chat").innerHTML="";
+$("typing").textContent="";
+show("chatCard");
+loadHistory(u);
+$("messageInput").focus();
+}
+
+function sendJson(p){
+if(!ws||ws.readyState!==WebSocket.OPEN)return false;
+try{
+ws.send(JSON.stringify(p));
+return true;
+}catch(e){
+console.error("ZIQVONA sendJson",e);
+return false;
+}
+}
+
+function loadHistory(u){
+sendJson({type:"history",with:u});
+}
+
+function showProfile(){
+const p=profileData(me);
+$("profileName").value=p.username||me;
+$("profileStatus").value=p.status||"";
+renderAvatar($("profileAvatar"),p);
+$("profileMessage").textContent="";
+show("profileCard");
+}
+
+function saveProfile(){
+const status=$("profileStatus").value.trim();
+if(!sendJson({type:"profile_update",status:status})){
+$("profileMessage").textContent="Ou pa konekte ak sèvè a.";
+return;
+}
+profiles[me]=Object.assign({},profiles[me]||{},{username:me,status:status});
+renderAvatar($("profileAvatar"),profiles[me]);
+$("profileMessage").textContent="Pwofil la sove.";
+}
+
+function connect(){
+const name=$("username").value.trim();
+if(!name){
+setLoginStatus("Tanpri mete yon non.");
+$("username").focus();
+return;
+}
+if(name.length<2){
+setLoginStatus("Non an dwe gen omwen 2 karaktè.");
+return;
+}
+if(ws&&(ws.readyState===WebSocket.OPEN||ws.readyState===WebSocket.CONNECTING))return;
+
+me=name;
+setLoginStatus("Koneksyon...");
+setStatus("Connecting...");
+
+const protocol=location.protocol==="https:"?"wss":"ws";
+const wsUrl=protocol+"://"+location.host;
+
+try{
+ws=new WebSocket(wsUrl);
+}catch(e){
+setLoginStatus("Koneksyon an pa mache.");
+setStatus("Offline");
+return;
+}
+
+ws.onopen=()=>{
+sendJson({type:"login",username:me});
+};
+
+ws.onmessage=event=>{
+let m;
+try{
+m=JSON.parse(event.data);
+}catch(e){
+console.warn("ZIQVONA invalid WebSocket message");
+return;
+}
+
+if(m.type==="login_ok"){
+hide("loginScreen");
+show("homeScreen");
+$("me").textContent=me;
+setLoginStatus("");
+setStatus("Online");
+if(m.profiles&&typeof m.profiles==="object")profiles=m.profiles;
+if(m.profile)profiles[me]=m.profile;
+renderUsers(m.online||[]);
+return;
+}
+
+if(m.type==="presence"){
+if(m.profiles&&typeof m.profiles==="object")profiles=m.profiles;
+renderUsers(m.online||[]);
+return;
+}
+
+if(m.type==="profiles"){
+if(m.profiles&&typeof m.profiles==="object"){
+profiles=Object.assign(profiles,m.profiles);
+}
+return;
+}
+
+if(m.type==="search_results"){
+renderSearchResults(m.users||m.results||[]);
+return;
+}
+
+if(m.type==="profile"){
+if(m.profile&&m.profile.username)profiles[m.profile.username]=m.profile;
+return;
+}
+
+if(m.type==="message"){
+if(m.from===selectedUser||m.to===selectedUser)addMessage(m);
+return;
+}
+
+if(m.type==="history"){
+const a=Array.isArray(m.messages)?m.messages:
+(Array.isArray(m.history)?m.history:[]);
+if(m.with&&m.with!==selectedUser)return;
+$("chat").innerHTML="";
+a.forEach(addMessage);
+return;
+}
+
+if(m.type==="typing"){
+if(m.from===selectedUser){
+$("typing").textContent=m.from+" ap ekri...";
+clearTimeout(typingTimer);
+typingTimer=setTimeout(()=>{$("typing").textContent=""},1200);
+}
+return;
+}
+
+if(m.type==="error"){
+const x=m.message||"Gen yon erè.";
+if(!$("loginScreen").classList.contains("hidden")){
+setLoginStatus(x);
+}else{
+alert(x);
+}
+return;
+}
+
+if(m.type==="call-offer"){
+receiveIncomingCall(m);
+return;
+}
+
+if(m.type==="call-answer"){
+handleAnswer(m);
+return;
+}
+
+if(m.type==="ice"){
+handleIce(m);
+return;
+}
+
+if(m.type==="call-end"){
+if(incomingCaller===m.from)hideIncoming();
+endCall(false);
+return;
+}
+};
+
+ws.onclose=()=>{
+setStatus("Offline");
+ws=null;
+};
+
+ws.onerror=()=>{
+setLoginStatus("Pa kapab konekte ak sèvè a. Verifye Render.");
+setStatus("Offline");
+};
+}
+
+function sendMessage(){
+const text=$("messageInput").value.trim();
+if(!text||!selectedUser)return;
+if(!sendJson({type:"message",to:selectedUser,text:text})){
+$("typing").textContent="Ou pa konekte ak sèvè a.";
+return;
+}
+$("messageInput").value="";
+}
+
+function sendTyping(){
+if(selectedUser)sendJson({type:"typing",to:selectedUser});
+}
+
+function getIceServers(){
+return [{
+urls:[
+"stun:stun.l.google.com:19302",
+"stun:stun1.l.google.com:19302",
+"stun:stun2.l.google.com:19302"
+]
+}];
+}
+
+function resetPeer(){
+if(peer){
+try{
+peer.onicecandidate=null;
+peer.ontrack=null;
+peer.close();
+}catch(e){}
+}
+peer=null;
+pendingCandidates=[];
+remoteDescriptionReady=false;
+}
+
+function createPeer(){
+resetPeer();
+
+const pc=new RTCPeerConnection({
+iceServers:getIceServers(),
+iceCandidatePoolSize:10
+});
+
+peer=pc;
+
+pc.onicecandidate=e=>{
+if(e.candidate&&selectedUser){
+sendJson({
+type:"ice",
+to:selectedUser,
+candidate:e.candidate
+});
+}
+};
+
+pc.onicecandidateerror=e=>{
+console.warn("ZIQVONA ICE error",e);
+};
+
+pc.ontrack=e=>{
+if(!e.streams||!e.streams[0])return;
+
+const stream=e.streams[0];
+
+$("remoteAudio").srcObject=stream;
+$("remoteAudio").play().catch(()=>{});
+
+if(isVideoCall){
+$("remoteVideo").srcObject=stream;
+$("remoteVideo").play().catch(()=>{});
+}
+};
+
+pc.onconnectionstatechange=()=>{
+if(peer!==pc)return;
+
+const state=pc.connectionState;
+
+if(state==="connected"){
+$("callStatus").textContent="Konekte";
+$("callDebug").textContent="";
+}
+else if(state==="connecting"){
+$("callStatus").textContent="Koneksyon...";
+$("callDebug").textContent="Ap etabli koneksyon an...";
+}
+else if(state==="disconnected"){
+$("callStatus").textContent="Koneksyon an koupe...";
+$("callDebug").textContent="WebRTC disconnected";
+}
+else if(state==="failed"){
+$("callStatus").textContent="Apèl la pa rive konekte.";
+$("callDebug").textContent="ICE echwe. TURN ap nesesè sou kèk rezo.";
+}
+};
+
+pc.oniceconnectionstatechange=()=>{
+if(peer!==pc)return;
+
+const state=pc.iceConnectionState;
+
+if(state==="checking"){
+$("callDebug").textContent="Ap chèche yon koneksyon rezo...";
+}
+else if(state==="connected"||state==="completed"){
+$("callDebug").textContent="Koneksyon rezo etabli.";
+}
+else if(state==="failed"){
+$("callDebug").textContent="ICE echwe. TURN ap nesesè sou kèk rezo.";
+}
+};
+
+if(localStream){
+localStream.getTracks().forEach(t=>{
+try{pc.addTrack(t,localStream)}catch(e){}
+});
+}
+
+return pc;
+}
+
+async function flushCandidates(){
+if(!peer||!peer.remoteDescription)return;
+
+const list=pendingCandidates.splice(0);
+
+for(const c of list){
+try{
+await peer.addIceCandidate(c);
+}catch(e){
+console.warn("ZIQVONA addIceCandidate",e);
+}
+}
+}
+
+async function startCall(video){
+if(!selectedUser){
+alert("Chwazi yon moun anvan.");
+return;
+}
+
+if(!ws||ws.readyState!==WebSocket.OPEN){
+alert("Ou pa konekte ak sèvè a.");
+return;
+}
+
+try{
+isVideoCall=!!video;
+muted=false;
+cameraOff=false;
+
+localStream=await navigator.mediaDevices.getUserMedia({
+audio:{
+echoCancellation:true,
+noiseSuppression:true,
+autoGainControl:true
+},
+video:isVideoCall?{
+width:{ideal:1280},
+height:{ideal:720},
+facingMode:"user"
+}:false
+});
+
+$("localVideo").srcObject=localStream;
+$("localVideo").play().catch(()=>{});
+
+show("callPanel");
+$("callTitle").textContent=isVideoCall?"📹 Apèl videyo":"📞 Apèl vwa";
+$("callStatus").textContent="Apèl ap sòti...";
+$("callDebug").textContent="Ap prepare koneksyon an...";
+$("videoArea").classList.toggle("hidden",!isVideoCall);
+
+createPeer();
+
+const offer=await peer.createOffer({
+offerToReceiveAudio:true,
+offerToReceiveVideo:isVideoCall
+});
+
+await peer.setLocalDescription(offer);
+
+if(!sendJson({
+type:"call-offer",
+to:selectedUser,
+offer:peer.localDescription,
+mode:isVideoCall?"video":"voice"
+})){
+throw new Error("SIGNALING_OFFLINE");
+}
+
+}catch(e){
+console.error("ZIQVONA startCall",e);
+endCall(false);
+
+if(e.name==="NotAllowedError"){
+alert("Bay ZIQVONA pèmisyon pou mikwo/kamera a, epi eseye ankò.");
+}
+else if(e.name==="NotFoundError"){
+alert("Mikwo oswa kamera pa jwenn sou aparèy sa a.");
+}
+else{
+alert("Apèl la pa ka kòmanse. Verifye pèmisyon mikwo/kamera a.");
+}
+}
+}
+
+function receiveIncomingCall(m){
+if(!m||!m.from||!m.offer)return;
+
+if(peer||localStream||!$("callPanel").classList.contains("hidden")){
+sendJson({type:"call-end",to:m.from});
+return;
+}
+
+incomingOffer=m;
+incomingCaller=m.from;
+
+$("incomingIcon").textContent=m.mode==="video"?"📹":"📞";
+$("incomingTitle").textContent=m.mode==="video"?"Apèl videyo k ap antre":"Apèl vwa k ap antre";
+$("incomingText").textContent=incomingCaller+" ap rele ou.";
+
+show("incomingPanel");
+}
+
+function hideIncoming(){
+incomingOffer=null;
+incomingCaller="";
+hide("incomingPanel");
+}
+
+function rejectIncoming(){
+const caller=incomingCaller;
+hideIncoming();
+
+if(caller){
+sendJson({type:"call-end",to:caller});
+}
+}
+
+async function acceptIncoming(){
+const m=incomingOffer;
+const caller=incomingCaller;
+
+if(!m||!caller){
+hideIncoming();
+return;
+}
+
+hideIncoming();
+
+selectedUser=caller;
+$("chatWith").textContent=selectedUser;
+show("chatCard");
+
+try{
+isVideoCall=m.mode==="video"||
+!!(m.offer.sdp&&m.offer.sdp.includes("m=video"));
+
+muted=false;
+cameraOff=false;
+
+localStream=await navigator.mediaDevices.getUserMedia({
+audio:{
+echoCancellation:true,
+noiseSuppression:true,
+autoGainControl:true
+},
+video:isVideoCall?{
+width:{ideal:1280},
+height:{ideal:720},
+facingMode:"user"
+}:false
+});
+
+$("localVideo").srcObject=localStream;
+$("localVideo").play().catch(()=>{});
+
+show("callPanel");
+
+$("callTitle").textContent=isVideoCall?"📹 Apèl videyo":"📞 Apèl vwa";
+$("callStatus").textContent="Koneksyon...";
+$("callDebug").textContent="M ap prepare repons lan...";
+$("videoArea").classList.toggle("hidden",!isVideoCall);
+
+createPeer();
+
+await peer.setRemoteDescription(new RTCSessionDescription(m.offer));
+remoteDescriptionReady=true;
+
+await flushCandidates();
+
+const answer=await peer.createAnswer({
+offerToReceiveAudio:true,
+offerToReceiveVideo:isVideoCall
+});
+
+await peer.setLocalDescription(answer);
+
+if(!sendJson({
+type:"call-answer",
+to:caller,
+answer:peer.localDescription
+})){
+throw new Error("SIGNALING_OFFLINE");
+}
+
+}catch(e){
+console.error("ZIQVONA acceptIncoming",e);
+endCall(false);
+
+if(e.name==="NotAllowedError"){
+alert("Bay ZIQVONA pèmisyon pou mikwo/kamera a, epi eseye ankò.");
+}else{
+alert("Apèl la pa disponib sou aparèy sa a.");
+}
+}
+}
+
+async function handleAnswer(m){
+if(!peer||!m.answer)return;
+
+try{
+if(peer.signalingState!=="have-local-offer")return;
+
+await peer.setRemoteDescription(new RTCSessionDescription(m.answer));
+remoteDescriptionReady=true;
+
+await flushCandidates();
+
+$("callStatus").textContent="Koneksyon...";
+$("callDebug").textContent="Repons resevwa. Ap etabli koneksyon rezo a...";
+
+}catch(e){
+console.error("ZIQVONA handleAnswer",e);
+$("callStatus").textContent="Erè nan koneksyon apèl la.";
+}
+}
+
+async function handleIce(m){
+if(!m||!m.candidate)return;
+
+if(!peer||!peer.remoteDescription){
+pendingCandidates.push(m.candidate);
+return;
+}
+
+try{
+await peer.addIceCandidate(m.candidate);
+}catch(e){
+pendingCandidates.push(m.candidate);
+}
+}
+
+function endCall(signal){
+if(signal&&selectedUser){
+sendJson({type:"call-end",to:selectedUser});
+}
+
+resetPeer();
+
+if(localStream){
+localStream.getTracks().forEach(t=>{
+try{t.stop()}catch(e){}
+});
+localStream=null;
+}
+
+$("localVideo").srcObject=null;
+$("remoteVideo").srcObject=null;
+$("remoteAudio").srcObject=null;
+
+hide("callPanel");
+hide("videoArea");
+
+incomingOffer=null;
+incomingCaller="";
+hide("incomingPanel");
+
+muted=false;
+cameraOff=false;
+isVideoCall=false;
+
+$("muteBtn").textContent="🎤";
+$("cameraBtn").textContent="📷";
+}
+
+function toggleMute(){
+muted=!muted;
+
+if(localStream){
+localStream.getAudioTracks().forEach(t=>{
+t.enabled=!muted;
+});
+}
+
+$("muteBtn").textContent=muted?"🔇":"🎤";
+}
+
+function toggleCamera(){
+if(!isVideoCall)return;
+
+cameraOff=!cameraOff;
+
+if(localStream){
+localStream.getVideoTracks().forEach(t=>{
+t.enabled=!cameraOff;
+});
+}
+
+$("cameraBtn").textContent=cameraOff?"🚫📷":"📷";
+}
+
+$("loginBtn").onclick=connect;
+
+$("username").onkeydown=e=>{
+if(e.key==="Enter")connect();
+};
+
+$("sendBtn").onclick=sendMessage;
+
+$("messageInput").onkeydown=e=>{
+if(e.key==="Enter"){
+e.preventDefault();
+sendMessage();
+}
+};
+
+$("messageInput").oninput=sendTyping;
+
+$("voiceBtn").onclick=()=>startCall(false);
+$("videoBtn").onclick=()=>startCall(true);
+$("endBtn").onclick=()=>endCall(true);
+$("hangupBtn").onclick=()=>endCall(true);
+
+$("muteBtn").onclick=toggleMute;
+$("cameraBtn").onclick=toggleCamera;
+
+$("profileBtn").onclick=showProfile;
+$("closeProfileBtn").onclick=()=>hide("profileCard");
+$("saveProfileBtn").onclick=saveProfile;
+
+$("userSearch").oninput=searchUsers;
+$("userSearch").onkeydown=e=>{
+if(e.key==="Enter"){
+e.preventDefault();
+searchUsers();
+}
+};
+
+$("acceptBtn").onclick=acceptIncoming;
+$("rejectBtn").onclick=rejectIncoming;
+
 })();
-</script></body></html>
