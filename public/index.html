@@ -1,521 +1,327 @@
 <!DOCTYPE html>
 <html lang="ht">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#12bfae">
-  <title>ZIQVONA — Chat prive</title>
-  <style>
-    :root{
-      --turq:#12bfae;
-      --turq-dark:#079b8d;
-      --bg:#eef4f4;
-      --panel:#fff;
-      --text:#172323;
-      --muted:#718080;
-      --line:#e5ecec;
-      --mine:#d7fff7;
-      --shadow:0 10px 35px rgba(10,45,45,.10);
-    }
-    *{box-sizing:border-box}
-    html,body{margin:0;height:100%;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-    button,input{font:inherit}
-    button{cursor:pointer;border:0}
-    .app{height:100vh;display:flex;overflow:hidden}
-    .sidebar{width:370px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
-    .brandbar{height:72px;padding:0 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:.5px}
-    .logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,#12bfae,#087e76);color:#fff;display:grid;place-items:center;font-weight:900;box-shadow:0 5px 15px rgba(18,191,174,.25)}
-    .top-actions{display:flex;gap:7px}
-    .icon-btn{width:38px;height:38px;border-radius:50%;background:transparent;color:#4d5d5d;font-size:20px}
-    .icon-btn:hover{background:#eef8f7}
-    .me{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;gap:11px;align-items:center}
-    .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#e4f8f5;display:grid;place-items:center;flex:none}
-    .avatar.default{background:linear-gradient(135deg,#12bfae,#087e76);color:#fff;font-weight:900}
-    .me-info{min-width:0;flex:1}
-    .me-name{font-weight:700}
-    .status{font-size:12px;color:var(--muted);margin-top:3px}
-    .search{padding:12px 14px}
-    .searchbox{height:42px;border-radius:22px;background:#f0f5f5;display:flex;align-items:center;padding:0 14px;gap:8px}
-    .searchbox input{border:0;outline:0;background:transparent;width:100%;color:var(--text)}
-    .chat-list{overflow:auto;flex:1}
-    .chat-item{display:flex;gap:12px;padding:13px 15px;border-bottom:1px solid #f1f4f4;align-items:center}
-    .chat-item:hover,.chat-item.active{background:#f2fbfa}
-    .chat-main{min-width:0;flex:1}
-    .chat-line{display:flex;justify-content:space-between;gap:8px}
-    .chat-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .chat-time{font-size:11px;color:var(--muted)}
-    .preview{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
-    .new-chat{position:absolute;left:310px;bottom:25px;width:52px;height:52px;border-radius:50%;background:var(--turq);color:white;font-size:25px;box-shadow:var(--shadow)}
-    .main{flex:1;display:flex;flex-direction:column;min-width:0}
-    .room-head{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 20px;gap:12px}
-    .room-user{min-width:0;flex:1}
-    .room-name{font-weight:800}
-    .room-status{font-size:12px;color:var(--turq-dark);margin-top:4px}
-    .call-actions{display:flex;gap:6px}
-    .call-btn{width:42px;height:42px;border-radius:50%;background:#eff9f7;color:#087e76;font-size:18px}
-    .call-btn:hover{background:#d9f7f2}
-    .messages{flex:1;overflow:auto;padding:24px 7%;background:#eaf2f1}
-    .privacy{text-align:center;font-size:11px;color:#728080;background:#dfeceb;padding:8px 14px;border-radius:18px;width:max-content;max-width:90%;margin:0 auto 20px}
-    .day{text-align:center;color:#738181;font-size:11px;margin:10px 0 18px}
-    .msg{display:flex;margin:7px 0}
-    .msg.mine{justify-content:flex-end}
-    .bubble{max-width:min(650px,75%);padding:10px 13px;border-radius:14px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.06);font-size:14px;line-height:1.45}
-    .mine .bubble{background:var(--mine);border-bottom-right-radius:4px}
-    .msg:not(.mine) .bubble{border-bottom-left-radius:4px}
-    .meta{text-align:right;font-size:10px;color:#758080;margin-top:4px}
-    .composer{min-height:70px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:10px 16px}
-    .compose-input{flex:1;background:#f1f5f5;border-radius:24px;min-height:46px;display:flex;align-items:center;padding:0 15px}
-    .compose-input input{width:100%;border:0;outline:0;background:transparent}
-    .send{width:46px;height:46px;border-radius:50%;background:var(--turq);color:white;font-size:18px}
-    .hidden{display:none!important}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;padding:20px;z-index:20}
-    .card{background:white;width:min(430px,100%);border-radius:20px;box-shadow:var(--shadow);padding:22px}
-    .card h2{margin:0 0 8px}
-    .card p{color:var(--muted);font-size:14px}
-    .form{display:grid;gap:11px;margin-top:15px}
-    .form input{height:46px;border:1px solid var(--line);border-radius:10px;padding:0 12px;outline:0}
-    .form input:focus{border-color:var(--turq)}
-    .primary{height:46px;border-radius:10px;background:var(--turq);color:#fff;font-weight:700}
-    .secondary{height:42px;border-radius:10px;background:#edf3f3;color:#435353;font-weight:700}
-    .close{float:right;background:#edf3f3;border-radius:50%;width:34px;height:34px}
-    .call-screen{position:fixed;inset:0;background:#101818;z-index:30;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
-    .call-avatar{width:120px;height:120px;border-radius:50%;margin-bottom:18px}
-    .call-title{font-size:24px;font-weight:800}
-    .call-sub{opacity:.7;margin-top:8px}
-    .call-controls{position:absolute;bottom:40px;display:flex;gap:14px}
-    .call-control{width:58px;height:58px;border-radius:50%;background:#293535;color:#fff;font-size:22px}
-    .call-control.end{background:#e74c3c}
-    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#182626;color:#fff;padding:12px 18px;border-radius:22px;z-index:50;font-size:13px;box-shadow:var(--shadow)}
-    @media(max-width:800px){
-      .sidebar{width:88px}
-      .brandbar{justify-content:center;padding:0}
-      .brand span,.me-info,.search,.chat-main,.new-chat{display:none}
-      .me{justify-content:center;padding:14px 8px}
-      .chat-item{justify-content:center;padding:13px 8px}
-      .room-head{padding:0 12px}
-      .messages{padding:18px 4%}
-      .bubble{max-width:84%}
-    }
-    @media(max-width:520px){
-      .sidebar{display:none}
-      .room-head{height:64px}
-      .composer{padding:8px}
-      .call-actions .call-btn:nth-child(3){display:none}
-    }
-  
-    /* ZIQVONA premium WhatsApp-inspired room */
-    body{background:#dce8e6}
-    .app{background:#f7fbfa}
-    .sidebar{width:390px;background:#f8fbfb;box-shadow:3px 0 18px rgba(0,0,0,.05);z-index:2}
-    .brandbar{height:76px;background:#ffffff;padding:0 20px}
-    .brand{font-size:23px;color:#102626}
-    .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#18d5bd,#078f83);box-shadow:0 7px 20px rgba(8,143,131,.22)}
-    .top-actions .icon-btn{font-size:19px}
-    .me{background:#f8fffe;padding:15px 18px}
-    .me .avatar{width:50px;height:50px}
-    .search{background:#fff;padding:12px 16px}
-    .searchbox{height:44px;background:#eef5f4;border:1px solid #e8eeee}
-    .chat-list{background:#fff}
-    .chat-item{min-height:78px;padding:13px 18px;transition:.16s}
-    .chat-item:hover{background:#f1f9f7}
-    .chat-item.active{background:#e3f7f3;border-left:4px solid var(--turq);padding-left:14px}
-    .chat-item .avatar{width:52px;height:52px}
-    .chat-name{font-size:15px}
-    .preview{font-size:13px;margin-top:6px}
-    .new-chat{left:auto;right:22px;bottom:25px;width:56px;height:56px;background:linear-gradient(145deg,#19d0ba,#079b8d);box-shadow:0 9px 24px rgba(8,155,141,.30)}
-    .main{background:#d8e6e3;position:relative}
-    .room-head{height:76px;padding:0 22px;background:rgba(255,255,255,.98);box-shadow:0 2px 10px rgba(0,0,0,.05);z-index:2}
-    .room-head .avatar{width:50px;height:50px}
-    .room-name{font-size:16px}
-    .room-status{color:#6d7d7c}
-    .call-btn{background:#eff9f7;border:1px solid #d9eeeb;transition:.16s}
-    .call-btn:hover{transform:translateY(-1px);background:#dff8f4}
-    .messages{
-      padding:28px 8%;
-      background-color:#dce9e6;
-      background-image:
-        radial-gradient(rgba(20,90,84,.07) 1px,transparent 1px),
-        radial-gradient(rgba(20,90,84,.045) 1px,transparent 1px);
-      background-size:28px 28px,42px 42px;
-      background-position:0 0,14px 18px;
-    }
-    .privacy{background:rgba(240,250,248,.94);box-shadow:0 2px 8px rgba(0,0,0,.05);border:1px solid rgba(255,255,255,.8);padding:9px 16px}
-    .day{background:rgba(255,255,255,.82);padding:7px 12px;border-radius:15px;width:max-content;margin:10px auto 18px;box-shadow:0 1px 5px rgba(0,0,0,.05)}
-    .bubble{font-size:14.5px;padding:11px 14px;border-radius:16px;box-shadow:0 2px 4px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.025)}
-    .mine .bubble{background:#d4fff5;border-bottom-right-radius:5px}
-    .msg:not(.mine) .bubble{background:#fff;border-bottom-left-radius:5px}
-    .meta{font-size:10px;color:#7b8a89}
-    .composer{min-height:74px;padding:12px 18px;background:#f8fbfb;box-shadow:0 -2px 12px rgba(0,0,0,.04);z-index:2}
-    .compose-input{height:48px;background:#fff;border:1px solid #e2ebea;box-shadow:inset 0 1px 2px rgba(0,0,0,.02)}
-    .send{width:48px;height:48px;background:linear-gradient(145deg,#18d0ba,#079b8d);box-shadow:0 5px 12px rgba(8,155,141,.2)}
-    .composer .icon-btn{background:#eef6f5}
-    .card{border:1px solid #e3eeee}
-    .primary{background:linear-gradient(145deg,#18d0ba,#079b8d)}
-    @media(max-width:800px){
-      .sidebar{width:86px}
-      .new-chat{right:16px;left:auto}
-      .room-head{padding:0 14px}
-      .messages{padding:20px 4%}
-    }
-    @media(max-width:520px){
-      .room-head{height:68px}
-      .room-head .avatar{width:44px;height:44px}
-      .composer{min-height:68px;padding:8px}
-      .messages{padding:16px 3%}
-      .bubble{max-width:88%}
-    }
-
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10bfa3">
+<title>ZIQVONA — Room</title>
+<style>
+:root{
+  --turq:#10bfa3;--turq2:#0aa98f;--bg:#eef5f4;--panel:#fff;--soft:#f5f9f8;
+  --text:#17312d;--muted:#70817e;--line:#e2ece9;--mine:#d9fdd3;--white:#fff;
+  --shadow:0 10px 35px rgba(15,75,67,.10)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+button,input,textarea{font:inherit}
+button{border:0;cursor:pointer}
+.app{height:100vh;display:grid;grid-template-columns:360px 1fr;background:var(--panel)}
+.sidebar{border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fff;min-width:0}
+.topbar{height:72px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:#fff}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.5px;color:var(--turq2)}
+.logo{width:40px;height:40px;border-radius:14px;background:linear-gradient(145deg,#19d6b6,#079f87);color:white;display:grid;place-items:center;font-weight:900;box-shadow:0 6px 18px rgba(16,191,163,.25)}
+.iconbtn{width:40px;height:40px;border-radius:12px;background:transparent;color:#55716c;font-size:20px}
+.iconbtn:hover{background:var(--soft);color:var(--turq2)}
+.meCard{margin:0 14px 12px;padding:12px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#f7fffd,#effaf7);display:flex;align-items:center;gap:10px}
+.avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#dff8f2;color:#087e6d;font-weight:800;overflow:hidden;flex:none}
+.avatar.big{width:52px;height:52px}.avatar img{width:100%;height:100%;object-fit:cover}
+.meInfo{min-width:0;flex:1}.name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search{margin:0 14px 10px;display:flex;align-items:center;gap:8px;background:#f1f6f5;border-radius:14px;padding:0 12px}
+.search input{width:100%;height:44px;border:0;outline:0;background:transparent;color:var(--text)}
+.filters{display:flex;gap:7px;padding:0 14px 10px;overflow:auto}.chip{padding:7px 12px;border-radius:20px;background:#f0f6f5;color:#55716c;font-size:12px;font-weight:700;white-space:nowrap}.chip.active{background:#d8f8f1;color:#078d79}
+.chatList{overflow:auto;flex:1}.chatItem{display:flex;gap:11px;padding:13px 15px;align-items:center;border-bottom:1px solid #f0f4f3;cursor:pointer}.chatItem:hover{background:#f7fbfa}.chatItem.active{background:#e9f8f5}.chatText{min-width:0;flex:1}.row{display:flex;justify-content:space-between;gap:8px}.preview{font-size:13px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time{font-size:11px;color:#8b9b98}.badge{min-width:19px;height:19px;border-radius:10px;background:var(--turq);color:#fff;font-size:10px;display:grid;place-items:center;margin-top:5px}
+.newChat{position:absolute;left:300px;bottom:24px;width:52px;height:52px;border-radius:17px;background:var(--turq);color:#fff;font-size:25px;box-shadow:0 12px 25px rgba(16,191,163,.30)}
+.main{min-width:0;display:flex;flex-direction:column;background:#f5faf9}
+.chatHead{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:10px 18px;gap:12px}
+.chatHeadInfo{min-width:0;flex:1}.chatHeadInfo .status{color:#0a9b84}
+.chatActions{display:flex;gap:4px}
+.messages{flex:1;overflow:auto;padding:28px 5%;background-color:#edf5f3;background-image:radial-gradient(rgba(16,191,163,.07) 1px,transparent 1px);background-size:18px 18px}
+.day{text-align:center;margin:4px auto 20px;background:#fff;border-radius:12px;padding:6px 11px;width:max-content;font-size:11px;color:#78908b;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.msg{display:flex;margin:7px 0}.msg.mine{justify-content:flex-end}.bubble{max-width:min(620px,78%);padding:9px 12px 7px;border-radius:15px 15px 15px 5px;background:#fff;box-shadow:0 2px 7px rgba(20,70,65,.08);font-size:14px;line-height:1.4}.mine .bubble{background:var(--mine);border-radius:15px 15px 5px 15px}.meta{font-size:10px;color:#7c918d;text-align:right;margin-top:4px}.ticks{color:#078f7b;font-weight:800;margin-left:3px}
+.composer{min-height:70px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:10px 14px;position:relative}
+.composer textarea{flex:1;resize:none;min-height:46px;max-height:120px;border:0;outline:0;background:#f1f6f5;border-radius:15px;padding:13px 14px;color:var(--text)}
+.send{width:48px;height:48px;border-radius:15px;background:var(--turq);color:#fff;font-size:19px}
+.emojiPanel{position:absolute;bottom:70px;left:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;width:300px;display:none;box-shadow:var(--shadow);z-index:5}.emojiPanel.show{display:block}.emojiGrid{display:flex;flex-wrap:wrap;gap:7px;font-size:23px}.emojiGrid button{background:#f6faf9;border-radius:9px;padding:4px}
+.modal{position:fixed;inset:0;background:rgba(8,38,34,.52);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}.modal.show{display:flex}.card{width:min(440px,100%);background:#fff;border-radius:25px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.card h2{margin:0 0 7px}.card p{color:var(--muted);font-size:13px}.field{margin:12px 0}.field label{font-size:12px;font-weight:700;color:#52716b;display:block;margin-bottom:6px}.field input{width:100%;padding:13px;border:1px solid var(--line);border-radius:13px;outline:0}.primary{width:100%;padding:14px;border-radius:14px;background:var(--turq);color:#fff;font-weight:800;margin-top:8px}.secondary{width:100%;padding:12px;border-radius:14px;background:#eef5f3;color:#45645e;font-weight:700;margin-top:8px}
+.callScreen{position:fixed;inset:0;background:linear-gradient(145deg,#082f2a,#0b5148);color:#fff;display:none;z-index:30;align-items:center;justify-content:center;flex-direction:column;text-align:center}.callScreen.show{display:flex}.callAvatar{width:110px;height:110px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#dff8f2;color:#078d79;font-size:42px;font-weight:900;margin-bottom:18px}.hang{margin-top:35px;width:62px;height:62px;border-radius:50%;background:#e84c55;color:#fff;font-size:25px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#183b36;color:#fff;padding:11px 15px;border-radius:12px;font-size:13px;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:760px){
+  .app{grid-template-columns:1fr}.sidebar{display:none}.sidebar.mobile{display:flex;position:absolute;inset:0 0 0 0;z-index:10;width:100%}.newChat{left:auto;right:22px}.messages{padding:20px 3%}.bubble{max-width:86%}.mobileBack{display:block!important}
+}
+.mobileBack{display:none}
+</style>
 </head>
 <body>
 <div class="app">
-  <aside class="sidebar">
-    <div class="brandbar">
+  <aside class="sidebar" id="sidebar">
+    <div class="topbar">
       <div class="brand"><div class="logo">Z</div><span>ZIQVONA</span></div>
-      <div class="top-actions">
-        <button class="icon-btn" id="profileBtn" title="Profil">⚙</button>
-      </div>
+      <button class="iconbtn" id="profileBtn" title="Pwofil">⚙</button>
     </div>
-
-    <div class="me">
-      <div id="myAvatar" class="avatar default">Z</div>
-      <div class="me-info">
-        <div id="myName" class="me-name">Envite w antre</div>
-        <div class="status">Profil ou prive</div>
-      </div>
+    <div class="meCard">
+      <div class="avatar big" id="meAvatar">Z</div>
+      <div class="meInfo"><div class="name" id="meName">Vizitè</div><div class="status" id="meStatus">Konekte sou ZIQVONA</div></div>
+      <button class="iconbtn" id="editProfileBtn">✎</button>
     </div>
-
-    <div class="search">
-      <div class="searchbox">⌕ <input id="searchInput" placeholder="Chèche yon chat..."></div>
-    </div>
-
-    <div id="chatList" class="chat-list"></div>
-    <button id="newChatBtn" class="new-chat" title="Nouvo chat">＋</button>
+    <div class="search">⌕<input id="searchInput" placeholder="Chèche chat..."></div>
+    <div class="filters"><button class="chip active" data-filter="all">Tout</button><button class="chip" data-filter="unread">Pa li</button><button class="chip" data-filter="groups">Gwoup</button></div>
+    <div class="chatList" id="chatList"></div>
+    <button class="newChat" id="newChatBtn">＋</button>
   </aside>
 
   <main class="main">
-    <header class="room-head">
-      <div id="roomAvatar" class="avatar default">Z</div>
-      <div class="room-user">
-        <div id="roomName" class="room-name">ZIQVONA</div>
-        <div id="roomStatus" class="room-status">Chat prive 1-a-1</div>
-      </div>
-      <div class="call-actions">
-        <button class="call-btn" id="audioBtn" title="Apèl vwa">☎</button>
-        <button class="call-btn" id="videoBtn" title="Apèl videyo">▣</button>
+    <header class="chatHead">
+      <button class="iconbtn mobileBack" id="backBtn">‹</button>
+      <div class="avatar" id="chatAvatar">Z</div>
+      <div class="chatHeadInfo"><div class="name" id="chatName">ZIQVONA</div><div class="status" id="chatStatus">Byenveni</div></div>
+      <div class="chatActions">
+        <button class="iconbtn" id="voiceBtn" title="Apèl vwa">☎</button>
+        <button class="iconbtn" id="videoBtn" title="Apèl video">▣</button>
+        <button class="iconbtn" id="chatMenuBtn" title="Plis">⋮</button>
       </div>
     </header>
 
-    <section id="messages" class="messages">
-      <div class="privacy">🔒 Mesaj sa yo fèt pou 2 moun sèlman. Lòt itilizatè yo pa wè kiyès w ap chat.</div>
-      <div class="day">JODI A</div>
-    </section>
+    <section class="messages" id="messages"></section>
 
-    <form id="composer" class="composer">
-      <button type="button" class="icon-btn" id="attachBtn" title="Atache">＋</button>
-      <div class="compose-input"><input id="messageInput" autocomplete="off" placeholder="Ekri yon mesaj..."></div>
-      <button type="button" class="icon-btn" id="micBtn" title="Vwa">🎙</button>
-      <button class="send" title="Voye">➤</button>
-    </form>
+    <div class="composer">
+      <button class="iconbtn" id="emojiBtn">☺</button>
+      <button class="iconbtn" id="attachBtn">＋</button>
+      <textarea id="messageInput" rows="1" placeholder="Ekri yon mesaj..."></textarea>
+      <button class="send" id="sendBtn">➤</button>
+      <div class="emojiPanel" id="emojiPanel"><div class="emojiGrid" id="emojiGrid"></div></div>
+    </div>
   </main>
 </div>
 
-<div id="loginModal" class="modal">
-  <div class="card">
-    <button class="close" id="closeLogin">×</button>
-    <h2>Konekte sou ZIQVONA</h2>
-    <p>Chwazi non ou. Pou teste chat prive a, sèvi ak 2 non diferan sou 2 aparèy.</p>
-    <form id="loginForm" class="form">
-      <input id="nameInput" required maxlength="40" placeholder="Non ou">
-      <input id="photoInput" type="url" placeholder="URL foto profil (opsyonèl)">
-      <button class="primary">Konekte</button>
-    </form>
-  </div>
+<div class="modal" id="loginModal">
+  <form class="card" id="loginForm">
+    <div class="logo" style="margin-bottom:14px">Z</div>
+    <h2>Byenveni sou ZIQVONA</h2>
+    <p>Kreye non ou pou antre nan Room Page la.</p>
+    <div class="field"><label>Non ou</label><input id="loginName" required maxlength="40" placeholder="Egzanp: Carl"></div>
+    <div class="field"><label>Status</label><input id="loginStatus" maxlength="80" placeholder="Disponib"></div>
+    <div class="field"><label>Foto profil (opsyonèl)</label><input id="loginPhoto" type="file" accept="image/*"></div>
+    <button class="primary" type="submit">Konekte sou ZIQVONA</button>
+  </form>
 </div>
 
-<div id="newChatModal" class="modal hidden">
-  <div class="card">
-    <button class="close" id="closeNewChat">×</button>
-    <h2>Nouvo chat prive</h2>
-    <p>Antre non lòt moun nan pou louvri yon room 1-a-1.</p>
-    <form id="newChatForm" class="form">
-      <input id="otherNameInput" required maxlength="40" placeholder="Non lòt moun nan">
-      <button class="primary">Louvri chat</button>
-    </form>
-  </div>
+<div class="modal" id="profileModal">
+  <form class="card" id="profileForm">
+    <h2>Profile ZIQVONA</h2>
+    <p>Chanje non, status oswa foto profil ou.</p>
+    <div class="field"><label>Non</label><input id="profileName" maxlength="40"></div>
+    <div class="field"><label>Status</label><input id="profileStatus" maxlength="80"></div>
+    <div class="field"><label>Nouvo foto</label><input id="profilePhoto" type="file" accept="image/*"></div>
+    <button class="primary" type="submit">Sove chanjman</button>
+    <button class="secondary" type="button" id="closeProfile">Fèmen</button>
+  </form>
 </div>
 
-<div id="profileModal" class="modal hidden">
-  <div class="card">
-    <button class="close" id="closeProfile">×</button>
-    <h2>Profil mwen</h2>
-    <form id="profileForm" class="form">
-      <input id="profileNameInput" required maxlength="40" placeholder="Non">
-      <input id="profilePhotoInput" type="url" placeholder="URL foto profil">
-      <input id="profileStatusInput" maxlength="80" placeholder="Status ou">
-      <button class="primary">Sove pwofil</button>
-    </form>
-  </div>
+<div class="modal" id="newChatModal">
+  <form class="card" id="newChatForm">
+    <h2>Nouvo chat</h2>
+    <p>Ajoute yon moun pou kreye yon nouvo Room.</p>
+    <div class="field"><label>Non moun nan</label><input id="newChatName" required maxlength="40" placeholder="Egzanp: Jean"></div>
+    <div class="field"><label>Status</label><input id="newChatStatus" maxlength="80" placeholder="Disponib"></div>
+    <button class="primary" type="submit">Kreye chat</button>
+    <button class="secondary" type="button" id="closeNewChat">Anile</button>
+  </form>
 </div>
 
-<div id="callScreen" class="call-screen hidden">
-  <div id="callAvatar" class="avatar default call-avatar">Z</div>
-  <div id="callTitle" class="call-title">Apèl ZIQVONA</div>
-  <div id="callSub" class="call-sub">Apèl ap prepare...</div>
-  <div class="call-controls">
-    <button class="call-control" id="muteBtn">🎙</button>
-    <button class="call-control" id="speakerBtn">🔊</button>
-    <button class="call-control end" id="endCallBtn">☎</button>
-  </div>
+<div class="callScreen" id="callScreen">
+  <div class="callAvatar" id="callAvatar">Z</div>
+  <h2 id="callName">ZIQVONA</h2>
+  <div id="callType">Apèl vwa</div>
+  <div style="opacity:.75;margin-top:8px;font-size:13px">Room pare. Koneksyon WebRTC reyèl bezwen signaling backend.</div>
+  <button class="hang" id="hangBtn">☎</button>
 </div>
-
-<div id="toast" class="toast hidden"></div>
+<div class="toast" id="toast"></div>
 
 <script>
 (function(){
   "use strict";
 
-  const state = {
-    me: JSON.parse(localStorage.getItem("ziqvona_me") || "null"),
-    active: null,
-    chats: JSON.parse(localStorage.getItem("ziqvona_chats") || "[]")
-  };
+  const KEY="ziqvona_room_v3";
+  const oldMe=localStorage.getItem("ziqvona_me");
+  const oldChats=localStorage.getItem("ziqvona_chats");
 
-  const $ = id => document.getElementById(id);
+  let state={me:oldMe?safeParse(oldMe,null):null,chats:oldChats?safeParse(oldChats,[]):[],active:null,filter:"all"};
 
+  function safeParse(v,fallback){try{return JSON.parse(v)}catch(e){return fallback}}
   function save(){
-    localStorage.setItem("ziqvona_me", JSON.stringify(state.me));
-    localStorage.setItem("ziqvona_chats", JSON.stringify(state.chats));
+    localStorage.setItem("ziqvona_me",JSON.stringify(state.me));
+    localStorage.setItem("ziqvona_chats",JSON.stringify(state.chats));
   }
-
-  function escapeHtml(value){
-    return String(value).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
+  function esc(v){return String(v??"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]})}
+  function initials(name){return (name||"Z").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"Z"}
+  function avatar(el,person){
+    el.innerHTML="";
+    if(person&&person.photo){
+      const img=document.createElement("img");img.src=person.photo;img.alt="";
+      img.onerror=function(){el.textContent=initials(person.name)};
+      el.appendChild(img);
+    }else el.textContent=initials(person&&person.name);
   }
-
-  function avatarHTML(name, photo, cls){
-    if(photo){
-      return '<img class="avatar '+(cls||"")+'" src="'+escapeHtml(photo)+'" alt="Foto profil" onerror="this.outerHTML=\\'<div class=&quot;avatar default '+(cls||"")+'&quot;>'+escapeHtml((name||"Z").charAt(0).toUpperCase())+'</div>\\'">';
+  function toast(msg){
+    const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+    clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove("show"),2200);
+  }
+  function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+  function time(){
+    return new Intl.DateTimeFormat("ht-HT",{hour:"2-digit",minute:"2-digit"}).format(new Date());
+  }
+  function ensureWelcome(){
+    if(!state.chats.length){
+      state.chats=[{id:id(),name:"ZIQVONA",status:"Byenveni sou ZIQVONA",photo:"",group:false,unread:0,messages:[
+        {id:id(),from:"them",text:"Byenveni sou ZIQVONA! 💚",time:time()},
+        {id:id(),from:"them",text:"Room Page la pare pou ou teste chat, emoji, pwofil ak apèl demo.",time:time()}
+      ]}];
     }
-    return '<div class="avatar default '+(cls||"")+'">'+escapeHtml((name||"Z").charAt(0).toUpperCase())+'</div>';
+    if(!state.active) state.active=state.chats[0].id;
   }
-
-  function showToast(text){
-    $("toast").textContent = text;
-    $("toast").classList.remove("hidden");
-    clearTimeout(showToast.t);
-    showToast.t = setTimeout(() => $("toast").classList.add("hidden"), 2600);
-  }
-
-  function ensureChat(name){
-    const clean = name.trim();
-    if(!clean) return null;
-    const key = clean.toLowerCase();
-    let chat = state.chats.find(c => c.key === key);
-    if(!chat){
-      chat = {key:key, name:clean, photo:"", messages:[]};
-      state.chats.unshift(chat);
-      save();
-    }
-    return chat;
-  }
-
   function renderMe(){
-    if(!state.me) return;
-    $("myName").textContent = state.me.name;
-    if(state.me.photo){
-      $("myAvatar").outerHTML = '<img id="myAvatar" class="avatar" src="'+escapeHtml(state.me.photo)+'" alt="Foto profil" onerror="this.outerHTML=\\'<div id=&quot;myAvatar&quot; class=&quot;avatar default&quot;>Z</div>\\'">';
-    }else{
-      $("myAvatar").className = "avatar default";
-      $("myAvatar").textContent = state.me.name.charAt(0).toUpperCase();
-    }
+    const me=state.me||{name:"Vizitè",status:"Konekte sou ZIQVONA"};
+    avatar(document.getElementById("meAvatar"),me);
+    document.getElementById("meName").textContent=me.name||"Vizitè";
+    document.getElementById("meStatus").textContent=me.status||"Disponib";
   }
-
-  function renderChatList(filter){
-    const list = $("chatList");
-    const q = (filter || "").toLowerCase();
-    list.innerHTML = "";
-    state.chats.filter(c => c.name.toLowerCase().includes(q)).forEach(chat => {
-      const last = chat.messages[chat.messages.length-1];
-      const item = document.createElement("div");
-      item.className = "chat-item" + (state.active && state.active.key === chat.key ? " active" : "");
-      item.innerHTML =
-        avatarHTML(chat.name, chat.photo) +
-        '<div class="chat-main"><div class="chat-line"><div class="chat-name">'+escapeHtml(chat.name)+'</div><div class="chat-time">'+(last ? escapeHtml(last.time) : "")+'</div></div>' +
-        '<div class="preview">'+(last ? (last.mine ? "Ou: " : "") + escapeHtml(last.text) : "Nouvo chat prive")+'</div></div>';
-      item.addEventListener("click", () => openChat(chat.key));
-      list.appendChild(item);
+  function renderList(){
+    const q=document.getElementById("searchInput").value.trim().toLowerCase();
+    const list=document.getElementById("chatList");list.innerHTML="";
+    const chats=state.chats.filter(c=>{
+      const match=(c.name+" "+(c.status||"")).toLowerCase().includes(q);
+      const filter=state.filter==="all"||(state.filter==="unread"&&c.unread>0)||(state.filter==="groups"&&c.group);
+      return match&&filter;
+    });
+    if(!chats.length){list.innerHTML='<div class="empty">Pa gen chat ki koresponn.</div>';return}
+    chats.forEach(c=>{
+      const last=c.messages[c.messages.length-1];
+      const row=document.createElement("div");row.className="chatItem"+(c.id===state.active?" active":"");
+      row.onclick=()=>openChat(c.id);
+      row.innerHTML='<div class="avatar"></div><div class="chatText"><div class="row"><div class="name">'+esc(c.name)+'</div><div class="time">'+esc(last?last.time:"")+'</div></div><div class="row"><div class="preview">'+esc(last?last.text:(c.status||"Nouvo chat"))+'</div>'+(c.unread?'<div class="badge">'+c.unread+'</div>':'')+'</div></div>';
+      avatar(row.querySelector(".avatar"),c);list.appendChild(row);
     });
   }
-
-  function openChat(key){
-    const chat = state.chats.find(c => c.key === key);
-    if(!chat) return;
-    state.active = chat;
-    $("roomName").textContent = chat.name;
-    $("roomStatus").textContent = "🔒 Chat prive • sèlman 2 moun";
-    $("roomAvatar").outerHTML = avatarHTML(chat.name, chat.photo, "");
-    $("roomAvatar").id = "roomAvatar";
-    renderMessages();
-    renderChatList($("searchInput").value);
+  function openChat(cid){
+    state.active=cid;
+    const c=state.chats.find(x=>x.id===cid);if(!c)return;
+    c.unread=0;save();
+    avatar(document.getElementById("chatAvatar"),c);
+    document.getElementById("chatName").textContent=c.name;
+    document.getElementById("chatStatus").textContent=c.status||"Disponib";
+    renderList();renderMessages();
+    if(innerWidth<=760)document.getElementById("sidebar").classList.remove("mobile");
   }
-
   function renderMessages(){
-    const box = $("messages");
-    box.innerHTML = '<div class="privacy">🔒 Chat prive 1-a-1. Lòt itilizatè yo pa wè moun w ap chat avèk li.</div><div class="day">JODI A</div>';
-    if(!state.active) return;
-    state.active.messages.forEach(m => {
-      const row = document.createElement("div");
-      row.className = "msg" + (m.mine ? " mine" : "");
-      row.innerHTML = '<div class="bubble">'+escapeHtml(m.text).replace(/\\n/g,"<br>")+'<div class="meta">'+escapeHtml(m.time)+(m.mine ? " ✓✓" : "")+'</div></div>';
-      box.appendChild(row);
+    const box=document.getElementById("messages");box.innerHTML='<div class="day">Jodi</div>';
+    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
+    c.messages.forEach(m=>{
+      const wrap=document.createElement("div");wrap.className="msg "+(m.from==="me"?"mine":"");
+      const b=document.createElement("div");b.className="bubble";
+      b.innerHTML='<div>'+esc(m.text).replace(/\n/g,"<br>")+'</div><div class="meta">'+esc(m.time)+(m.from==="me"?'<span class="ticks">✓✓</span>':'')+'</div>';
+      wrap.appendChild(b);box.appendChild(wrap);
     });
-    box.scrollTop = box.scrollHeight;
+    box.scrollTop=box.scrollHeight;
   }
-
-  function now(){
-    return new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  function send(){
+    const input=document.getElementById("messageInput");const text=input.value.trim();
+    if(!text)return;
+    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
+    c.messages.push({id:id(),from:"me",text,time:time()});
+    save();input.value="";autoGrow();renderMessages();renderList();
+    toast("Mesaj la ajoute nan Room la");
   }
-
-  function sendMessage(text){
-    if(!state.active){
-      showToast("Louvri yon chat anvan ou voye mesaj.");
-      return;
-    }
-    const t = text.trim();
-    if(!t) return;
-    state.active.messages.push({text:t,mine:true,time:now()});
-    save();
-    renderMessages();
-    renderChatList($("searchInput").value);
-
-    // Demo repons lokal pou montre room nan fonksyone.
-    setTimeout(() => {
-      if(!state.active || state.active.key !== state.chats.find(c=>c.key===state.active.key).key) return;
-      state.active.messages.push({text:"Mwen resevwa mesaj ou a sou ZIQVONA. 💬",mine:false,time:now()});
-      save();
-      renderMessages();
-      renderChatList($("searchInput").value);
-    }, 900);
+  function autoGrow(){const x=document.getElementById("messageInput");x.style.height="auto";x.style.height=Math.min(x.scrollHeight,120)+"px"}
+  function fileToData(file,cb){
+    if(!file){cb("");return}
+    const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file);
   }
+  function show(el){el.classList.add("show")}
+  function hide(el){el.classList.remove("show")}
 
-  $("composer").addEventListener("submit", e => {
+  document.getElementById("loginForm").addEventListener("submit",function(e){
     e.preventDefault();
-    sendMessage($("messageInput").value);
-    $("messageInput").value = "";
-    $("messageInput").focus();
+    const name=document.getElementById("loginName").value.trim();
+    if(!name)return;
+    const status=document.getElementById("loginStatus").value.trim()||"Disponib";
+    const file=document.getElementById("loginPhoto").files[0];
+    fileToData(file,function(photo){
+      state.me={name,status,photo};ensureWelcome();save();hide(document.getElementById("loginModal"));
+      renderMe();openChat(state.active);toast("Ou konekte sou ZIQVONA");
+    });
   });
 
-  $("searchInput").addEventListener("input", e => renderChatList(e.target.value));
-
-  $("newChatBtn").addEventListener("click", () => $("newChatModal").classList.remove("hidden"));
-  $("closeNewChat").addEventListener("click", () => $("newChatModal").classList.add("hidden"));
-
-  $("newChatForm").addEventListener("submit", e => {
+  document.getElementById("editProfileBtn").onclick=function(){
+    const me=state.me||{name:"Vizitè",status:"Disponib"};
+    document.getElementById("profileName").value=me.name||"";
+    document.getElementById("profileStatus").value=me.status||"";
+    document.getElementById("profilePhoto").value="";
+    show(document.getElementById("profileModal"));
+  };
+  document.getElementById("profileBtn").onclick=function(){document.getElementById("editProfileBtn").click()};
+  document.getElementById("closeProfile").onclick=function(){hide(document.getElementById("profileModal"))};
+  document.getElementById("profileForm").addEventListener("submit",function(e){
     e.preventDefault();
-    const name = $("otherNameInput").value.trim();
-    if(state.me && name.toLowerCase() === state.me.name.toLowerCase()){
-      showToast("Chwazi non yon lòt moun pou chat prive a.");
-      return;
-    }
-    const chat = ensureChat(name);
-    $("otherNameInput").value = "";
-    $("newChatModal").classList.add("hidden");
-    openChat(chat.key);
+    const me=state.me||{};const file=document.getElementById("profilePhoto").files[0];
+    fileToData(file,function(photo){
+      state.me={name:document.getElementById("profileName").value.trim()||"Vizitè",status:document.getElementById("profileStatus").value.trim()||"Disponib",photo:photo||me.photo||""};
+      save();renderMe();hide(document.getElementById("profileModal"));toast("Profile mete ajou");
+    });
   });
 
-  $("profileBtn").addEventListener("click", () => {
-    if(state.me){
-      $("profileNameInput").value = state.me.name || "";
-      $("profilePhotoInput").value = state.me.photo || "";
-      $("profileStatusInput").value = state.me.status || "";
-    }
-    $("profileModal").classList.remove("hidden");
-  });
-  $("closeProfile").addEventListener("click", () => $("profileModal").classList.add("hidden"));
-
-  $("profileForm").addEventListener("submit", e => {
+  document.getElementById("newChatBtn").onclick=function(){show(document.getElementById("newChatModal"));setTimeout(()=>document.getElementById("newChatName").focus(),50)};
+  document.getElementById("closeNewChat").onclick=function(){hide(document.getElementById("newChatModal"))};
+  document.getElementById("newChatForm").addEventListener("submit",function(e){
     e.preventDefault();
-    state.me = {
-      name:$("profileNameInput").value.trim(),
-      photo:$("profilePhotoInput").value.trim(),
-      status:$("profileStatusInput").value.trim()
-    };
-    save();
-    renderMe();
-    $("profileModal").classList.add("hidden");
-    showToast("Profil la sove.");
+    const name=document.getElementById("newChatName").value.trim();if(!name)return;
+    const c={id:id(),name,status:document.getElementById("newChatStatus").value.trim()||"Disponib",photo:"",group:false,unread:0,messages:[]};
+    state.chats.unshift(c);save();hide(document.getElementById("newChatModal"));this.reset();openChat(c.id);toast("Nouvo Room kreye");
   });
 
-  $("attachBtn").addEventListener("click", () => showToast("Atachman ap ajoute nan pwochen vèsyon an."));
-  $("micBtn").addEventListener("click", () => showToast("Fonksyon nòt vwa pare pou konekte ak backend."));
+  document.getElementById("sendBtn").onclick=send;
+  document.getElementById("messageInput").addEventListener("input",autoGrow);
+  document.getElementById("messageInput").addEventListener("keydown",function(e){
+    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}
+  });
+  document.getElementById("attachBtn").onclick=function(){toast("Atachman yo ap pare pou pwochen etap backend la")};
+
+  const emojis=["😀","😂","😍","🥰","😘","😎","😭","😡","❤️","💚","💯","🔥","👍","👏","🙏","🎉","🤝","🤣","😢","😉","🤗","😴","✨","🌟","📞","🎥","💬","🚀","🇭🇹","🌍"];
+  document.getElementById("emojiGrid").innerHTML=emojis.map(e=>'<button type="button">'+e+'</button>').join("");
+  document.getElementById("emojiGrid").addEventListener("click",function(e){
+    if(e.target.tagName==="BUTTON"){const input=document.getElementById("messageInput");input.value+=e.target.textContent;input.focus();autoGrow()}
+  });
+  document.getElementById("emojiBtn").onclick=function(){document.getElementById("emojiPanel").classList.toggle("show")};
+
+  document.getElementById("searchInput").addEventListener("input",renderList);
+  document.querySelectorAll(".chip").forEach(btn=>btn.onclick=function(){
+    document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));this.classList.add("active");state.filter=this.dataset.filter;renderList();
+  });
+  document.getElementById("backBtn").onclick=function(){document.getElementById("sidebar").classList.add("mobile")};
 
   function startCall(type){
-    if(!state.active){
-      showToast("Chwazi yon chat anvan ou fè apèl.");
-      return;
-    }
-    $("callTitle").textContent = (type === "video" ? "Apèl videyo ak " : "Apèl vwa ak ") + state.active.name;
-    $("callSub").textContent = "Ap tann koneksyon...";
-    const a = $("callAvatar");
-    if(state.active.photo){
-      a.outerHTML = '<img id="callAvatar" class="avatar call-avatar" src="'+escapeHtml(state.active.photo)+'" alt="Foto profil">';
-    }else{
-      a.className = "avatar default call-avatar";
-      a.textContent = state.active.name.charAt(0).toUpperCase();
-    }
-    $("callScreen").classList.remove("hidden");
-    setTimeout(() => {
-      if(!$("callScreen").classList.contains("hidden"))
-        $("callSub").textContent = "Apèl demo aktif • koneksyon WebRTC backend ap vini";
-    }, 900);
+    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
+    avatar(document.getElementById("callAvatar"),c);
+    document.getElementById("callName").textContent=c.name;
+    document.getElementById("callType").textContent=type==="video"?"Apèl video":"Apèl vwa";
+    show(document.getElementById("callScreen"));
+    toast("Mòd apèl ouvè");
   }
+  document.getElementById("voiceBtn").onclick=()=>startCall("voice");
+  document.getElementById("videoBtn").onclick=()=>startCall("video");
+  document.getElementById("hangBtn").onclick=function(){hide(document.getElementById("callScreen"));toast("Apèl fini")};
+  document.getElementById("chatMenuBtn").onclick=function(){toast("Meni Room la pare pou plis fonksyon")};
 
-  $("audioBtn").addEventListener("click", () => startCall("audio"));
-  $("videoBtn").addEventListener("click", () => startCall("video"));
-  $("endCallBtn").addEventListener("click", () => $("callScreen").classList.add("hidden"));
-  $("muteBtn").addEventListener("click", () => showToast("Mikwo aktive/dezaktive nan vèsyon demo."));
-  $("speakerBtn").addEventListener("click", () => showToast("Son aktive/dezaktive nan vèsyon demo."));
-
-  $("closeLogin").addEventListener("click", () => {
-    if(state.me) $("loginModal").classList.add("hidden");
+  document.addEventListener("click",function(e){
+    if(!e.target.closest("#emojiBtn")&&!e.target.closest("#emojiPanel"))document.getElementById("emojiPanel").classList.remove("show");
   });
 
-  $("loginForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const name = $("nameInput").value.trim();
-    if(!name) return;
-    state.me = {
-      name:name,
-      photo:$("photoInput").value.trim(),
-      status:"Disponib sou ZIQVONA"
-    };
-    save();
-    renderMe();
-    $("loginModal").classList.add("hidden");
-    if(!state.chats.length){
-      const welcome = ensureChat("ZIQVONA");
-      welcome.messages.push({text:"Byenveni sou ZIQVONA! Kounye a ou ka kreye yon chat prive.",mine:false,time:now()});
-      save();
-    }
-    renderChatList("");
-    if(!state.active && state.chats[0]) openChat(state.chats[0].key);
-  });
-
-  function init(){
-    if(state.me){
-      renderMe();
-      $("loginModal").classList.add("hidden");
-      renderChatList("");
-      if(state.chats[0]) openChat(state.chats[0].key);
-    }else{
-      $("loginModal").classList.remove("hidden");
-    }
-  }
-
-  init();
+  // First-run: always show login if no local profile, so the Konekte flow is accessible.
+  ensureWelcome();
+  renderMe();
+  renderList();
+  openChat(state.active);
+  if(!state.me)show(document.getElementById("loginModal"));
 })();
 </script>
 </body>
