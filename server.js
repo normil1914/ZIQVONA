@@ -15,28 +15,42 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 10000;
 
+/* =========================
+   EXPRESS
+========================= */
+
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+app.use(
+  express.static(path.join(__dirname, "public"))
+);
 
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
     app: "ZIQVONA",
-    version: "Global Online v2"
+    version: "2.1.0",
+    technology: "Node.js + Express + Socket.IO"
   });
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(
+    path.join(__dirname, "public", "index.html")
+  );
 });
 
-/*
-==================================================
-GLOBAL ONLINE USERS
-==================================================
-*/
+/* =========================
+   ONLINE USERS
+========================= */
 
-const onlineUsers = new Map();
+const users = new Map();
+
+function cleanText(value, max = 500) {
+  return String(value || "")
+    .trim()
+    .slice(0, max);
+}
 
 function publicUser(user) {
   return {
@@ -44,52 +58,47 @@ function publicUser(user) {
     name: user.name,
     avatar: user.avatar || "",
     status: user.status || "Online",
-    online: true
+    online: true,
+    joinedAt: user.joinedAt
   };
 }
 
-function getOnlineUsers() {
-  return Array.from(onlineUsers.values())
+function getUsers() {
+  return Array.from(users.values())
     .map(publicUser)
     .sort((a, b) =>
       a.name.localeCompare(b.name)
     );
 }
 
-function broadcastOnlineUsers() {
+function sendOnlineUsers() {
   io.emit("online-users", {
-    users: getOnlineUsers()
+    users: getUsers()
   });
 }
 
-/*
-==================================================
-CONNECTION
-==================================================
-*/
+/* =========================
+   SOCKET.IO
+========================= */
 
 io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
 
-  console.log("CONNECTED:", socket.id);
-
-  /*
-  ================================================
-  REGISTER USER
-  ================================================
-  */
+  /* =========================
+     REGISTER USER
+  ========================= */
 
   socket.on("register-user", (data = {}) => {
-
     const name =
-      String(data.name || "ZIQVONA User")
-        .trim()
-        .slice(0, 30);
+      cleanText(data.name, 30) ||
+      "ZIQVONA User";
 
     const avatar =
-      String(data.avatar || "");
+      cleanText(data.avatar, 500);
 
     const status =
-      String(data.status || "Online");
+      cleanText(data.status, 80) ||
+      "Online";
 
     const user = {
       id: socket.id,
@@ -97,10 +106,10 @@ io.on("connection", (socket) => {
       avatar,
       status,
       online: true,
-      connectedAt: Date.now()
+      joinedAt: Date.now()
     };
 
-    onlineUsers.set(socket.id, user);
+    users.set(socket.id, user);
 
     socket.data.name = name;
 
@@ -108,125 +117,68 @@ io.on("connection", (socket) => {
       user: publicUser(user)
     });
 
-    broadcastOnlineUsers();
+    sendOnlineUsers();
 
-    io.emit("user-online", {
+    socket.broadcast.emit("user-online", {
       user: publicUser(user)
     });
 
-    console.log(
-      `${name} is ONLINE`
-    );
+    console.log(`${name} is ONLINE`);
   });
 
-
-  /*
-  ================================================
-  UPDATE PROFILE
-  ================================================
-  */
+  /* =========================
+     UPDATE PROFILE
+  ========================= */
 
   socket.on("profile-update", (data = {}) => {
-
-    const user =
-      onlineUsers.get(socket.id);
+    const user = users.get(socket.id);
 
     if (!user) return;
 
-    if (data.name) {
-      user.name =
-        String(data.name)
-          .trim()
-          .slice(0, 30);
+    if (data.name !== undefined) {
+      const newName =
+        cleanText(data.name, 30);
+
+      if (newName) {
+        user.name = newName;
+      }
     }
 
     if (data.avatar !== undefined) {
       user.avatar =
-        String(data.avatar);
+        cleanText(data.avatar, 500);
     }
 
     if (data.status !== undefined) {
       user.status =
-        String(data.status)
-          .trim()
-          .slice(0, 80);
+        cleanText(data.status, 80) ||
+        "Online";
     }
 
     socket.data.name = user.name;
 
-    onlineUsers.set(
-      socket.id,
-      user
-    );
-
-    broadcastOnlineUsers();
+    users.set(socket.id, user);
 
     io.emit("user-updated", {
       user: publicUser(user)
     });
+
+    sendOnlineUsers();
   });
 
-
-  /*
-  ================================================
-  GLOBAL CHAT
-  ================================================
-  */
+  /* =========================
+     GLOBAL CHAT
+  ========================= */
 
   socket.on("global-message", (data = {}) => {
-
-    const user =
-      onlineUsers.get(socket.id);
-
-    if (!user) return;
-
-    const text =
-      String(data.text || "").trim();
-
-    if (!text) return;
-
-    io.emit("global-message", {
-      id:
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2),
-
-      senderId:
-        socket.id,
-
-      senderName:
-        user.name,
-
-      text,
-
-      time:
-        new Date().toISOString()
-    });
-  });
-
-
-  /*
-  ================================================
-  PRIVATE MESSAGE
-  ================================================
-  */
-
-  socket.on("private-message", (data = {}) => {
-
-    const sender =
-      onlineUsers.get(socket.id);
+    const sender = users.get(socket.id);
 
     if (!sender) return;
 
-    const targetId =
-      String(data.targetId || "");
-
     const text =
-      String(data.text || "").trim();
+      cleanText(data.text, 2000);
 
-    if (!targetId || !text) return;
+    if (!text) return;
 
     const message = {
       id:
@@ -236,18 +188,65 @@ io.on("connection", (socket) => {
           .toString(36)
           .slice(2),
 
-      senderId:
-        socket.id,
+      senderId: socket.id,
 
-      senderName:
-        sender.name,
+      senderName: sender.name,
+
+      senderAvatar: sender.avatar || "",
+
+      text,
+
+      time: new Date().toISOString()
+    };
+
+    io.emit("global-message", message);
+  });
+
+  /* =========================
+     PRIVATE CHAT
+  ========================= */
+
+  socket.on("private-message", (data = {}) => {
+    const sender = users.get(socket.id);
+
+    if (!sender) return;
+
+    const targetId =
+      cleanText(data.targetId, 100);
+
+    const text =
+      cleanText(data.text, 2000);
+
+    if (!targetId || !text) return;
+
+    if (!users.has(targetId)) {
+      socket.emit("message-error", {
+        message:
+          "Itilizatè sa a pa online kounye a."
+      });
+
+      return;
+    }
+
+    const message = {
+      id:
+        Date.now() +
+        "-" +
+        Math.random()
+          .toString(36)
+          .slice(2),
+
+      senderId: socket.id,
+
+      senderName: sender.name,
+
+      senderAvatar: sender.avatar || "",
 
       targetId,
 
       text,
 
-      time:
-        new Date().toISOString()
+      time: new Date().toISOString()
     };
 
     io.to(targetId).emit(
@@ -261,65 +260,79 @@ io.on("connection", (socket) => {
     );
   });
 
+  /* =========================
+     TYPING
+  ========================= */
 
-  /*
-  ================================================
-  TYPING
-  ================================================
-  */
+  socket.on(
+    "private-typing",
+    (data = {}) => {
+      const targetId =
+        cleanText(data.targetId, 100);
 
-  socket.on("private-typing", (data = {}) => {
+      if (!targetId) return;
 
-    if (!data.targetId) return;
+      io.to(targetId).emit(
+        "private-typing",
+        {
+          userId: socket.id,
+          name:
+            socket.data.name ||
+            "ZIQVONA User"
+        }
+      );
+    }
+  );
 
-    io.to(data.targetId).emit(
-      "private-typing",
-      {
-        userId: socket.id,
-        name:
-          socket.data.name ||
-          "ZIQVONA User"
-      }
-    );
-  });
+  socket.on(
+    "private-stop-typing",
+    (data = {}) => {
+      const targetId =
+        cleanText(data.targetId, 100);
 
+      if (!targetId) return;
 
-  socket.on("private-stop-typing", (data = {}) => {
+      io.to(targetId).emit(
+        "private-stop-typing",
+        {
+          userId: socket.id
+        }
+      );
+    }
+  );
 
-    if (!data.targetId) return;
-
-    io.to(data.targetId).emit(
-      "private-stop-typing",
-      {
-        userId: socket.id
-      }
-    );
-  });
-
-
-  /*
-  ================================================
-  VOICE / VIDEO CALL
-  ================================================
-  */
+  /* =========================
+     WEBRTC CALL
+  ========================= */
 
   socket.on("call-user", (data = {}) => {
+    const targetId =
+      cleanText(data.targetId, 100);
 
-    if (!data.targetId) return;
+    if (!targetId) return;
 
-    io.to(data.targetId).emit(
+    if (!users.has(targetId)) {
+      socket.emit("call-error", {
+        message:
+          "Itilizatè a pa online."
+      });
+
+      return;
+    }
+
+    io.to(targetId).emit(
       "incoming-call",
       {
-        from:
-          socket.id,
+        from: socket.id,
 
         fromName:
           socket.data.name ||
           "ZIQVONA User",
 
         callType:
-          data.callType ||
-          "video",
+          data.callType === "voice"
+            ? "voice"
+            : "video",
 
         offer:
           data.offer || null
@@ -327,131 +340,100 @@ io.on("connection", (socket) => {
     );
   });
 
-
   socket.on("accept-call", (data = {}) => {
+    const targetId =
+      cleanText(data.targetId, 100);
 
-    if (!data.targetId) return;
+    if (!targetId) return;
 
-    io.to(data.targetId).emit(
+    io.to(targetId).emit(
       "call-accepted",
       {
-        from:
-          socket.id,
-
-        answer:
-          data.answer || null
+        from: socket.id,
+        answer: data.answer || null
       }
     );
   });
 
+  socket.on("reject-call", (data = {}) => {
+    const targetId =
+      cleanText(data.targetId, 100);
+
+    if (!targetId) return;
+
+    io.to(targetId).emit(
+      "call-rejected",
+      {
+        from: socket.id
+      }
+    );
+  });
 
   socket.on("ice-candidate", (data = {}) => {
+    const targetId =
+      cleanText(data.targetId, 100);
 
-    if (!data.targetId) return;
+    if (!targetId) return;
 
-    io.to(data.targetId).emit(
+    io.to(targetId).emit(
       "ice-candidate",
       {
-        from:
-          socket.id,
-
+        from: socket.id,
         candidate:
           data.candidate || null
       }
     );
   });
 
-
   socket.on("end-call", (data = {}) => {
+    const targetId =
+      cleanText(data.targetId, 100);
 
-    if (!data.targetId) return;
+    if (!targetId) return;
 
-    io.to(data.targetId).emit(
+    io.to(targetId).emit(
       "call-ended",
       {
-        from:
-          socket.id
+        from: socket.id
       }
     );
   });
 
-
-  /*
-  ================================================
-  DISCONNECT
-  ================================================
-  */
+  /* =========================
+     DISCONNECT
+  ========================= */
 
   socket.on("disconnect", () => {
-
     const user =
-      onlineUsers.get(socket.id);
+      users.get(socket.id);
 
-    if (user) {
+    if (!user) return;
 
-      onlineUsers.delete(
-        socket.id
-      );
+    users.delete(socket.id);
 
-      io.emit("user-offline", {
-        id: socket.id,
-        name: user.name
-      });
+    io.emit("user-offline", {
+      id: socket.id,
+      name: user.name
+    });
 
-      broadcastOnlineUsers();
+    sendOnlineUsers();
 
-      console.log(
-        `${user.name} is OFFLINE`
-      );
-    }
-
+    console.log(
+      `${user.name} is OFFLINE`
+    );
   });
-
 });
 
-
-/*
-==================================================
-START SERVER
-==================================================
-*/
+/* =========================
+   START SERVER
+========================= */
 
 server.listen(
   PORT,
   "0.0.0.0",
   () => {
-
     console.log(
-      "================================"
-    );
-
-    console.log(
-      "ZIQVONA GLOBAL ONLINE v2"
-    );
-
-    console.log(
-      "PORT:",
-      PORT
-    );
-
-    console.log(
-      "GLOBAL USERS: READY"
-    );
-
-    console.log(
-      "PRIVATE CHAT: READY"
-    );
-
-    console.log(
-      "VOICE CALL SIGNALING: READY"
-    );
-
-    console.log(
-      "VIDEO CALL SIGNALING: READY"
-    );
-
-    console.log(
-      "================================"
+      `ZIQVONA 2.1.0 running on port ${PORT}`
     );
   }
 );
