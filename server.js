@@ -5,6 +5,7 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -14,92 +15,87 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 10000;
 
-// ===============================
-// ZIQVONA SERVER
-// ===============================
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Health check
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
     app: "ZIQVONA",
-    message: "ZIQVONA server is running",
+    version: "1.0",
     time: new Date().toISOString()
   });
 });
 
-// Main page
-app.get("/", (req, res) => {
+app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===============================
+// ============================
 // ROOMS
-// ===============================
+// ============================
 
 const rooms = new Map();
 
-function getRoom(roomId) {
+function createRoom(roomId) {
   if (!rooms.has(roomId)) {
-    rooms.set(roomId, {
-      users: new Map(),
-      createdAt: Date.now()
-    });
+    rooms.set(roomId, new Map());
   }
 
   return rooms.get(roomId);
 }
 
-function getUsers(room) {
-  return Array.from(room.users.values()).map((user) => ({
+function usersInRoom(roomId) {
+  const room = rooms.get(roomId);
+
+  if (!room) return [];
+
+  return Array.from(room.values()).map((user) => ({
     id: user.id,
     name: user.name,
-    avatar: user.avatar || null,
-    status: user.status || "Online"
+    avatar: user.avatar,
+    status: user.status
   }));
 }
 
-// ===============================
-// SOCKET.IO
-// ===============================
+// ============================
+// SOCKET CONNECTION
+// ============================
 
 io.on("connection", (socket) => {
-  console.log("🔵 Connected:", socket.id);
+  console.log("CONNECTED:", socket.id);
 
-  // -------------------------------
+  // --------------------------
   // JOIN ROOM
-  // -------------------------------
+  // --------------------------
 
   socket.on("join-room", (data = {}) => {
-    const roomId = String(data.roomId || "ziqvona-room").trim();
-    const name = String(data.name || "ZIQVONA User").trim();
-    const avatar = data.avatar || null;
+    const roomId = String(data.roomId || "ziqvona-main");
+    const name = String(data.name || "ZIQVONA User");
+    const avatar = data.avatar || "";
     const status = data.status || "Online";
 
-    const room = getRoom(roomId);
+    const room = createRoom(roomId);
 
     socket.join(roomId);
 
     socket.data.roomId = roomId;
     socket.data.name = name;
 
-    room.users.set(socket.id, {
+    room.set(socket.id, {
       id: socket.id,
       name,
       avatar,
       status
     });
 
-    // Send current users to the new user
+    // Give the new user the current list
     socket.emit("room-users", {
       roomId,
-      users: getUsers(room)
+      users: usersInRoom(roomId)
     });
 
-    // Tell everyone else a new user joined
+    // Tell existing users about the new user
     socket.to(roomId).emit("user-joined", {
       id: socket.id,
       name,
@@ -107,163 +103,68 @@ io.on("connection", (socket) => {
       status
     });
 
-    // Update complete user list
+    // Refresh everyone
     io.to(roomId).emit("users-updated", {
-      users: getUsers(room)
+      users: usersInRoom(roomId)
     });
 
-    console.log(`👤 ${name} joined room ${roomId}`);
+    console.log(`${name} joined ${roomId}`);
   });
 
-  // -------------------------------
-  // CHAT MESSAGE
-  // -------------------------------
+  // --------------------------
+  // CHAT
+  // --------------------------
 
   socket.on("chat-message", (data = {}) => {
     const roomId = socket.data.roomId;
 
     if (!roomId) return;
 
-    const message = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    const text = String(data.text || "").trim();
+
+    if (!text) return;
+
+    io.to(roomId).emit("chat-message", {
+      id: Date.now() + "-" + Math.random(),
       senderId: socket.id,
-      senderName: data.senderName || socket.data.name || "ZIQVONA User",
-      text: String(data.text || "").trim(),
-      type: data.type || "text",
-      time: Date.now()
-    };
-
-    if (!message.text && message.type === "text") {
-      return;
-    }
-
-    io.to(roomId).emit("chat-message", message);
+      senderName: data.senderName || socket.data.name || "User",
+      text,
+      time: new Date().toISOString()
+    });
   });
 
-  // -------------------------------
+  // --------------------------
   // PRIVATE MESSAGE
-  // -------------------------------
+  // --------------------------
 
   socket.on("private-message", (data = {}) => {
-    const targetId = data.targetId;
+    if (!data.targetId) return;
 
-    if (!targetId) return;
+    const text = String(data.text || "").trim();
 
-    const message = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    if (!text) return;
+
+    io.to(data.targetId).emit("private-message", {
+      id: Date.now() + "-" + Math.random(),
       senderId: socket.id,
-      senderName: data.senderName || socket.data.name || "ZIQVONA User",
-      text: String(data.text || "").trim(),
-      type: data.type || "text",
-      time: Date.now()
-    };
-
-    io.to(targetId).emit("private-message", message);
-  });
-
-  // ===============================
-  // WEBRTC SIGNALING
-  // ===============================
-
-  // User wants to call another user
-  socket.on("call-user", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("incoming-call", {
-      from: socket.id,
-      fromName: data.fromName || socket.data.name || "ZIQVONA User",
-      callType: data.callType || "video",
-      offer: data.offer || null
+      senderName: socket.data.name || "User",
+      text,
+      time: new Date().toISOString()
     });
   });
 
-  // Receiver accepts call
-  socket.on("accept-call", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("call-accepted", {
-      from: socket.id,
-      answer: data.answer || null
-    });
-  });
-
-  // ICE candidate
-  socket.on("ice-candidate", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("ice-candidate", {
-      from: socket.id,
-      candidate: data.candidate || null
-    });
-  });
-
-  // End call
-  socket.on("end-call", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("call-ended", {
-      from: socket.id
-    });
-  });
-
-  // ===============================
-  // GROUP CALL SIGNALING
-  // ===============================
-
-  socket.on("group-call-start", (data = {}) => {
-    const roomId = socket.data.roomId;
-
-    if (!roomId) return;
-
-    socket.to(roomId).emit("group-call-started", {
-      from: socket.id,
-      fromName: socket.data.name,
-      callType: data.callType || "video"
-    });
-  });
-
-  socket.on("group-call-offer", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("group-call-offer", {
-      from: socket.id,
-      offer: data.offer || null
-    });
-  });
-
-  socket.on("group-call-answer", (data = {}) => {
-    const targetId = data.targetId;
-
-    if (!targetId) return;
-
-    io.to(targetId).emit("group-call-answer", {
-      from: socket.id,
-      answer: data.answer || null
-    });
-  });
-
-  // ===============================
+  // --------------------------
   // TYPING
-  // ===============================
+  // --------------------------
 
-  socket.on("typing", (data = {}) => {
+  socket.on("typing", () => {
     const roomId = socket.data.roomId;
 
     if (!roomId) return;
 
     socket.to(roomId).emit("typing", {
       userId: socket.id,
-      name: data.name || socket.data.name
+      name: socket.data.name || "User"
     });
   });
 
@@ -277,9 +178,9 @@ io.on("connection", (socket) => {
     });
   });
 
-  // ===============================
-  // PROFILE UPDATE
-  // ===============================
+  // --------------------------
+  // PROFILE
+  // --------------------------
 
   socket.on("profile-update", (data = {}) => {
     const roomId = socket.data.roomId;
@@ -288,24 +189,99 @@ io.on("connection", (socket) => {
 
     const room = rooms.get(roomId);
 
-    if (!room || !room.users.has(socket.id)) return;
+    if (!room || !room.has(socket.id)) return;
 
-    const user = room.users.get(socket.id);
+    const user = room.get(socket.id);
 
-    user.name = data.name || user.name;
+    user.name = String(data.name || user.name);
     user.avatar = data.avatar || user.avatar;
     user.status = data.status || user.status;
 
     socket.data.name = user.name;
 
     io.to(roomId).emit("users-updated", {
-      users: getUsers(room)
+      users: usersInRoom(roomId)
     });
   });
 
-  // ===============================
+  // ==========================
+  // WEBRTC
+  // ==========================
+
+  socket.on("call-user", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("incoming-call", {
+      from: socket.id,
+      fromName: socket.data.name || "ZIQVONA User",
+      callType: data.callType || "video",
+      offer: data.offer || null
+    });
+  });
+
+  socket.on("accept-call", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("call-accepted", {
+      from: socket.id,
+      answer: data.answer || null
+    });
+  });
+
+  socket.on("ice-candidate", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("ice-candidate", {
+      from: socket.id,
+      candidate: data.candidate || null
+    });
+  });
+
+  socket.on("end-call", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("call-ended", {
+      from: socket.id
+    });
+  });
+
+  // ==========================
+  // GROUP CALL
+  // ==========================
+
+  socket.on("group-call-start", (data = {}) => {
+    const roomId = socket.data.roomId;
+
+    if (!roomId) return;
+
+    socket.to(roomId).emit("group-call-started", {
+      from: socket.id,
+      fromName: socket.data.name || "User",
+      callType: data.callType || "video"
+    });
+  });
+
+  socket.on("group-call-offer", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("group-call-offer", {
+      from: socket.id,
+      offer: data.offer
+    });
+  });
+
+  socket.on("group-call-answer", (data = {}) => {
+    if (!data.targetId) return;
+
+    io.to(data.targetId).emit("group-call-answer", {
+      from: socket.id,
+      answer: data.answer
+    });
+  });
+
+  // --------------------------
   // EMOJI / REACTION
-  // ===============================
+  // --------------------------
 
   socket.on("reaction", (data = {}) => {
     const roomId = socket.data.roomId;
@@ -314,20 +290,19 @@ io.on("connection", (socket) => {
 
     io.to(roomId).emit("reaction", {
       userId: socket.id,
-      name: socket.data.name,
-      emoji: data.emoji || "❤️",
-      messageId: data.messageId || null
+      name: socket.data.name || "User",
+      emoji: data.emoji || "❤️"
     });
   });
 
-  // ===============================
+  // --------------------------
   // DISCONNECT
-  // ===============================
+  // --------------------------
 
   socket.on("disconnect", () => {
-    const roomId = socket.data.roomId;
+    console.log("DISCONNECTED:", socket.id);
 
-    console.log("🔴 Disconnected:", socket.id);
+    const roomId = socket.data.roomId;
 
     if (!roomId) return;
 
@@ -335,38 +310,38 @@ io.on("connection", (socket) => {
 
     if (!room) return;
 
-    const user = room.users.get(socket.id);
+    const user = room.get(socket.id);
 
-    room.users.delete(socket.id);
+    room.delete(socket.id);
 
     socket.to(roomId).emit("user-left", {
       id: socket.id,
-      name: user ? user.name : "ZIQVONA User"
+      name: user ? user.name : "User"
     });
 
     io.to(roomId).emit("users-updated", {
-      users: getUsers(room)
+      users: usersInRoom(roomId)
     });
 
-    // Delete empty rooms
-    if (room.users.size === 0) {
+    if (room.size === 0) {
       rooms.delete(roomId);
     }
   });
 });
 
-// ===============================
-// START SERVER
-// ===============================
+// ============================
+// START
+// ============================
 
 server.listen(PORT, "0.0.0.0", () => {
-  console.log("=================================");
-  console.log("🚀 ZIQVONA SERVER STARTED");
-  console.log(`🌐 Port: ${PORT}`);
-  console.log("💬 Chat: READY");
-  console.log("👥 Multi-user rooms: READY");
-  console.log("📞 Voice signaling: READY");
-  console.log("📹 Video signaling: READY");
-  console.log("👨‍👩‍👧‍👦 Group calls: READY");
-  console.log("=================================");
+  console.log("--------------------------------");
+  console.log("ZIQVONA SERVER");
+  console.log("PORT:", PORT);
+  console.log("CHAT: READY");
+  console.log("ROOMS: READY");
+  console.log("MULTI USER: READY");
+  console.log("VOICE SIGNALING: READY");
+  console.log("VIDEO SIGNALING: READY");
+  console.log("GROUP CALL SIGNALING: READY");
+  console.log("--------------------------------");
 });
