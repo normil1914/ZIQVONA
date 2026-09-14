@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
 
 <meta
@@ -14,11 +13,21 @@
   content="#10bfa3"
 >
 
-<title>ZIQVONA</title>
-
-<script src="/socket.io/socket.io.js"></script>
+<title>ZIQVONA — Global Online</title>
 
 <style>
+
+:root {
+  --turq: #10bfa3;
+  --turq-dark: #079b85;
+  --bg: #f3f7f6;
+  --white: #ffffff;
+  --text: #172321;
+  --muted: #74827f;
+  --border: #e4ebe9;
+  --danger: #e74c3c;
+  --green: #20c997;
+}
 
 * {
   box-sizing: border-box;
@@ -27,171 +36,173 @@
 body {
   margin: 0;
   font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     Arial,
-    Helvetica,
     sans-serif;
 
-  background: #eefaf7;
-  color: #102a27;
+  background: var(--bg);
+  color: var(--text);
+
+  height: 100vh;
+  overflow: hidden;
 }
 
 button,
 input {
-  font-family: inherit;
+  font: inherit;
 }
 
-button {
-  cursor: pointer;
-}
+/* =========================
+   LOGIN
+========================= */
 
-.hidden {
-  display: none !important;
-}
-
-/* LOGIN */
-
-#loginPage {
-  min-height: 100vh;
+#loginScreen {
+  position: fixed;
+  inset: 0;
 
   display: flex;
-  justify-content: center;
   align-items: center;
-
-  padding: 20px;
+  justify-content: center;
 
   background:
     linear-gradient(
       135deg,
       #10bfa3,
-      #087f73
+      #087e70
     );
+
+  z-index: 1000;
 }
 
-.login-card {
-  width: 100%;
-  max-width: 430px;
+.loginCard {
+  width: min(92%, 430px);
 
   background: white;
 
-  border-radius: 28px;
+  border-radius: 24px;
 
-  padding: 35px 28px;
-
-  text-align: center;
+  padding: 35px;
 
   box-shadow:
-    0 20px 60px
-    rgba(0,0,0,.18);
+    0 25px 70px
+    rgba(0,0,0,.22);
+
+  text-align: center;
 }
 
-.logo {
-  width: 82px;
-  height: 82px;
+.logoCircle {
+  width: 80px;
+  height: 80px;
 
-  margin:
-    0 auto 18px;
+  margin: 0 auto 18px;
 
-  border-radius: 25px;
+  border-radius: 50%;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background: #10bfa3;
+  background: var(--turq);
 
   color: white;
 
-  font-size: 40px;
+  font-size: 42px;
   font-weight: 900;
 }
 
-.login-card h1 {
+.loginCard h1 {
   margin: 0;
+
   font-size: 32px;
 }
 
-.tagline {
-  margin:
-    10px 0 25px;
+.loginCard p {
+  color: var(--muted);
 
-  color: #71827f;
-
-  font-size: 13px;
-
-  letter-spacing: .5px;
+  line-height: 1.5;
 }
 
-.login-card input {
+.loginCard input {
   width: 100%;
 
   padding: 15px;
 
-  margin-bottom: 12px;
+  margin-top: 12px;
 
-  border:
-    1px solid #d8e6e3;
+  border: 1px solid var(--border);
 
-  border-radius: 14px;
+  border-radius: 12px;
 
   outline: none;
-
-  font-size: 16px;
 }
 
-.login-card input:focus {
-  border-color:
-    #10bfa3;
+.loginCard input:focus {
+  border-color: var(--turq);
 }
 
-.primary {
+.primaryButton {
   width: 100%;
+
+  margin-top: 15px;
+
+  padding: 15px;
 
   border: 0;
 
-  background: #10bfa3;
+  border-radius: 12px;
+
+  background: var(--turq);
 
   color: white;
 
-  padding: 15px;
+  font-weight: 700;
 
-  border-radius: 14px;
-
-  font-size: 16px;
-
-  font-weight: 800;
+  cursor: pointer;
 }
 
+.primaryButton:hover {
+  background: var(--turq-dark);
+}
 
-/* APP */
+/* =========================
+   APP
+========================= */
 
 #app {
+  display: none;
+
   height: 100vh;
+}
+
+.app {
+  display: flex;
+
+  height: 100%;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+  width: 350px;
+
+  background: white;
+
+  border-right:
+    1px solid var(--border);
 
   display: flex;
   flex-direction: column;
 }
 
-
-/* HEADER */
-
-.header {
-  height: 68px;
-
-  background: white;
+.sidebarHeader {
+  padding: 20px;
 
   border-bottom:
-    1px solid #dce9e6;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding:
-    0 18px;
-
-  flex-shrink: 0;
+    1px solid var(--border);
 }
 
 .brand {
@@ -200,171 +211,150 @@ button {
   gap: 10px;
 }
 
-.brand-logo {
-  width: 42px;
-  height: 42px;
+.brandLogo {
+  width: 45px;
+  height: 45px;
 
-  border-radius: 13px;
-
-  background: #10bfa3;
-
-  color: white;
+  border-radius: 50%;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
+  background: var(--turq);
+
+  color: white;
+
   font-weight: 900;
-  font-size: 21px;
+
+  font-size: 22px;
 }
 
-.brand-name {
-  font-weight: 900;
+.brandText strong {
+  display: block;
+
   font-size: 20px;
 }
 
-.status {
-  font-size: 11px;
-  color: #10a58f;
+.brandText span {
+  color: var(--green);
+
+  font-size: 13px;
 }
 
-
-/* BODY */
-
-.body {
-  flex: 1;
-
-  min-height: 0;
-
-  display: flex;
+.searchBox {
+  margin-top: 18px;
 }
 
-
-/* PEOPLE */
-
-.people {
-  width: 300px;
-
-  background: white;
-
-  border-right:
-    1px solid #dce9e6;
-
-  display: flex;
-  flex-direction: column;
-
-  flex-shrink: 0;
-}
-
-.people-header {
-  padding: 18px;
-}
-
-.people-title {
-  font-weight: 900;
-  font-size: 18px;
-}
-
-.people-subtitle {
-  color: #10a58f;
-
-  font-size: 12px;
-
-  margin-top: 4px;
-}
-
-.search {
-  margin-top: 14px;
-
+.searchBox input {
   width: 100%;
 
-  padding: 11px 13px;
+  padding: 12px 14px;
 
   border:
-    1px solid #d8e6e3;
+    1px solid var(--border);
 
   border-radius: 12px;
 
   outline: none;
 }
 
-.people-list {
+.onlineTitle {
+  padding:
+    18px 20px 8px;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  color: var(--muted);
+
+  text-transform: uppercase;
+}
+
+.usersList {
   flex: 1;
 
   overflow-y: auto;
-
-  padding:
-    0 10px 15px;
 }
 
-.person {
+.userItem {
   display: flex;
 
   align-items: center;
 
-  gap: 10px;
+  gap: 12px;
 
-  padding: 10px;
+  padding: 13px 18px;
 
-  border-radius: 14px;
+  cursor: pointer;
 
-  margin-bottom: 5px;
+  border-bottom:
+    1px solid #f0f3f2;
 }
 
-.person:hover {
-  background: #eefaf7;
+.userItem:hover {
+  background: #f4faf8;
 }
 
-.person.active {
-  background: #dff8f3;
+.userItem.active {
+  background: #e7f8f4;
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
 
   border-radius: 50%;
 
-  background: #10bfa3;
+  background: var(--turq);
 
   color: white;
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
-  font-weight: 900;
+  font-weight: 800;
 
   position: relative;
 
-  flex-shrink: 0;
+  overflow: hidden;
 }
 
-.online-dot {
-  width: 11px;
-  height: 11px;
+.avatar img {
+  width: 100%;
+  height: 100%;
 
-  border-radius: 50%;
+  object-fit: cover;
+}
 
-  background: #20c878;
+.onlineDot {
+  position: absolute;
+
+  width: 12px;
+  height: 12px;
+
+  background: #20c997;
 
   border:
     2px solid white;
 
-  position: absolute;
+  border-radius: 50%;
 
   right: -1px;
-  bottom: 0;
+  bottom: -1px;
 }
 
-.person-info {
+.userInfo {
   min-width: 0;
   flex: 1;
 }
 
-.person-name {
-  font-weight: 800;
+.userName {
+  font-weight: 700;
 
   white-space: nowrap;
 
@@ -373,33 +363,39 @@ button {
   text-overflow: ellipsis;
 }
 
-.person-status {
-  font-size: 11px;
+.userStatus {
+  color: var(--muted);
 
-  color: #10a58f;
+  font-size: 13px;
 
-  margin-top: 3px;
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
 }
 
-
-/* CHAT */
+/* =========================
+   CHAT
+========================= */
 
 .chat {
   flex: 1;
 
-  min-width: 0;
-
   display: flex;
+
   flex-direction: column;
+
+  min-width: 0;
 }
 
-.chat-header {
-  height: 67px;
+.chatHeader {
+  height: 75px;
 
   background: white;
 
   border-bottom:
-    1px solid #dce9e6;
+    1px solid var(--border);
 
   display: flex;
 
@@ -408,146 +404,170 @@ button {
   justify-content: space-between;
 
   padding:
-    0 18px;
+    0 20px;
 }
 
-.chat-user {
+.chatUser {
   display: flex;
 
   align-items: center;
 
-  gap: 10px;
+  gap: 12px;
 }
 
-.chat-avatar {
-  width: 40px;
-  height: 40px;
+.chatUserName {
+  font-weight: 800;
+}
 
-  border-radius: 50%;
+.chatUserStatus {
+  font-size: 13px;
 
-  background: #10bfa3;
+  color: var(--green);
+}
 
-  color: white;
-
+.callButtons {
   display: flex;
 
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 900;
+  gap: 8px;
 }
 
-.chat-name {
-  font-weight: 900;
-}
-
-.chat-status {
-  color: #10a58f;
-
-  font-size: 11px;
-
-  margin-top: 2px;
-}
-
-.chat-actions {
-  display: flex;
-  gap: 7px;
-}
-
-.icon {
+.callButton {
   width: 42px;
   height: 42px;
 
   border: 0;
 
-  border-radius: 12px;
+  border-radius: 50%;
 
-  background: #eefaf7;
+  background: #e8f8f4;
+
+  cursor: pointer;
 
   font-size: 18px;
 }
 
-.icon:hover {
-  background: #d9f6f0;
+.callButton:hover {
+  background: #d4f2eb;
 }
-
-
-/* MESSAGES */
 
 .messages {
   flex: 1;
 
   overflow-y: auto;
 
-  padding: 20px;
+  padding: 25px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
 }
 
-.empty {
-  height: 100%;
+.welcome {
+  margin: auto;
+
+  text-align: center;
+
+  max-width: 500px;
+}
+
+.welcomeLogo {
+  width: 90px;
+  height: 90px;
+
+  margin: auto;
+
+  border-radius: 50%;
+
+  background: var(--turq);
+
+  color: white;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
 
-  text-align: center;
-
-  color: #7b8b88;
+  font-size: 44px;
+  font-weight: 900;
 }
 
-.message {
-  max-width: 75%;
-
-  margin-bottom: 12px;
+.welcome h2 {
+  margin-bottom: 5px;
 }
 
-.message.mine {
-  margin-left: auto;
+.welcome p {
+  color: var(--muted);
 }
 
-.bubble {
+.messageRow {
+  display: flex;
+}
+
+.messageRow.mine {
+  justify-content: flex-end;
+}
+
+.messageBubble {
+  max-width: min(70%, 600px);
+
+  padding:
+    10px 14px;
+
+  border-radius: 16px;
+
   background: white;
 
-  padding: 11px 14px;
-
-  border-radius: 17px;
-
   box-shadow:
-    0 2px 8px
-    rgba(0,0,0,.05);
+    0 1px 2px rgba(0,0,0,.06);
 }
 
-.message.mine .bubble {
-  background: #10bfa3;
+.messageRow.mine
+.messageBubble {
+  background: var(--turq);
+
   color: white;
 }
 
-.sender {
-  font-size: 10px;
+.messageSender {
+  font-size: 12px;
 
   font-weight: 800;
 
   margin-bottom: 4px;
-
-  opacity: .7;
 }
 
-.time {
-  font-size: 9px;
+.messageTime {
+  font-size: 10px;
 
-  opacity: .55;
+  opacity: .65;
 
   margin-top: 4px;
+
+  text-align: right;
 }
 
+.typing {
+  height: 25px;
 
-/* COMPOSER */
+  padding:
+    0 25px;
 
-.composer {
+  color: var(--muted);
+
+  font-size: 13px;
+}
+
+/* =========================
+   INPUT
+========================= */
+
+.messageInputArea {
   background: white;
 
   border-top:
-    1px solid #dce9e6;
+    1px solid var(--border);
 
   padding: 12px;
 
@@ -556,218 +576,331 @@ button {
   gap: 8px;
 }
 
-.composer input {
+.emojiButton {
+  width: 45px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  background: #f1f5f4;
+
+  cursor: pointer;
+
+  font-size: 20px;
+}
+
+.messageInput {
   flex: 1;
 
   min-width: 0;
 
   border:
-    1px solid #d8e6e3;
+    1px solid var(--border);
 
-  border-radius: 14px;
+  border-radius: 12px;
 
-  padding: 13px;
+  padding:
+    12px 14px;
 
   outline: none;
 }
 
-.send {
-  width: 48px;
+.sendButton {
+  width: 90px;
 
   border: 0;
 
-  border-radius: 14px;
+  border-radius: 12px;
 
-  background: #10bfa3;
+  background: var(--turq);
 
   color: white;
 
-  font-size: 18px;
+  font-weight: 700;
+
+  cursor: pointer;
 }
 
+/* =========================
+   CALL WINDOW
+========================= */
 
-/* MOBILE */
+#callOverlay {
+  display: none;
 
-@media(max-width:750px) {
-
-  .people {
-    width: 100%;
-  }
-
-  .chat {
-    display: none;
-  }
-
-  .people.mobile-chat-open {
-    display: none;
-  }
-
-  .chat.mobile-visible {
-    display: flex;
-    width: 100%;
-  }
-
-}
-
-
-/* CALL */
-
-#callModal {
   position: fixed;
 
   inset: 0;
 
-  background:
-    rgba(0,0,0,.84);
+  background: #101514;
 
-  z-index: 100;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
+  z-index: 2000;
 }
 
-.call-box {
-  width: 100%;
-  max-width: 900px;
-
-  height: 80vh;
-
-  background: #101716;
-
-  border-radius: 24px;
-
-  overflow: hidden;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.videos {
-  flex: 1;
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(
-      auto-fit,
-      minmax(220px,1fr)
-    );
-
-  gap: 10px;
-
-  padding: 12px;
-
-  overflow: auto;
-}
-
-.video {
-  position: relative;
-
-  background: #1b2523;
-
-  border-radius: 16px;
-
-  overflow: hidden;
-
-  min-height: 180px;
-}
-
-.video video {
-  width: 100%;
-  height: 100%;
-
-  min-height: 180px;
-
-  object-fit: cover;
-}
-
-.video-label {
+.callTop {
   position: absolute;
 
-  left: 10px;
-  bottom: 10px;
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 65px;
+
+  padding: 15px 20px;
 
   color: white;
 
-  background:
-    rgba(0,0,0,.55);
+  display: flex;
 
-  padding: 5px 8px;
+  justify-content: space-between;
 
-  border-radius: 8px;
+  align-items: center;
 
-  font-size: 12px;
+  z-index: 5;
 }
 
-.controls {
+.callVideos {
+  width: 100%;
+  height: 100%;
+
+  position: relative;
+}
+
+#remoteVideo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  background: #000;
+}
+
+#localVideo {
+  position: absolute;
+
+  right: 20px;
+  bottom: 90px;
+
+  width: 180px;
+  height: 130px;
+
+  object-fit: cover;
+
+  border-radius: 15px;
+
+  background: #222;
+
+  border: 2px solid white;
+}
+
+.callControls {
+  position: absolute;
+
+  bottom: 20px;
+
+  left: 0;
+  right: 0;
+
   display: flex;
 
   justify-content: center;
 
-  gap: 10px;
+  gap: 12px;
 
-  padding: 15px;
-
-  background: #111917;
+  z-index: 5;
 }
 
-.control {
-  width: 52px;
-  height: 52px;
+.endCall {
+  width: 60px;
+  height: 60px;
 
   border: 0;
 
   border-radius: 50%;
 
-  background: #26322f;
+  background: var(--danger);
 
   color: white;
 
-  font-size: 20px;
+  font-size: 22px;
+
+  cursor: pointer;
 }
 
-.end {
-  background: #e54848;
+/* =========================
+   INCOMING CALL
+========================= */
+
+#incomingCall {
+  display: none;
+
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(0,0,0,.75);
+
+  z-index: 3000;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.incomingCard {
+  width: min(90%, 380px);
+
+  background: white;
+
+  border-radius: 22px;
+
+  padding: 30px;
+
+  text-align: center;
+}
+
+.incomingCard h2 {
+  margin-top: 5px;
+}
+
+.incomingActions {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+.acceptButton,
+.rejectButton {
+  flex: 1;
+
+  padding: 14px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.acceptButton {
+  background: var(--turq);
+
+  color: white;
+}
+
+.rejectButton {
+  background: #eee;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 750px) {
+
+  .sidebar {
+    width: 90px;
+  }
+
+  .brandText,
+  .searchBox,
+  .onlineTitle,
+  .userInfo {
+    display: none;
+  }
+
+  .sidebarHeader {
+    padding: 12px;
+
+    display: flex;
+
+    justify-content: center;
+  }
+
+  .userItem {
+    justify-content: center;
+
+    padding: 12px 8px;
+  }
+
+  .chatHeader {
+    padding: 0 12px;
+  }
+
+  .chatUserName {
+    max-width: 130px;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+  }
+
+  .messageBubble {
+    max-width: 85%;
+  }
+
+  .sendButton {
+    width: 60px;
+  }
+
+  #localVideo {
+    width: 120px;
+    height: 90px;
+  }
 }
 
 </style>
-
 </head>
 
 <body>
 
+<!-- =========================
+     LOGIN
+========================= -->
 
-<!-- LOGIN -->
+<section id="loginScreen">
 
-<section id="loginPage">
+  <div class="loginCard">
 
-  <div class="login-card">
-
-    <div class="logo">
+    <div class="logoCircle">
       Z
     </div>
 
     <h1>ZIQVONA</h1>
 
-    <div class="tagline">
-      GOOD MUSIC • BETTER VIBES • ONE FAMILY
-    </div>
+    <p>
+      Chat • Voice • Video • Global Online
+    </p>
 
     <input
       id="nameInput"
-      placeholder="Your name"
+      type="text"
       maxlength="30"
+      placeholder="Enter your name"
+      autocomplete="name"
+    >
+
+    <input
+      id="statusInput"
+      type="text"
+      maxlength="80"
+      placeholder="Status (optional)"
+      value="Online"
     >
 
     <button
-      id="joinBtn"
-      class="primary"
+      class="primaryButton"
+      id="loginButton"
     >
-      Join ZIQVONA
+      Connect to ZIQVONA
     </button>
 
   </div>
@@ -775,228 +908,244 @@ button {
 </section>
 
 
-<!-- APP -->
+<!-- =========================
+     APP
+========================= -->
 
-<section
-  id="app"
-  class="hidden"
->
+<section id="app">
 
-<header class="header">
+  <div class="app">
 
-  <div class="brand">
+    <!-- SIDEBAR -->
 
-    <div class="brand-logo">
+    <aside class="sidebar">
+
+      <div class="sidebarHeader">
+
+        <div class="brand">
+
+          <div class="brandLogo">
+            Z
+          </div>
+
+          <div class="brandText">
+
+            <strong>ZIQVONA</strong>
+
+            <span>
+              Global Online
+            </span>
+
+          </div>
+
+        </div>
+
+        <div class="searchBox">
+
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search people..."
+          >
+
+        </div>
+
+      </div>
+
+      <div class="onlineTitle">
+        People Online
+      </div>
+
+      <div
+        id="usersList"
+        class="usersList"
+      ></div>
+
+    </aside>
+
+
+    <!-- CHAT -->
+
+    <main class="chat">
+
+      <header class="chatHeader">
+
+        <div class="chatUser">
+
+          <div
+            id="chatAvatar"
+            class="avatar"
+          >
+            Z
+            <span class="onlineDot"></span>
+          </div>
+
+          <div>
+
+            <div
+              id="chatUserName"
+              class="chatUserName"
+            >
+              ZIQVONA Global Chat
+            </div>
+
+            <div
+              id="chatUserStatus"
+              class="chatUserStatus"
+            >
+              Everyone online
+            </div>
+
+          </div>
+
+        </div>
+
+        <div
+          id="callButtons"
+          class="callButtons"
+          style="display:none"
+        >
+
+          <button
+            id="voiceCallButton"
+            class="callButton"
+            title="Voice call"
+          >
+            📞
+          </button>
+
+          <button
+            id="videoCallButton"
+            class="callButton"
+            title="Video call"
+          >
+            🎥
+          </button>
+
+        </div>
+
+      </header>
+
+
+      <section
+        id="messages"
+        class="messages"
+      >
+
+        <div
+          id="welcome"
+          class="welcome"
+        >
+
+          <div class="welcomeLogo">
+            Z
+          </div>
+
+          <h2>
+            Welcome to ZIQVONA
+          </h2>
+
+          <p>
+            Everyone connected to ZIQVONA
+            can appear here as online.
+          </p>
+
+          <p>
+            Select a person to start
+            a private conversation.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <div
+        id="typing"
+        class="typing"
+      ></div>
+
+
+      <form
+        id="messageForm"
+        class="messageInputArea"
+      >
+
+        <button
+          type="button"
+          id="emojiButton"
+          class="emojiButton"
+        >
+          😊
+        </button>
+
+        <input
+          id="messageInput"
+          class="messageInput"
+          type="text"
+          placeholder="Write a message..."
+          autocomplete="off"
+        >
+
+        <button
+          type="submit"
+          class="sendButton"
+        >
+          Send
+        </button>
+
+      </form>
+
+    </main>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     INCOMING CALL
+========================= -->
+
+<div id="incomingCall">
+
+  <div class="incomingCard">
+
+    <div
+      id="incomingAvatar"
+      class="avatar"
+      style="
+        width:80px;
+        height:80px;
+        margin:auto;
+        font-size:30px;
+      "
+    >
       Z
     </div>
 
-    <div>
+    <h2 id="incomingName">
+      Incoming call
+    </h2>
 
-      <div class="brand-name">
-        ZIQVONA
-      </div>
+    <p id="incomingType">
+      ZIQVONA call
+    </p>
 
-      <div
-        id="connection"
-        class="status"
-      >
-        Connecting...
-      </div>
-
-    </div>
-
-  </div>
-
-  <button
-    id="logout"
-    class="icon"
-  >
-    ⎋
-  </button>
-
-</header>
-
-
-<div class="body">
-
-
-<!-- PEOPLE -->
-
-<aside class="people">
-
-  <div class="people-header">
-
-    <div class="people-title">
-      Online People
-    </div>
-
-    <div
-      id="onlineCount"
-      class="people-subtitle"
-    >
-      0 online
-    </div>
-
-    <input
-      id="search"
-      class="search"
-      placeholder="Search people..."
-    >
-
-  </div>
-
-  <div
-    id="peopleList"
-    class="people-list"
-  ></div>
-
-</aside>
-
-
-<!-- CHAT -->
-
-<section
-  id="chat"
-  class="chat"
->
-
-  <div class="chat-header">
-
-    <div class="chat-user">
-
-      <div
-        id="chatAvatar"
-        class="chat-avatar"
-      >
-        Z
-      </div>
-
-      <div>
-
-        <div
-          id="chatName"
-          class="chat-name"
-        >
-          ZIQVONA Global Chat
-        </div>
-
-        <div
-          id="chatStatus"
-          class="chat-status"
-        >
-          Everyone
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="chat-actions">
+    <div class="incomingActions">
 
       <button
-        id="voiceBtn"
-        class="icon"
-        title="Voice call"
+        id="rejectButton"
+        class="rejectButton"
       >
-        📞
+        Reject
       </button>
 
       <button
-        id="videoBtn"
-        class="icon"
-        title="Video call"
+        id="acceptButton"
+        class="acceptButton"
       >
-        📹
-      </button>
-
-    </div>
-
-  </div>
-
-
-  <div
-    id="messages"
-    class="messages"
-  >
-
-    <div class="empty">
-      Select a person or use Global Chat.
-    </div>
-
-  </div>
-
-
-  <form
-    id="composer"
-    class="composer"
-  >
-
-    <input
-      id="messageInput"
-      placeholder="Write a message..."
-      autocomplete="off"
-    >
-
-    <button
-      type="button"
-      id="emoji"
-      class="icon"
-    >
-      😊
-    </button>
-
-    <button
-      type="submit"
-      class="send"
-    >
-      ➤
-    </button>
-
-  </form>
-
-</section>
-
-</div>
-
-</section>
-
-
-<!-- CALL -->
-
-<div
-  id="callModal"
-  class="hidden"
->
-
-  <div class="call-box">
-
-    <div
-      id="videos"
-      class="videos"
-    ></div>
-
-    <div class="controls">
-
-      <button
-        id="mute"
-        class="control"
-      >
-        🎤
-      </button>
-
-      <button
-        id="camera"
-        class="control"
-      >
-        📹
-      </button>
-
-      <button
-        id="endCall"
-        class="control end"
-      >
-        ☎
+        Accept
       </button>
 
     </div>
@@ -1005,29 +1154,74 @@ button {
 
 </div>
 
+
+<!-- =========================
+     CALL OVERLAY
+========================= -->
+
+<div id="callOverlay">
+
+  <div class="callTop">
+
+    <strong id="callName">
+      ZIQVONA Call
+    </strong>
+
+    <span id="callType">
+      Video
+    </span>
+
+  </div>
+
+  <div class="callVideos">
+
+    <video
+      id="remoteVideo"
+      autoplay
+      playsinline
+    ></video>
+
+    <video
+      id="localVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
+
+  </div>
+
+  <div class="callControls">
+
+    <button
+      id="endCallButton"
+      class="endCall"
+      title="End call"
+    >
+      ☎
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- Socket.IO client comes from our own Node server -->
+
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
 
-"use strict";
-
-
-/* =================================
+/* =========================
    SOCKET
-================================= */
+========================= */
 
-const socket =
-  io({
-    transports:
-      ["websocket","polling"]
-  });
+const socket = io();
 
-
-/* =================================
+/* =========================
    STATE
-================================= */
+========================= */
 
-let myId = "";
-let myName = "";
+let currentUser = null;
 
 let onlineUsers = [];
 
@@ -1035,64 +1229,56 @@ let selectedUser = null;
 
 let globalChat = true;
 
+let typingTimer = null;
+
+let incomingCallData = null;
+
+let peerConnection = null;
+
 let localStream = null;
 
-const peers =
-  new Map();
+let currentCallTarget = null;
+
+let currentCallType = "video";
+
+let pendingOffer = null;
 
 
-/* =================================
-   ELEMENTS
-================================= */
+/* =========================
+   DOM
+========================= */
 
-const loginPage =
+const loginScreen =
   document.getElementById(
-    "loginPage"
+    "loginScreen"
   );
 
 const app =
-  document.getElementById(
-    "app"
-  );
+  document.getElementById("app");
 
 const nameInput =
   document.getElementById(
     "nameInput"
   );
 
-const joinBtn =
+const statusInput =
   document.getElementById(
-    "joinBtn"
+    "statusInput"
   );
 
-const peopleList =
+const loginButton =
   document.getElementById(
-    "peopleList"
+    "loginButton"
   );
 
-const onlineCount =
+const usersList =
   document.getElementById(
-    "onlineCount"
+    "usersList"
   );
 
-const search =
+const searchInput =
   document.getElementById(
-    "search"
-  );
-
-const chatName =
-  document.getElementById(
-    "chatName"
-  );
-
-const chatStatus =
-  document.getElementById(
-    "chatStatus"
-  );
-
-const chatAvatar =
-  document.getElementById(
-    "chatAvatar"
+    "searchInput"
   );
 
 const messages =
@@ -1100,9 +1286,9 @@ const messages =
     "messages"
   );
 
-const composer =
+const messageForm =
   document.getElementById(
-    "composer"
+    "messageForm"
   );
 
 const messageInput =
@@ -1110,98 +1296,155 @@ const messageInput =
     "messageInput"
   );
 
-const emoji =
+const typing =
   document.getElementById(
-    "emoji"
+    "typing"
   );
 
-const connection =
+const chatUserName =
   document.getElementById(
-    "connection"
+    "chatUserName"
   );
 
-const logout =
+const chatUserStatus =
   document.getElementById(
-    "logout"
+    "chatUserStatus"
   );
 
-const voiceBtn =
+const chatAvatar =
   document.getElementById(
-    "voiceBtn"
+    "chatAvatar"
   );
 
-const videoBtn =
+const callButtons =
   document.getElementById(
-    "videoBtn"
+    "callButtons"
   );
 
-const callModal =
+const voiceCallButton =
   document.getElementById(
-    "callModal"
+    "voiceCallButton"
   );
 
-const videos =
+const videoCallButton =
   document.getElementById(
-    "videos"
+    "videoCallButton"
   );
 
-const endCall =
+const incomingCall =
   document.getElementById(
-    "endCall"
+    "incomingCall"
   );
 
-const mute =
+const incomingName =
   document.getElementById(
-    "mute"
+    "incomingName"
   );
 
-const camera =
+const incomingType =
   document.getElementById(
-    "camera"
+    "incomingType"
+  );
+
+const incomingAvatar =
+  document.getElementById(
+    "incomingAvatar"
+  );
+
+const acceptButton =
+  document.getElementById(
+    "acceptButton"
+  );
+
+const rejectButton =
+  document.getElementById(
+    "rejectButton"
+  );
+
+const callOverlay =
+  document.getElementById(
+    "callOverlay"
+  );
+
+const callName =
+  document.getElementById(
+    "callName"
+  );
+
+const callType =
+  document.getElementById(
+    "callType"
+  );
+
+const localVideo =
+  document.getElementById(
+    "localVideo"
+  );
+
+const remoteVideo =
+  document.getElementById(
+    "remoteVideo"
+  );
+
+const endCallButton =
+  document.getElementById(
+    "endCallButton"
   );
 
 
-/* =================================
-   CONNECT
-================================= */
-
-socket.on(
-  "connect",
-  () => {
-
-    myId =
-      socket.id;
-
-    connection.textContent =
-      "Connected";
-
-    connection.style.color =
-      "#10a58f";
-
-  }
-);
-
-
-socket.on(
-  "disconnect",
-  () => {
-
-    connection.textContent =
-      "Disconnected";
-
-    connection.style.color =
-      "#e54848";
-
-  }
-);
-
-
-/* =================================
+/* =========================
    LOGIN
-================================= */
+========================= */
 
-joinBtn.onclick =
-  register;
+function login() {
+
+  const name =
+    nameInput.value.trim();
+
+  const status =
+    statusInput.value.trim() ||
+    "Online";
+
+  if (!name) {
+
+    alert(
+      "Please enter your name."
+    );
+
+    nameInput.focus();
+
+    return;
+  }
+
+  localStorage.setItem(
+    "ziqvonaName",
+    name
+  );
+
+  localStorage.setItem(
+    "ziqvonaStatus",
+    status
+  );
+
+  currentUser = {
+    name,
+    status
+  };
+
+  socket.emit(
+    "register-user",
+    {
+      name,
+      status,
+      avatar: ""
+    }
+  );
+}
+
+loginButton.addEventListener(
+  "click",
+  login
+);
 
 nameInput.addEventListener(
   "keydown",
@@ -1210,188 +1453,251 @@ nameInput.addEventListener(
     if (
       event.key === "Enter"
     ) {
-
-      register();
-
+      login();
     }
 
   }
 );
 
 
-function register() {
+/* =========================
+   RESTORE NAME
+========================= */
 
-  const name =
-    nameInput.value.trim();
-
-  if (!name) {
-
-    alert(
-      "Enter your name first."
-    );
-
-    return;
-
-  }
-
-  myName =
-    name;
-
-  localStorage.setItem(
-    "ziqvonaName",
-    myName
+const savedName =
+  localStorage.getItem(
+    "ziqvonaName"
   );
 
-  loginPage
-    .classList
-    .add("hidden");
-
-  app
-    .classList
-    .remove("hidden");
-
-  socket.emit(
-    "register-user",
-    {
-      name: myName,
-      avatar: "",
-      status: "Online"
-    }
+const savedStatus =
+  localStorage.getItem(
+    "ziqvonaStatus"
   );
 
+if (savedName) {
+  nameInput.value =
+    savedName;
+}
+
+if (savedStatus) {
+  statusInput.value =
+    savedStatus;
 }
 
 
-/* =================================
+/* =========================
+   REGISTERED
+========================= */
+
+socket.on(
+  "registered",
+  ({ user }) => {
+
+    currentUser = user;
+
+    loginScreen.style.display =
+      "none";
+
+    app.style.display =
+      "block";
+
+    openGlobalChat();
+
+    messageInput.focus();
+  }
+);
+
+
+/* =========================
    ONLINE USERS
-================================= */
+========================= */
 
 socket.on(
   "online-users",
-  (data) => {
+  ({ users }) => {
 
-    onlineUsers =
-      data.users || [];
+    onlineUsers = users || [];
 
-    renderPeople();
-
+    renderUsers();
   }
 );
 
+
+/* =========================
+   USER ONLINE
+========================= */
 
 socket.on(
   "user-online",
-  (data) => {
+  ({ user }) => {
 
-    showNotice(
-      `${data.user.name} is now online`
-    );
+    const existing =
+      onlineUsers.find(
+        u => u.id === user.id
+      );
 
+    if (!existing) {
+
+      onlineUsers.push(user);
+
+    } else {
+
+      Object.assign(
+        existing,
+        user
+      );
+
+    }
+
+    renderUsers();
   }
 );
 
 
-socket.on(
-  "user-offline",
-  (data) => {
-
-    showNotice(
-      `${data.name} went offline`
-    );
-
-  }
-);
-
+/* =========================
+   USER UPDATED
+========================= */
 
 socket.on(
   "user-updated",
-  () => {
+  ({ user }) => {
 
-    // Full list comes from
-    // online-users.
+    const index =
+      onlineUsers.findIndex(
+        u => u.id === user.id
+      );
 
+    if (index !== -1) {
+
+      onlineUsers[index] =
+        user;
+    }
+
+    if (
+      selectedUser &&
+      selectedUser.id === user.id
+    ) {
+
+      selectedUser = user;
+
+      updateChatHeader();
+    }
+
+    renderUsers();
   }
 );
 
 
-/* =================================
-   PEOPLE LIST
-================================= */
+/* =========================
+   USER OFFLINE
+========================= */
 
-search.addEventListener(
-  "input",
-  renderPeople
+socket.on(
+  "user-offline",
+  ({ id }) => {
+
+    onlineUsers =
+      onlineUsers.filter(
+        user => user.id !== id
+      );
+
+    if (
+      selectedUser &&
+      selectedUser.id === id
+    ) {
+
+      selectedUser = null;
+
+      openGlobalChat();
+    }
+
+    renderUsers();
+  }
 );
 
 
-function renderPeople() {
+/* =========================
+   RENDER USERS
+========================= */
 
-  peopleList.innerHTML =
-    "";
+function renderUsers() {
 
   const query =
-    search.value
+    searchInput.value
       .trim()
       .toLowerCase();
 
+  usersList.innerHTML = "";
+
   const filtered =
     onlineUsers.filter(
-      (user) =>
-        user.name
-          .toLowerCase()
-          .includes(query)
+      user => {
+
+        if (
+          currentUser &&
+          user.id === currentUser.id
+        ) {
+          return false;
+        }
+
+        return (
+          user.name
+            .toLowerCase()
+            .includes(query)
+        );
+      }
     );
 
-  onlineCount.textContent =
-    `${onlineUsers.length} online`;
+  if (!filtered.length) {
+
+    const empty =
+      document.createElement("div");
+
+    empty.style.padding =
+      "25px";
+
+    empty.style.color =
+      "#74827f";
+
+    empty.style.textAlign =
+      "center";
+
+    empty.textContent =
+      "No other people online";
+
+    usersList.appendChild(
+      empty
+    );
+
+    return;
+  }
 
   filtered.forEach(
-    (user) => {
+    user => {
 
-      const row =
+      const item =
         document.createElement(
           "div"
         );
 
-      row.className =
-        "person";
+      item.className =
+        "userItem";
 
       if (
         selectedUser &&
         selectedUser.id === user.id
       ) {
 
-        row.classList.add(
+        item.classList.add(
           "active"
         );
-
       }
 
       const avatar =
-        document.createElement(
-          "div"
+        createAvatar(
+          user,
+          true
         );
-
-      avatar.className =
-        "avatar";
-
-      avatar.textContent =
-        user.name
-          .charAt(0)
-          .toUpperCase();
-
-      const dot =
-        document.createElement(
-          "div"
-        );
-
-      dot.className =
-        "online-dot";
-
-      avatar.appendChild(
-        dot
-      );
-
 
       const info =
         document.createElement(
@@ -1399,8 +1705,7 @@ function renderPeople() {
         );
 
       info.className =
-        "person-info";
-
+        "userInfo";
 
       const name =
         document.createElement(
@@ -1408,13 +1713,10 @@ function renderPeople() {
         );
 
       name.className =
-        "person-name";
+        "userName";
 
       name.textContent =
-        user.id === myId
-          ? `${user.name} (You)`
-          : user.name;
-
+        user.name;
 
       const status =
         document.createElement(
@@ -1422,122 +1724,224 @@ function renderPeople() {
         );
 
       status.className =
-        "person-status";
+        "userStatus";
 
       status.textContent =
+        user.status ||
         "Online";
 
+      info.appendChild(name);
+      info.appendChild(status);
 
-      info.appendChild(
-        name
-      );
+      item.appendChild(avatar);
+      item.appendChild(info);
 
-      info.appendChild(
-        status
-      );
-
-      row.appendChild(
-        avatar
-      );
-
-      row.appendChild(
-        info
-      );
-
-      row.onclick =
+      item.addEventListener(
+        "click",
         () => {
 
-          if (
-            user.id === myId
-          ) {
-
-            return;
-
-          }
-
-          openPrivateChat(
-            user
-          );
-
-        };
-
-
-      peopleList.appendChild(
-        row
+          selectUser(user);
+        }
       );
 
-    });
-
+      usersList.appendChild(
+        item
+      );
+    }
+  );
 }
 
 
-/* =================================
+/* =========================
+   AVATAR
+========================= */
+
+function createAvatar(
+  user,
+  online = false
+) {
+
+  const avatar =
+    document.createElement(
+      "div"
+    );
+
+  avatar.className =
+    "avatar";
+
+  if (user.avatar) {
+
+    const img =
+      document.createElement(
+        "img"
+      );
+
+    img.src =
+      user.avatar;
+
+    img.alt =
+      user.name;
+
+    avatar.appendChild(
+      img
+    );
+
+  } else {
+
+    avatar.textContent =
+      (user.name || "Z")
+        .charAt(0)
+        .toUpperCase();
+  }
+
+  if (online) {
+
+    const dot =
+      document.createElement(
+        "span"
+      );
+
+    dot.className =
+      "onlineDot";
+
+    avatar.appendChild(dot);
+  }
+
+  return avatar;
+}
+
+
+/* =========================
+   SELECT USER
+========================= */
+
+function selectUser(user) {
+
+  selectedUser = user;
+
+  globalChat = false;
+
+  updateChatHeader();
+
+  clearMessages();
+
+  renderUsers();
+
+  messageInput.placeholder =
+    `Message ${user.name}...`;
+
+  messageInput.focus();
+}
+
+
+/* =========================
    GLOBAL CHAT
-================================= */
+========================= */
 
 function openGlobalChat() {
 
-  selectedUser =
-    null;
+  globalChat = true;
 
-  globalChat =
-    true;
+  selectedUser = null;
 
-  chatName.textContent =
+  chatUserName.textContent =
     "ZIQVONA Global Chat";
 
-  chatStatus.textContent =
-    "Everyone";
+  chatUserStatus.textContent =
+    `${onlineUsers.length} people online`;
 
-  chatAvatar.textContent =
-    "Z";
+  chatAvatar.innerHTML =
+    "Z<span class='onlineDot'></span>";
+
+  callButtons.style.display =
+    "none";
 
   clearMessages();
 
-  renderPeople();
+  messageInput.placeholder =
+    "Message everyone...";
 
+  renderUsers();
 }
 
 
-/* =================================
-   PRIVATE CHAT
-================================= */
+/* =========================
+   HEADER
+========================= */
 
-function openPrivateChat(
-  user
-) {
+function updateChatHeader() {
 
-  selectedUser =
-    user;
+  if (!selectedUser) {
 
-  globalChat =
-    false;
+    openGlobalChat();
 
-  chatName.textContent =
-    user.name;
+    return;
+  }
 
-  chatStatus.textContent =
+  chatUserName.textContent =
+    selectedUser.name;
+
+  chatUserStatus.textContent =
+    selectedUser.status ||
     "Online";
 
-  chatAvatar.textContent =
-    user.name
-      .charAt(0)
-      .toUpperCase();
+  chatAvatar.innerHTML = "";
 
-  clearMessages();
+  if (selectedUser.avatar) {
 
-  renderPeople();
+    const img =
+      document.createElement(
+        "img"
+      );
 
-  messageInput.focus();
+    img.src =
+      selectedUser.avatar;
 
+    img.alt =
+      selectedUser.name;
+
+    chatAvatar.appendChild(
+      img
+    );
+
+  } else {
+
+    chatAvatar.textContent =
+      selectedUser.name
+        .charAt(0)
+        .toUpperCase();
+  }
+
+  const dot =
+    document.createElement(
+      "span"
+    );
+
+  dot.className =
+    "onlineDot";
+
+  chatAvatar.appendChild(dot);
+
+  callButtons.style.display =
+    "flex";
 }
 
 
-/* =================================
-   MESSAGES
-================================= */
+/* =========================
+   CLEAR MESSAGES
+========================= */
 
-composer.addEventListener(
+function clearMessages() {
+
+  messages.innerHTML = "";
+}
+
+
+/* =========================
+   MESSAGE FORM
+========================= */
+
+messageForm.addEventListener(
   "submit",
   (event) => {
 
@@ -1548,7 +1952,6 @@ composer.addEventListener(
 
     if (!text) return;
 
-
     if (globalChat) {
 
       socket.emit(
@@ -1558,13 +1961,7 @@ composer.addEventListener(
         }
       );
 
-    } else {
-
-      if (!selectedUser) {
-
-        return;
-
-      }
+    } else if (selectedUser) {
 
       socket.emit(
         "private-message",
@@ -1575,17 +1972,26 @@ composer.addEventListener(
           text
         }
       );
-
     }
 
-    messageInput.value =
-      "";
+    messageInput.value = "";
 
+    socket.emit(
+      "private-stop-typing",
+      {
+        targetId:
+          selectedUser
+            ? selectedUser.id
+            : ""
+      }
+    );
   }
 );
 
 
-/* GLOBAL MESSAGE */
+/* =========================
+   GLOBAL MESSAGE
+========================= */
 
 socket.on(
   "global-message",
@@ -1594,75 +2000,92 @@ socket.on(
     if (!globalChat) return;
 
     addMessage(
-      message
+      message,
+      message.senderId ===
+      socket.id
     );
-
   }
 );
 
 
-/* PRIVATE MESSAGE */
+/* =========================
+   PRIVATE MESSAGE
+========================= */
 
 socket.on(
   "private-message",
   (message) => {
 
-    if (
-      selectedUser &&
-      (
-        message.senderId ===
-        selectedUser.id
+    const isMine =
+      message.senderId ===
+      socket.id;
 
-        ||
+    if (isMine) {
 
-        message.senderId ===
-        myId
-      )
-    ) {
+      if (
+        !selectedUser ||
+        selectedUser.id !==
+        message.targetId
+      ) {
+        return;
+      }
 
-      addMessage(
-        message
-      );
+    } else {
 
+      if (
+        !selectedUser ||
+        selectedUser.id !==
+        message.senderId
+      ) {
+
+        const sender =
+          onlineUsers.find(
+            u =>
+              u.id ===
+              message.senderId
+          );
+
+        if (sender) {
+
+          selectUser(sender);
+
+        } else {
+
+          return;
+        }
+      }
     }
 
+    addMessage(
+      message,
+      isMine
+    );
   }
 );
 
 
+/* =========================
+   ADD MESSAGE
+========================= */
+
 function addMessage(
-  message
+  message,
+  mine
 ) {
 
-  const empty =
-    messages.querySelector(
-      ".empty"
-    );
-
-  if (empty) {
-    empty.remove();
-  }
-
-
-  const wrapper =
+  const row =
     document.createElement(
       "div"
     );
 
-  wrapper.className =
-    "message";
+  row.className =
+    "messageRow";
 
-  if (
-    message.senderId ===
-    myId
-  ) {
-
-    wrapper.classList.add(
+  if (mine) {
+    row.classList.add(
       "mine"
     );
-
   }
-
 
   const bubble =
     document.createElement(
@@ -1670,23 +2093,25 @@ function addMessage(
     );
 
   bubble.className =
-    "bubble";
+    "messageBubble";
 
+  if (!mine) {
 
-  const sender =
-    document.createElement(
-      "div"
+    const sender =
+      document.createElement(
+        "div"
+      );
+
+    sender.className =
+      "messageSender";
+
+    sender.textContent =
+      message.senderName;
+
+    bubble.appendChild(
+      sender
     );
-
-  sender.className =
-    "sender";
-
-  sender.textContent =
-    message.senderId ===
-    myId
-      ? "You"
-      : message.senderName;
-
+  }
 
   const text =
     document.createElement(
@@ -1696,6 +2121,7 @@ function addMessage(
   text.textContent =
     message.text;
 
+  bubble.appendChild(text);
 
   const time =
     document.createElement(
@@ -1703,94 +2129,166 @@ function addMessage(
     );
 
   time.className =
-    "time";
+    "messageTime";
 
   time.textContent =
-    new Date(
-      message.time
-    ).toLocaleTimeString(
-      [],
-      {
-        hour:
-          "2-digit",
+    formatTime(message.time);
 
-        minute:
-          "2-digit"
-      }
-    );
+  bubble.appendChild(time);
 
-
-  bubble.appendChild(
-    sender
-  );
-
-  bubble.appendChild(
-    text
-  );
-
-  bubble.appendChild(
-    time
-  );
-
-  wrapper.appendChild(
+  row.appendChild(
     bubble
   );
 
   messages.appendChild(
-    wrapper
+    row
   );
 
   messages.scrollTop =
     messages.scrollHeight;
-
 }
 
 
-function clearMessages() {
+/* =========================
+   TIME
+========================= */
 
-  messages.innerHTML = `
-    <div class="empty">
-      Start a conversation.
-    </div>
-  `;
+function formatTime(time) {
 
+  try {
+
+    return new Date(time)
+      .toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
+
+  } catch {
+
+    return "";
+  }
 }
 
 
-/* =================================
-   NOTICE
-================================= */
+/* =========================
+   SEARCH
+========================= */
 
-function showNotice(
-  text
-) {
+searchInput.addEventListener(
+  "input",
+  renderUsers
+);
 
-  console.log(
-    "ZIQVONA:",
-    text
+
+/* =========================
+   EMOJI
+========================= */
+
+document
+  .getElementById(
+    "emojiButton"
+  )
+  .addEventListener(
+    "click",
+    () => {
+
+      messageInput.value +=
+        " 😊";
+
+      messageInput.focus();
+    }
   );
 
-}
 
+/* =========================
+   TYPING
+========================= */
 
-/* =================================
-   EMOJI
-================================= */
-
-emoji.onclick =
+messageInput.addEventListener(
+  "input",
   () => {
 
-    messageInput.value +=
-      " 😊";
+    if (
+      globalChat ||
+      !selectedUser
+    ) {
+      return;
+    }
 
-    messageInput.focus();
+    socket.emit(
+      "private-typing",
+      {
+        targetId:
+          selectedUser.id
+      }
+    );
 
-  };
+    clearTimeout(
+      typingTimer
+    );
+
+    typingTimer =
+      setTimeout(
+        () => {
+
+          socket.emit(
+            "private-stop-typing",
+            {
+              targetId:
+                selectedUser.id
+            }
+          );
+
+        },
+        1000
+      );
+  }
+);
 
 
-/* =================================
-   WEBRTC
-================================= */
+/* =========================
+   TYPING RECEIVED
+========================= */
+
+socket.on(
+  "private-typing",
+  ({ userId, name }) => {
+
+    if (
+      selectedUser &&
+      selectedUser.id ===
+      userId
+    ) {
+
+      typing.textContent =
+        `${name} is typing...`;
+    }
+  }
+);
+
+socket.on(
+  "private-stop-typing",
+  ({ userId }) => {
+
+    if (
+      selectedUser &&
+      selectedUser.id ===
+      userId
+    ) {
+
+      typing.textContent =
+        "";
+    }
+  }
+);
+
+
+/* =========================
+   WEBRTC CONFIG
+========================= */
 
 const rtcConfig = {
 
@@ -1811,172 +2309,20 @@ const rtcConfig = {
 };
 
 
-async function getMedia(
-  video
-) {
+/* =========================
+   CREATE PEER
+========================= */
 
-  try {
-
-    localStream =
-      await navigator
-        .mediaDevices
-        .getUserMedia(
-          {
-            audio: true,
-            video
-          }
-        );
-
-    showLocalVideo();
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      error
-    );
-
-    alert(
-      "Please allow microphone/camera access."
-    );
-
-    return false;
-
-  }
-
-}
-
-
-function showLocalVideo() {
-
-  let box =
-    document.getElementById(
-      "localVideo"
-    );
-
-  if (!box) {
-
-    box =
-      document.createElement(
-        "div"
-      );
-
-    box.className =
-      "video";
-
-    box.id =
-      "localVideo";
-
-    videos.appendChild(
-      box
-    );
-
-  }
-
-
-  let video =
-    box.querySelector(
-      "video"
-    );
-
-  if (!video) {
-
-    video =
-      document.createElement(
-        "video"
-      );
-
-    video.autoplay =
-      true;
-
-    video.muted =
-      true;
-
-    video.playsInline =
-      true;
-
-    box.appendChild(
-      video
-    );
-
-  }
-
-  video.srcObject =
-    localStream;
-
-
-  let label =
-    box.querySelector(
-      ".video-label"
-    );
-
-  if (!label) {
-
-    label =
-      document.createElement(
-        "div"
-      );
-
-    label.className =
-      "video-label";
-
-    box.appendChild(
-      label
-    );
-
-  }
-
-  label.textContent =
-    myName;
-
-}
-
-
-/* =================================
-   PEER
-================================= */
-
-function createPeer(
+function createPeerConnection(
   targetId
 ) {
 
-  if (
-    peers.has(targetId)
-  ) {
-
-    return peers.get(
-      targetId
-    );
-
-  }
-
-
-  const pc =
+  peerConnection =
     new RTCPeerConnection(
       rtcConfig
     );
 
-
-  if (localStream) {
-
-    localStream
-      .getTracks()
-      .forEach(
-        (track) => {
-
-          pc.addTrack(
-            track,
-            localStream
-          );
-
-        }
-      );
-
-  }
-
-
-  pc.onicecandidate =
+  peerConnection.onicecandidate =
     (event) => {
 
       if (
@@ -1991,510 +2337,629 @@ function createPeer(
               event.candidate
           }
         );
-
       }
-
     };
 
-
-  pc.ontrack =
+  peerConnection.ontrack =
     (event) => {
 
-      showRemoteVideo(
-        targetId,
+      if (
+        event.streams &&
         event.streams[0]
-      );
+      ) {
 
+        remoteVideo.srcObject =
+          event.streams[0];
+      }
     };
 
+  peerConnection.onconnectionstatechange =
+    () => {
 
-  peers.set(
-    targetId,
-    pc
-  );
+      if (
+        peerConnection &&
+        (
+          peerConnection.connectionState ===
+            "failed" ||
 
+          peerConnection.connectionState ===
+            "disconnected"
+        )
+      ) {
 
-  return pc;
+        endCall(false);
+      }
+    };
 
+  return peerConnection;
 }
 
 
-/* =================================
-   REMOTE VIDEO
-================================= */
+/* =========================
+   GET MEDIA
+========================= */
 
-function showRemoteVideo(
-  id,
-  stream
+async function getMedia(
+  type
 ) {
 
-  let box =
-    document.getElementById(
-      "remote-" + id
+  const constraints = {
+
+    audio: true,
+
+    video:
+      type === "video"
+  };
+
+  return navigator.mediaDevices
+    .getUserMedia(
+      constraints
     );
-
-  if (!box) {
-
-    box =
-      document.createElement(
-        "div"
-      );
-
-    box.className =
-      "video";
-
-    box.id =
-      "remote-" + id;
-
-    videos.appendChild(
-      box
-    );
-
-  }
-
-
-  let video =
-    box.querySelector(
-      "video"
-    );
-
-  if (!video) {
-
-    video =
-      document.createElement(
-        "video"
-      );
-
-    video.autoplay =
-      true;
-
-    video.playsInline =
-      true;
-
-    box.appendChild(
-      video
-    );
-
-  }
-
-  video.srcObject =
-    stream;
-
-
-  let label =
-    box.querySelector(
-      ".video-label"
-    );
-
-  if (!label) {
-
-    label =
-      document.createElement(
-        "div"
-      );
-
-    label.className =
-      "video-label";
-
-    box.appendChild(
-      label
-    );
-
-  }
-
-
-  const user =
-    onlineUsers.find(
-      (u) =>
-        u.id === id
-    );
-
-  label.textContent =
-    user
-      ? user.name
-      : "ZIQVONA User";
-
 }
 
 
-/* =================================
-   CALL
-================================= */
-
-voiceBtn.onclick =
-  () => {
-
-    if (!selectedUser) {
-
-      alert(
-        "Select someone online first."
-      );
-
-      return;
-
-    }
-
-    startCall(
-      selectedUser.id,
-      false
-    );
-
-  };
-
-
-videoBtn.onclick =
-  () => {
-
-    if (!selectedUser) {
-
-      alert(
-        "Select someone online first."
-      );
-
-      return;
-
-    }
-
-    startCall(
-      selectedUser.id,
-      true
-    );
-
-  };
-
+/* =========================
+   START CALL
+========================= */
 
 async function startCall(
-  targetId,
-  video
+  type
 ) {
 
-  const ok =
-    await getMedia(
-      video
+  if (!selectedUser) {
+
+    alert(
+      "Select someone online first."
     );
 
-  if (!ok) return;
+    return;
+  }
 
-  callModal.classList.remove(
-    "hidden"
-  );
+  currentCallTarget =
+    selectedUser.id;
 
+  currentCallType =
+    type;
 
-  const pc =
-    createPeer(
-      targetId
+  try {
+
+    localStream =
+      await getMedia(type);
+
+    localVideo.srcObject =
+      localStream;
+
+    createPeerConnection(
+      currentCallTarget
     );
 
+    localStream
+      .getTracks()
+      .forEach(
+        track => {
 
-  const offer =
-    await pc.createOffer();
+          peerConnection.addTrack(
+            track,
+            localStream
+          );
+        }
+      );
 
-  await pc.setLocalDescription(
-    offer
-  );
+    const offer =
+      await peerConnection
+        .createOffer();
 
+    await peerConnection
+      .setLocalDescription(
+        offer
+      );
 
-  socket.emit(
-    "call-user",
-    {
-      targetId,
-      callType:
-        video
-          ? "video"
-          : "voice",
+    socket.emit(
+      "call-user",
+      {
+        targetId:
+          currentCallTarget,
 
-      offer
-    }
-  );
+        callType:
+          currentCallType,
 
+        offer
+      }
+    );
+
+    showCallOverlay(
+      selectedUser.name,
+      type
+    );
+
+  } catch (error) {
+
+    console.error(
+      "CALL ERROR:",
+      error
+    );
+
+    alert(
+      "Camera/microphone access was not allowed."
+    );
+
+    cleanupCall();
+  }
 }
 
 
-/* =================================
-   INCOMING
-================================= */
+/* =========================
+   INCOMING CALL
+========================= */
 
 socket.on(
   "incoming-call",
-  async (data) => {
+  (data) => {
 
-    const accept =
-      confirm(
-        `${data.fromName} is calling you. Accept?`
-      );
+    incomingCallData =
+      data;
 
-    if (!accept) return;
+    incomingName.textContent =
+      data.fromName;
 
+    incomingType.textContent =
+      data.callType === "voice"
+        ? "Incoming voice call"
+        : "Incoming video call";
 
-    const video =
-      data.callType ===
-      "video";
+    incomingAvatar.textContent =
+      (data.fromName || "Z")
+        .charAt(0)
+        .toUpperCase();
 
-
-    const ok =
-      await getMedia(
-        video
-      );
-
-    if (!ok) return;
-
-
-    callModal.classList.remove(
-      "hidden"
-    );
-
-
-    const pc =
-      createPeer(
-        data.from
-      );
-
-
-    await pc.setRemoteDescription(
-      new RTCSessionDescription(
-        data.offer
-      )
-    );
-
-
-    const answer =
-      await pc.createAnswer();
-
-
-    await pc.setLocalDescription(
-      answer
-    );
-
-
-    socket.emit(
-      "accept-call",
-      {
-        targetId:
-          data.from,
-
-        answer
-      }
-    );
-
+    incomingCall.style.display =
+      "flex";
   }
 );
 
 
-/* =================================
-   ACCEPT
-================================= */
+/* =========================
+   ACCEPT CALL
+========================= */
 
-socket.on(
-  "call-accepted",
-  async (data) => {
+acceptButton.addEventListener(
+  "click",
+  async () => {
 
-    const pc =
-      peers.get(
-        data.from
-      );
+    if (!incomingCallData) {
+      return;
+    }
 
-    if (!pc) return;
+    const data =
+      incomingCallData;
 
-    await pc.setRemoteDescription(
-      new RTCSessionDescription(
-        data.answer
-      )
-    );
+    incomingCall.style.display =
+      "none";
 
-  }
-);
+    currentCallTarget =
+      data.from;
 
+    currentCallType =
+      data.callType;
 
-/* =================================
-   ICE
-================================= */
-
-socket.on(
-  "ice-candidate",
-  async (data) => {
-
-    const pc =
-      peers.get(
-        data.from
-      );
-
-    if (!pc) return;
+    pendingOffer =
+      data.offer;
 
     try {
 
-      await pc.addIceCandidate(
-        new RTCIceCandidate(
-          data.candidate
-        )
+      localStream =
+        await getMedia(
+          currentCallType
+        );
+
+      localVideo.srcObject =
+        localStream;
+
+      createPeerConnection(
+        currentCallTarget
       );
-
-    } catch (
-      error
-    ) {
-
-      console.error(
-        error
-      );
-
-    }
-
-  }
-);
-
-
-/* =================================
-   END CALL
-================================= */
-
-endCall.onclick =
-  () => {
-
-    peers.forEach(
-      (pc) =>
-        pc.close()
-    );
-
-    peers.clear();
-
-
-    if (localStream) {
 
       localStream
         .getTracks()
         .forEach(
-          (track) =>
-            track.stop()
+          track => {
+
+            peerConnection.addTrack(
+              track,
+              localStream
+            );
+          }
         );
 
-      localStream =
-        null;
+      await peerConnection
+        .setRemoteDescription(
+          new RTCSessionDescription(
+            pendingOffer
+          )
+        );
 
-    }
+      const answer =
+        await peerConnection
+          .createAnswer();
 
-
-    videos.innerHTML =
-      "";
-
-    callModal.classList.add(
-      "hidden"
-    );
-
-
-    if (
-      selectedUser
-    ) {
+      await peerConnection
+        .setLocalDescription(
+          answer
+        );
 
       socket.emit(
-        "end-call",
+        "accept-call",
         {
           targetId:
-            selectedUser.id
+            currentCallTarget,
+
+          answer
         }
       );
 
+      showCallOverlay(
+        data.fromName,
+        currentCallType
+      );
+
+      incomingCallData =
+        null;
+
+    } catch (error) {
+
+      console.error(
+        "ACCEPT CALL ERROR:",
+        error
+      );
+
+      alert(
+        "Could not accept the call."
+      );
+
+      cleanupCall();
+    }
+  }
+);
+
+
+/* =========================
+   REJECT CALL
+========================= */
+
+rejectButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      incomingCallData
+    ) {
+
+      socket.emit(
+        "reject-call",
+        {
+          targetId:
+            incomingCallData.from
+        }
+      );
     }
 
-  };
+    incomingCallData =
+      null;
 
+    incomingCall.style.display =
+      "none";
+  }
+);
+
+
+/* =========================
+   CALL ACCEPTED
+========================= */
+
+socket.on(
+  "call-accepted",
+  async ({
+    answer
+  }) => {
+
+    if (
+      !peerConnection ||
+      !answer
+    ) {
+      return;
+    }
+
+    try {
+
+      await peerConnection
+        .setRemoteDescription(
+          new RTCSessionDescription(
+            answer
+          )
+        );
+
+    } catch (error) {
+
+      console.error(
+        "ANSWER ERROR:",
+        error
+      );
+    }
+  }
+);
+
+
+/* =========================
+   ICE
+========================= */
+
+socket.on(
+  "ice-candidate",
+  async ({
+    candidate
+  }) => {
+
+    if (
+      !peerConnection ||
+      !candidate
+    ) {
+      return;
+    }
+
+    try {
+
+      await peerConnection
+        .addIceCandidate(
+          new RTCIceCandidate(
+            candidate
+          )
+        );
+
+    } catch (error) {
+
+      console.error(
+        "ICE ERROR:",
+        error
+      );
+    }
+  }
+);
+
+
+/* =========================
+   CALL REJECTED
+========================= */
+
+socket.on(
+  "call-rejected",
+  () => {
+
+    alert(
+      "The call was rejected."
+    );
+
+    cleanupCall();
+  }
+);
+
+
+/* =========================
+   CALL ENDED
+========================= */
 
 socket.on(
   "call-ended",
   () => {
 
-    endCall.click();
-
+    cleanupCall();
   }
 );
 
 
-/* =================================
-   MUTE
-================================= */
+/* =========================
+   CALL ERROR
+========================= */
 
-mute.onclick =
+socket.on(
+  "call-error",
+  ({ message }) => {
+
+    alert(
+      message ||
+      "Call could not start."
+    );
+
+    cleanupCall();
+  }
+);
+
+
+/* =========================
+   SHOW CALL
+========================= */
+
+function showCallOverlay(
+  name,
+  type
+) {
+
+  callName.textContent =
+    name;
+
+  callType.textContent =
+    type === "voice"
+      ? "Voice call"
+      : "Video call";
+
+  callOverlay.style.display =
+    "block";
+
+  if (type === "voice") {
+
+    localVideo.style.display =
+      "none";
+
+  } else {
+
+    localVideo.style.display =
+      "block";
+  }
+}
+
+
+/* =========================
+   END CALL
+========================= */
+
+endCallButton.addEventListener(
+  "click",
   () => {
 
-    if (!localStream)
-      return;
+    endCall(true);
+  }
+);
 
-    const tracks =
-      localStream
-        .getAudioTracks();
+function endCall(
+  notify = true
+) {
 
-    tracks.forEach(
-      (track) => {
+  if (
+    notify &&
+    currentCallTarget
+  ) {
 
-        track.enabled =
-          !track.enabled;
-
+    socket.emit(
+      "end-call",
+      {
+        targetId:
+          currentCallTarget
       }
     );
+  }
 
-  };
-
-
-/* =================================
-   CAMERA
-================================= */
-
-camera.onclick =
-  () => {
-
-    if (!localStream)
-      return;
-
-    const tracks =
-      localStream
-        .getVideoTracks();
-
-    tracks.forEach(
-      (track) => {
-
-        track.enabled =
-          !track.enabled;
-
-      }
-    );
-
-  };
+  cleanupCall();
+}
 
 
-/* =================================
-   LOGOUT
-================================= */
+/* =========================
+   CLEANUP CALL
+========================= */
 
-logout.onclick =
-  () => {
+function cleanupCall() {
 
-    localStorage.removeItem(
-      "ziqvonaName"
-    );
+  if (peerConnection) {
 
-    location.reload();
+    peerConnection.close();
 
-  };
+    peerConnection =
+      null;
+  }
 
+  if (localStream) {
 
-/* =================================
-   RESTORE NAME
-================================= */
-
-window.addEventListener(
-  "load",
-  () => {
-
-    const saved =
-      localStorage.getItem(
-        "ziqvonaName"
+    localStream
+      .getTracks()
+      .forEach(
+        track => track.stop()
       );
 
-    if (saved) {
+    localStream =
+      null;
+  }
 
-      nameInput.value =
-        saved;
+  localVideo.srcObject =
+    null;
 
-    }
+  remoteVideo.srcObject =
+    null;
 
+  callOverlay.style.display =
+    "none";
+
+  currentCallTarget =
+    null;
+
+  pendingOffer =
+    null;
+
+  incomingCallData =
+    null;
+
+  incomingCall.style.display =
+    "none";
+}
+
+
+/* =========================
+   CALL BUTTONS
+========================= */
+
+voiceCallButton.addEventListener(
+  "click",
+  () => {
+
+    startCall("voice");
+  }
+);
+
+videoCallButton.addEventListener(
+  "click",
+  () => {
+
+    startCall("video");
+  }
+);
+
+
+/* =========================
+   SOCKET STATUS
+========================= */
+
+socket.on(
+  "connect",
+  () => {
+
+    console.log(
+      "ZIQVONA Socket.IO connected:",
+      socket.id
+    );
+  }
+);
+
+socket.on(
+  "disconnect",
+  () => {
+
+    console.log(
+      "ZIQVONA Socket.IO disconnected"
+    );
+  }
+);
+
+socket.on(
+  "connect_error",
+  (error) => {
+
+    console.error(
+      "Socket.IO connection error:",
+      error
+    );
+  }
+);
+
+
+/* =========================
+   MESSAGE ERROR
+========================= */
+
+socket.on(
+  "message-error",
+  ({ message }) => {
+
+    alert(
+      message ||
+      "Message could not be sent."
+    );
   }
 );
 
