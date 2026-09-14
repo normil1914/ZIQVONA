@@ -4,324 +4,241 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#10bfa3">
-<title>ZIQVONA — Room</title>
+<title>ZIQVONA</title>
 <style>
-:root{
-  --turq:#10bfa3;--turq2:#0aa98f;--bg:#eef5f4;--panel:#fff;--soft:#f5f9f8;
-  --text:#17312d;--muted:#70817e;--line:#e2ece9;--mine:#d9fdd3;--white:#fff;
-  --shadow:0 10px 35px rgba(15,75,67,.10)
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
-button,input,textarea{font:inherit}
-button{border:0;cursor:pointer}
-.app{height:100vh;display:grid;grid-template-columns:360px 1fr;background:var(--panel)}
-.sidebar{border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fff;min-width:0}
-.topbar{height:72px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:#fff}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.5px;color:var(--turq2)}
-.logo{width:40px;height:40px;border-radius:14px;background:linear-gradient(145deg,#19d6b6,#079f87);color:white;display:grid;place-items:center;font-weight:900;box-shadow:0 6px 18px rgba(16,191,163,.25)}
-.iconbtn{width:40px;height:40px;border-radius:12px;background:transparent;color:#55716c;font-size:20px}
-.iconbtn:hover{background:var(--soft);color:var(--turq2)}
-.meCard{margin:0 14px 12px;padding:12px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#f7fffd,#effaf7);display:flex;align-items:center;gap:10px}
-.avatar{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#dff8f2;color:#087e6d;font-weight:800;overflow:hidden;flex:none}
-.avatar.big{width:52px;height:52px}.avatar img{width:100%;height:100%;object-fit:cover}
-.meInfo{min-width:0;flex:1}.name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.search{margin:0 14px 10px;display:flex;align-items:center;gap:8px;background:#f1f6f5;border-radius:14px;padding:0 12px}
-.search input{width:100%;height:44px;border:0;outline:0;background:transparent;color:var(--text)}
-.filters{display:flex;gap:7px;padding:0 14px 10px;overflow:auto}.chip{padding:7px 12px;border-radius:20px;background:#f0f6f5;color:#55716c;font-size:12px;font-weight:700;white-space:nowrap}.chip.active{background:#d8f8f1;color:#078d79}
-.chatList{overflow:auto;flex:1}.chatItem{display:flex;gap:11px;padding:13px 15px;align-items:center;border-bottom:1px solid #f0f4f3;cursor:pointer}.chatItem:hover{background:#f7fbfa}.chatItem.active{background:#e9f8f5}.chatText{min-width:0;flex:1}.row{display:flex;justify-content:space-between;gap:8px}.preview{font-size:13px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time{font-size:11px;color:#8b9b98}.badge{min-width:19px;height:19px;border-radius:10px;background:var(--turq);color:#fff;font-size:10px;display:grid;place-items:center;margin-top:5px}
-.newChat{position:absolute;left:300px;bottom:24px;width:52px;height:52px;border-radius:17px;background:var(--turq);color:#fff;font-size:25px;box-shadow:0 12px 25px rgba(16,191,163,.30)}
-.main{min-width:0;display:flex;flex-direction:column;background:#f5faf9}
-.chatHead{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:10px 18px;gap:12px}
-.chatHeadInfo{min-width:0;flex:1}.chatHeadInfo .status{color:#0a9b84}
-.chatActions{display:flex;gap:4px}
-.messages{flex:1;overflow:auto;padding:28px 5%;background-color:#edf5f3;background-image:radial-gradient(rgba(16,191,163,.07) 1px,transparent 1px);background-size:18px 18px}
-.day{text-align:center;margin:4px auto 20px;background:#fff;border-radius:12px;padding:6px 11px;width:max-content;font-size:11px;color:#78908b;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.msg{display:flex;margin:7px 0}.msg.mine{justify-content:flex-end}.bubble{max-width:min(620px,78%);padding:9px 12px 7px;border-radius:15px 15px 15px 5px;background:#fff;box-shadow:0 2px 7px rgba(20,70,65,.08);font-size:14px;line-height:1.4}.mine .bubble{background:var(--mine);border-radius:15px 15px 5px 15px}.meta{font-size:10px;color:#7c918d;text-align:right;margin-top:4px}.ticks{color:#078f7b;font-weight:800;margin-left:3px}
-.composer{min-height:70px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:10px 14px;position:relative}
-.composer textarea{flex:1;resize:none;min-height:46px;max-height:120px;border:0;outline:0;background:#f1f6f5;border-radius:15px;padding:13px 14px;color:var(--text)}
-.send{width:48px;height:48px;border-radius:15px;background:var(--turq);color:#fff;font-size:19px}
-.emojiPanel{position:absolute;bottom:70px;left:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;width:300px;display:none;box-shadow:var(--shadow);z-index:5}.emojiPanel.show{display:block}.emojiGrid{display:flex;flex-wrap:wrap;gap:7px;font-size:23px}.emojiGrid button{background:#f6faf9;border-radius:9px;padding:4px}
-.modal{position:fixed;inset:0;background:rgba(8,38,34,.52);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}.modal.show{display:flex}.card{width:min(440px,100%);background:#fff;border-radius:25px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.card h2{margin:0 0 7px}.card p{color:var(--muted);font-size:13px}.field{margin:12px 0}.field label{font-size:12px;font-weight:700;color:#52716b;display:block;margin-bottom:6px}.field input{width:100%;padding:13px;border:1px solid var(--line);border-radius:13px;outline:0}.primary{width:100%;padding:14px;border-radius:14px;background:var(--turq);color:#fff;font-weight:800;margin-top:8px}.secondary{width:100%;padding:12px;border-radius:14px;background:#eef5f3;color:#45645e;font-weight:700;margin-top:8px}
-.callScreen{position:fixed;inset:0;background:linear-gradient(145deg,#082f2a,#0b5148);color:#fff;display:none;z-index:30;align-items:center;justify-content:center;flex-direction:column;text-align:center}.callScreen.show{display:flex}.callAvatar{width:110px;height:110px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#dff8f2;color:#078d79;font-size:42px;font-weight:900;margin-bottom:18px}.hang{margin-top:35px;width:62px;height:62px;border-radius:50%;background:#e84c55;color:#fff;font-size:25px}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#183b36;color:#fff;padding:11px 15px;border-radius:12px;font-size:13px;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.empty{padding:30px;text-align:center;color:var(--muted);font-size:13px}
-@media(max-width:760px){
-  .app{grid-template-columns:1fr}.sidebar{display:none}.sidebar.mobile{display:flex;position:absolute;inset:0 0 0 0;z-index:10;width:100%}.newChat{left:auto;right:22px}.messages{padding:20px 3%}.bubble{max-width:86%}.mobileBack{display:block!important}
-}
-.mobileBack{display:none}
+:root{--turq:#10bfa3;--dark:#102a2b;--bg:#f3f8f7;--card:#fff;--muted:#6d7b7b;--line:#dce8e6;--danger:#d9534f}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--dark)}
+button,input,textarea{font:inherit}button{cursor:pointer;border:0}
+.app{height:100vh;display:flex;overflow:hidden}.side{width:330px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.brand{padding:18px 20px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:23px}.logo{width:42px;height:42px;border-radius:13px;background:var(--turq);color:white;display:grid;place-items:center;font-weight:900}
+.me{padding:12px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.avatar{width:44px;height:44px;border-radius:50%;background:#dff7f2;display:grid;place-items:center;color:#087e6d;font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
+.meinfo{flex:1}.meinfo b{display:block}.meinfo small{color:var(--muted)}
+.search{margin:12px 14px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;outline:none;width:calc(100% - 28px)}
+.tabs{display:flex;gap:7px;padding:0 14px 10px}.tabs button{background:#eef5f4;padding:8px 10px;border-radius:10px;color:#506565}.tabs button.active{background:var(--turq);color:white}
+.list{overflow:auto;flex:1}.item{padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #eef3f2}.item:hover{background:#f5faf9}.itemmain{flex:1}.itemmain b{display:block}.itemmain small{color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;background:#b9c4c3}.dot.on{background:#18b67b}
+.bottom{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px}.bottom button{flex:1;padding:10px;border-radius:10px;background:#eef5f4}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 18px;gap:12px}.topinfo{flex:1}.topinfo b{display:block}.topinfo small{color:var(--muted)}.callbtn{background:#e8f8f5;color:#087e6d;padding:10px 12px;border-radius:10px}
+.messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:8px}.empty{margin:auto;text-align:center;color:var(--muted);max-width:420px}.bubble{max-width:72%;padding:10px 13px;border-radius:15px;background:#fff;border:1px solid var(--line);align-self:flex-start;white-space:pre-wrap;word-break:break-word}.bubble.mine{align-self:flex-end;background:#dff8f3;border-color:#c4eee6}.time{font-size:10px;color:#718080;margin-top:5px;text-align:right}
+.compose{background:#fff;border-top:1px solid var(--line);padding:10px;display:flex;gap:8px}.compose textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px;outline:none;min-height:42px;max-height:120px}.compose button{background:var(--turq);color:#fff;border-radius:11px;padding:0 16px}
+.emoji{position:absolute;bottom:72px;left:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;width:240px;box-shadow:0 10px 30px #0002}.emoji span{font-size:25px;cursor:pointer;padding:5px;display:inline-block}
+.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.box{background:#fff;border-radius:18px;width:min(430px,100%);padding:22px}.box h2{margin-top:0}.box input,.box textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:6px 0 10px;outline:none}.actions{display:flex;gap:8px;justify-content:flex-end}.primary{background:var(--turq);color:#fff;padding:10px 15px;border-radius:10px}.secondary{background:#edf3f2;padding:10px 15px;border-radius:10px}
+.statusbar{font-size:12px;padding:5px 14px;background:#102a2b;color:#fff;text-align:center}.statusbar.ok{background:#087e6d}.statusbar.bad{background:#b84b47}
+.call{position:fixed;inset:0;background:#102a2b;color:#fff;display:none;z-index:30;flex-direction:column}.call.show{display:flex}.videos{flex:1;display:grid;place-items:center;padding:20px}.remote{width:min(850px,90vw);height:min(65vh,600px);background:#1d4546;border-radius:20px;display:grid;place-items:center;position:relative;overflow:hidden}.remote video{width:100%;height:100%;object-fit:cover}.local{position:absolute;right:18px;bottom:18px;width:180px;height:130px;background:#000;border-radius:12px;overflow:hidden}.local video{width:100%;height:100%;object-fit:cover}.callcontrols{padding:20px;display:flex;justify-content:center;gap:10px}.hang{background:#d9534f;color:#fff;padding:13px 20px;border-radius:25px}.incoming{position:fixed;inset:0;background:#0008;z-index:40;display:none;align-items:center;justify-content:center}.incoming.show{display:flex}.incoming .box{text-align:center}
+@media(max-width:700px){.side{width:90px}.side .brand span,.meinfo,.search,.tabs,.bottom{display:none}.me{justify-content:center}.item{padding:10px;justify-content:center}.itemmain{display:none}.bubble{max-width:88%}.top{padding:0 10px}}
 </style>
 </head>
 <body>
+<div id="statusbar" class="statusbar">Sèvè ZIQVONA ap konekte...</div>
 <div class="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="topbar">
-      <div class="brand"><div class="logo">Z</div><span>ZIQVONA</span></div>
-      <button class="iconbtn" id="profileBtn" title="Pwofil">⚙</button>
-    </div>
-    <div class="meCard">
-      <div class="avatar big" id="meAvatar">Z</div>
-      <div class="meInfo"><div class="name" id="meName">Vizitè</div><div class="status" id="meStatus">Konekte sou ZIQVONA</div></div>
-      <button class="iconbtn" id="editProfileBtn">✎</button>
-    </div>
-    <div class="search">⌕<input id="searchInput" placeholder="Chèche chat..."></div>
-    <div class="filters"><button class="chip active" data-filter="all">Tout</button><button class="chip" data-filter="unread">Pa li</button><button class="chip" data-filter="groups">Gwoup</button></div>
-    <div class="chatList" id="chatList"></div>
-    <button class="newChat" id="newChatBtn">＋</button>
-  </aside>
-
-  <main class="main">
-    <header class="chatHead">
-      <button class="iconbtn mobileBack" id="backBtn">‹</button>
-      <div class="avatar" id="chatAvatar">Z</div>
-      <div class="chatHeadInfo"><div class="name" id="chatName">ZIQVONA</div><div class="status" id="chatStatus">Byenveni</div></div>
-      <div class="chatActions">
-        <button class="iconbtn" id="voiceBtn" title="Apèl vwa">☎</button>
-        <button class="iconbtn" id="videoBtn" title="Apèl video">▣</button>
-        <button class="iconbtn" id="chatMenuBtn" title="Plis">⋮</button>
-      </div>
-    </header>
-
-    <section class="messages" id="messages"></section>
-
-    <div class="composer">
-      <button class="iconbtn" id="emojiBtn">☺</button>
-      <button class="iconbtn" id="attachBtn">＋</button>
-      <textarea id="messageInput" rows="1" placeholder="Ekri yon mesaj..."></textarea>
-      <button class="send" id="sendBtn">➤</button>
-      <div class="emojiPanel" id="emojiPanel"><div class="emojiGrid" id="emojiGrid"></div></div>
-    </div>
-  </main>
+<aside class="side">
+  <div class="brand"><div class="logo">Z</div><span>ZIQVONA</span></div>
+  <div class="me" id="meCard"></div>
+  <input id="search" class="search" placeholder="Chèche yon itilizatè...">
+  <div class="tabs"><button class="active" data-filter="all">Tout</button><button data-filter="online">Online</button></div>
+  <div id="list" class="list"></div>
+  <div class="bottom"><button id="profileBtn">Profil</button><button id="loginBtn">Konekte</button></div>
+</aside>
+<main class="main">
+  <header class="top"><div id="topInfo" class="topinfo"><b>Byenveni sou ZIQVONA</b><small>Konekte pou kòmanse</small></div><button id="voiceBtn" class="callbtn" style="display:none">📞</button><button id="videoBtn" class="callbtn" style="display:none">🎥</button></header>
+  <section id="messages" class="messages"><div class="empty"><h2>💬 ZIQVONA</h2><p>Chèche yon moun sou bò gòch la pou kòmanse yon konvèsasyon an tan reyèl.</p></div></section>
+  <div class="compose"><button id="emojiBtn" class="secondary">😊</button><textarea id="text" placeholder="Ekri mesaj ou..." disabled></textarea><button id="sendBtn" disabled>Voye</button></div>
+</main>
 </div>
+<div id="emoji" class="emoji" style="display:none"></div>
 
-<div class="modal" id="loginModal">
-  <form class="card" id="loginForm">
-    <div class="logo" style="margin-bottom:14px">Z</div>
-    <h2>Byenveni sou ZIQVONA</h2>
-    <p>Kreye non ou pou antre nan Room Page la.</p>
-    <div class="field"><label>Non ou</label><input id="loginName" required maxlength="40" placeholder="Egzanp: Carl"></div>
-    <div class="field"><label>Status</label><input id="loginStatus" maxlength="80" placeholder="Disponib"></div>
-    <div class="field"><label>Foto profil (opsyonèl)</label><input id="loginPhoto" type="file" accept="image/*"></div>
-    <button class="primary" type="submit">Konekte sou ZIQVONA</button>
-  </form>
-</div>
+<div id="loginModal" class="modal"><div class="box"><h2>Byenveni sou ZIQVONA</h2><p>Chwazi non ou pou konekte ak lòt moun.</p><input id="nameInput" maxlength="30" placeholder="Non ou"><input id="statusInput" maxlength="120" placeholder="Status (eg. Disponib)"><div class="actions"><button class="secondary" id="closeLogin">Fèmen</button><button class="primary" id="doLogin">Konekte</button></div></div></div>
 
-<div class="modal" id="profileModal">
-  <form class="card" id="profileForm">
-    <h2>Profile ZIQVONA</h2>
-    <p>Chanje non, status oswa foto profil ou.</p>
-    <div class="field"><label>Non</label><input id="profileName" maxlength="40"></div>
-    <div class="field"><label>Status</label><input id="profileStatus" maxlength="80"></div>
-    <div class="field"><label>Nouvo foto</label><input id="profilePhoto" type="file" accept="image/*"></div>
-    <button class="primary" type="submit">Sove chanjman</button>
-    <button class="secondary" type="button" id="closeProfile">Fèmen</button>
-  </form>
-</div>
+<div id="profileModal" class="modal"><div class="box"><h2>Mon profil</h2><input id="profileName" maxlength="50" placeholder="Non"><textarea id="profileStatus" maxlength="120" placeholder="Status"></textarea><div class="actions"><button class="secondary" id="closeProfile">Fèmen</button><button class="primary" id="saveProfile">Sove</button></div></div></div>
 
-<div class="modal" id="newChatModal">
-  <form class="card" id="newChatForm">
-    <h2>Nouvo chat</h2>
-    <p>Ajoute yon moun pou kreye yon nouvo Room.</p>
-    <div class="field"><label>Non moun nan</label><input id="newChatName" required maxlength="40" placeholder="Egzanp: Jean"></div>
-    <div class="field"><label>Status</label><input id="newChatStatus" maxlength="80" placeholder="Disponib"></div>
-    <button class="primary" type="submit">Kreye chat</button>
-    <button class="secondary" type="button" id="closeNewChat">Anile</button>
-  </form>
-</div>
+<div id="incoming" class="incoming"><div class="box"><h2 id="incomingTitle">Apèl ap vini</h2><p id="incomingType"></p><div class="actions" style="justify-content:center"><button class="secondary" id="rejectCall">Refize</button><button class="primary" id="acceptCall">Aksepte</button></div></div></div>
 
-<div class="callScreen" id="callScreen">
-  <div class="callAvatar" id="callAvatar">Z</div>
-  <h2 id="callName">ZIQVONA</h2>
-  <div id="callType">Apèl vwa</div>
-  <div style="opacity:.75;margin-top:8px;font-size:13px">Room pare. Koneksyon WebRTC reyèl bezwen signaling backend.</div>
-  <button class="hang" id="hangBtn">☎</button>
-</div>
-<div class="toast" id="toast"></div>
+<div id="call" class="call"><div style="padding:18px;text-align:center"><b id="callTitle">Apèl ZIQVONA</b><div id="callState">Koneksyon...</div></div><div class="videos"><div class="remote"><span id="remoteText">Ap tann videyo...</span><video id="remoteVideo" autoplay playsinline></video><div class="local"><video id="localVideo" autoplay muted playsinline></video></div></div></div><div class="callcontrols"><button id="hangup" class="hang">⛔ Fini apèl</button></div></div>
 
 <script>
 (function(){
-  "use strict";
+"use strict";
 
-  const KEY="ziqvona_room_v3";
-  const oldMe=localStorage.getItem("ziqvona_me");
-  const oldChats=localStorage.getItem("ziqvona_chats");
+const $=id=>document.getElementById(id);
+const WS_URL=(location.protocol==="https:"?"wss://":"ws://")+location.host;
+let ws=null,reconnectTimer=null,manualClose=false;
+let me=JSON.parse(localStorage.getItem("ziqvona_me")||"null");
+let active=null,profiles={},online=[],filter="all";
+let chats=JSON.parse(localStorage.getItem("ziqvona_chats")||"{}");
+let pc=null,localStream=null,callWith=null,callType=null,pendingOffer=null,iceQueue=[];
 
-  let state={me:oldMe?safeParse(oldMe,null):null,chats:oldChats?safeParse(oldChats,[]):[],active:null,filter:"all"};
+const emojis=["😀","😂","😍","🥰","😎","👍","❤️","🔥","👏","🙏","😊","😭","🤣","🎉","💯","😢","😡","🤝","👋","✨"];
 
-  function safeParse(v,fallback){try{return JSON.parse(v)}catch(e){return fallback}}
-  function save(){
-    localStorage.setItem("ziqvona_me",JSON.stringify(state.me));
-    localStorage.setItem("ziqvona_chats",JSON.stringify(state.chats));
-  }
-  function esc(v){return String(v??"").replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]})}
-  function initials(name){return (name||"Z").trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase()||"Z"}
-  function avatar(el,person){
-    el.innerHTML="";
-    if(person&&person.photo){
-      const img=document.createElement("img");img.src=person.photo;img.alt="";
-      img.onerror=function(){el.textContent=initials(person.name)};
-      el.appendChild(img);
-    }else el.textContent=initials(person&&person.name);
-  }
-  function toast(msg){
-    const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
-    clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove("show"),2200);
-  }
-  function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-  function time(){
-    return new Intl.DateTimeFormat("ht-HT",{hour:"2-digit",minute:"2-digit"}).format(new Date());
-  }
-  function ensureWelcome(){
-    if(!state.chats.length){
-      state.chats=[{id:id(),name:"ZIQVONA",status:"Byenveni sou ZIQVONA",photo:"",group:false,unread:0,messages:[
-        {id:id(),from:"them",text:"Byenveni sou ZIQVONA! 💚",time:time()},
-        {id:id(),from:"them",text:"Room Page la pare pou ou teste chat, emoji, pwofil ak apèl demo.",time:time()}
-      ]}];
-    }
-    if(!state.active) state.active=state.chats[0].id;
-  }
-  function renderMe(){
-    const me=state.me||{name:"Vizitè",status:"Konekte sou ZIQVONA"};
-    avatar(document.getElementById("meAvatar"),me);
-    document.getElementById("meName").textContent=me.name||"Vizitè";
-    document.getElementById("meStatus").textContent=me.status||"Disponib";
-  }
-  function renderList(){
-    const q=document.getElementById("searchInput").value.trim().toLowerCase();
-    const list=document.getElementById("chatList");list.innerHTML="";
-    const chats=state.chats.filter(c=>{
-      const match=(c.name+" "+(c.status||"")).toLowerCase().includes(q);
-      const filter=state.filter==="all"||(state.filter==="unread"&&c.unread>0)||(state.filter==="groups"&&c.group);
-      return match&&filter;
-    });
-    if(!chats.length){list.innerHTML='<div class="empty">Pa gen chat ki koresponn.</div>';return}
-    chats.forEach(c=>{
-      const last=c.messages[c.messages.length-1];
-      const row=document.createElement("div");row.className="chatItem"+(c.id===state.active?" active":"");
-      row.onclick=()=>openChat(c.id);
-      row.innerHTML='<div class="avatar"></div><div class="chatText"><div class="row"><div class="name">'+esc(c.name)+'</div><div class="time">'+esc(last?last.time:"")+'</div></div><div class="row"><div class="preview">'+esc(last?last.text:(c.status||"Nouvo chat"))+'</div>'+(c.unread?'<div class="badge">'+c.unread+'</div>':'')+'</div></div>';
-      avatar(row.querySelector(".avatar"),c);list.appendChild(row);
-    });
-  }
-  function openChat(cid){
-    state.active=cid;
-    const c=state.chats.find(x=>x.id===cid);if(!c)return;
-    c.unread=0;save();
-    avatar(document.getElementById("chatAvatar"),c);
-    document.getElementById("chatName").textContent=c.name;
-    document.getElementById("chatStatus").textContent=c.status||"Disponib";
-    renderList();renderMessages();
-    if(innerWidth<=760)document.getElementById("sidebar").classList.remove("mobile");
-  }
-  function renderMessages(){
-    const box=document.getElementById("messages");box.innerHTML='<div class="day">Jodi</div>';
-    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
-    c.messages.forEach(m=>{
-      const wrap=document.createElement("div");wrap.className="msg "+(m.from==="me"?"mine":"");
-      const b=document.createElement("div");b.className="bubble";
-      b.innerHTML='<div>'+esc(m.text).replace(/\n/g,"<br>")+'</div><div class="meta">'+esc(m.time)+(m.from==="me"?'<span class="ticks">✓✓</span>':'')+'</div>';
-      wrap.appendChild(b);box.appendChild(wrap);
-    });
-    box.scrollTop=box.scrollHeight;
-  }
-  function send(){
-    const input=document.getElementById("messageInput");const text=input.value.trim();
-    if(!text)return;
-    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
-    c.messages.push({id:id(),from:"me",text,time:time()});
-    save();input.value="";autoGrow();renderMessages();renderList();
-    toast("Mesaj la ajoute nan Room la");
-  }
-  function autoGrow(){const x=document.getElementById("messageInput");x.style.height="auto";x.style.height=Math.min(x.scrollHeight,120)+"px"}
-  function fileToData(file,cb){
-    if(!file){cb("");return}
-    const r=new FileReader();r.onload=()=>cb(r.result);r.readAsDataURL(file);
-  }
-  function show(el){el.classList.add("show")}
-  function hide(el){el.classList.remove("show")}
+function save(){localStorage.setItem("ziqvona_me",JSON.stringify(me));localStorage.setItem("ziqvona_chats",JSON.stringify(chats))}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmt(t){try{return new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}catch{return ""}}
+function toast(msg){$("statusbar").textContent=msg;setTimeout(()=>{if(ws&&ws.readyState===1)$("statusbar").textContent="Sèvè ZIQVONA: konekte";},2500)}
+function setStatus(ok,msg){$("statusbar").textContent=msg||"";$("statusbar").className="statusbar "+(ok?"ok":"bad")}
+function send(o){if(ws&&ws.readyState===1){ws.send(JSON.stringify(o));return true}toast("Sèvè a pa konekte.");return false}
+function ensureChat(u){if(!chats[u])chats[u]=[];return chats[u]}
+function profile(u){return profiles[u]||{username:u,displayName:u,status:"",avatar:""}}
 
-  document.getElementById("loginForm").addEventListener("submit",function(e){
-    e.preventDefault();
-    const name=document.getElementById("loginName").value.trim();
-    if(!name)return;
-    const status=document.getElementById("loginStatus").value.trim()||"Disponib";
-    const file=document.getElementById("loginPhoto").files[0];
-    fileToData(file,function(photo){
-      state.me={name,status,photo};ensureWelcome();save();hide(document.getElementById("loginModal"));
-      renderMe();openChat(state.active);toast("Ou konekte sou ZIQVONA");
-    });
-  });
+function renderMe(){
+ if(!me){$("meCard").innerHTML='<div class="avatar">Z</div><div class="meinfo"><b>Pa konekte</b><small>Klike Konekte</small></div>';return}
+ const p=profile(me.username);const av=p.avatar?'<img src="'+esc(p.avatar)+'">':esc((p.displayName||me.username)[0]||"Z");
+ $("meCard").innerHTML='<div class="avatar">'+av+'</div><div class="meinfo"><b>'+esc(p.displayName||me.username)+'</b><small>'+esc(p.status||"Disponib")+'</small></div>';
+}
+function renderList(){
+ const q=$("search").value.trim().toLowerCase();
+ let names=Object.keys(profiles).filter(u=>!me||u!==me.username);
+ names=names.filter(u=>(filter==="online"?online.includes(u):true));
+ names=names.filter(u=>!q||u.toLowerCase().includes(q)||profile(u).displayName.toLowerCase().includes(q));
+ names.sort((a,b)=>(online.includes(b)?1:0)-(online.includes(a)?1:0));
+ $("list").innerHTML=names.map(u=>{
+   const p=profile(u),av=p.avatar?'<img src="'+esc(p.avatar)+'">':esc((p.displayName||u)[0]||"Z");
+   return '<div class="item" data-user="'+esc(u)+'"><div class="avatar">'+av+'</div><div class="itemmain"><b>'+esc(p.displayName)+'</b><small>@'+esc(u)+' · '+esc(p.status||"Disponib")+'</small></div><span class="dot '+(online.includes(u)?"on":"")+'"></span></div>'
+ }).join("") || '<div style="padding:20px;color:#718080;text-align:center">Pa gen rezilta.</div>';
+ document.querySelectorAll(".item").forEach(x=>x.onclick=()=>openChat(x.dataset.user));
+}
+function renderMessages(){
+ const box=$("messages");
+ if(!active){box.innerHTML='<div class="empty"><h2>💬 ZIQVONA</h2><p>Chèche yon moun pou kòmanse.</p></div>';return}
+ const arr=ensureChat(active);
+ if(!arr.length){box.innerHTML='<div class="empty"><h3>Nouvo konvèsasyon</h3><p>Ekri premye mesaj la bay '+esc(profile(active).displayName)+'.</p></div>';return}
+ box.innerHTML=arr.map(m=>{
+   const mine=m.from===me.username;
+   return '<div class="bubble '+(mine?"mine":"")+'">'+esc(m.text||"")+'<div class="time">'+fmt(m.time)+(m.read?" ✓✓":m.delivered?" ✓":"")+'</div></div>'
+ }).join("");
+ box.scrollTop=box.scrollHeight;
+}
+function openChat(u){
+ if(!me){$("loginModal").classList.add("show");return}
+ active=u;$("topInfo").innerHTML='<b>'+esc(profile(u).displayName)+'</b><small>@'+esc(u)+' · '+(online.includes(u)?"🟢 online":"offline")+'</small>';
+ $("text").disabled=false;$("sendBtn").disabled=false;$("voiceBtn").style.display="block";$("videoBtn").style.display="block";
+ renderMessages();send({type:"history",with:u});
+}
+function addMessage(m){
+ const u=m.from===me.username?m.to:m.from;
+ const arr=ensureChat(u);
+ if(!arr.some(x=>x.id===m.id))arr.push(m);
+ if(arr.length>300)arr.splice(0,arr.length-300);
+ save();if(active===u)renderMessages();
+}
+function connect(){
+ if(!me)return;
+ manualClose=false;
+ try{ws=new WebSocket(WS_URL)}catch(e){setStatus(false,"WebSocket pa disponib");return}
+ ws.onopen=()=>{setStatus(true,"Sèvè ZIQVONA: konekte");send({type:"login",username:me.username});};
+ ws.onmessage=e=>{
+  let m;try{m=JSON.parse(e.data)}catch{return}
+  if(m.type==="welcome")return;
+  if(m.type==="login_ok"){me.username=m.username;profiles=m.profiles||{};online=m.online||[];renderMe();renderList();return}
+  if(m.type==="presence"){profiles=m.profiles||profiles;online=m.online||[];renderMe();renderList();if(active)openChat(active);return}
+  if(m.type==="profiles"){profiles=m.profiles||profiles;renderMe();renderList();if(active)openChat(active);return}
+  if(m.type==="profile"){profiles[m.profile.username]=m.profile;renderMe();renderList();save();return}
+  if(m.type==="search_results"){profiles={...profiles};m.results.forEach(p=>{profiles[p.username]=p});renderList();return}
+  if(m.type==="message"){addMessage(m);if(m.from!==me.username)send({type:"message_delivered",to:m.from,messageId:m.id});return}
+  if(m.type==="history"){const arr=ensureChat(m.with);(m.messages||[]).forEach(x=>{if(!arr.some(y=>y.id===x.id))arr.push(x)});save();if(active===m.with)renderMessages();return}
+  if(m.type==="typing"){if(active===m.from)$("topInfo").innerHTML='<b>'+esc(profile(m.from).displayName)+'</b><small>ap ekri...</small>';setTimeout(()=>{if(active===m.from)openChat(m.from)},1800);return}
+  if(m.type==="message_delivered"){for(const u in chats){const x=chats[u].find(a=>a.id===m.messageId);if(x)x.delivered=true}save();renderMessages();return}
+  if(m.type==="message_read"){for(const u in chats){const x=chats[u].find(a=>a.id===m.messageId);if(x)x.read=true}save();renderMessages();return}
+  if(m.type==="error"){toast(m.message);return}
+  if(["call-offer","call-answer","ice","call-end"].includes(m.type))handleSignal(m);
+ };
+ ws.onclose=()=>{if(!manualClose){setStatus(false,"Sèvè dekonekte — rekoneksyon...");clearTimeout(reconnectTimer);reconnectTimer=setTimeout(connect,2500)}};
+ ws.onerror=()=>{};
+}
+function login(){
+ const name=$("nameInput").value.trim();
+ if(name.length<2){toast("Mete yon non ki gen omwen 2 karaktè.");return}
+ me={username:name,displayName:name,status:$("statusInput").value.trim()||"Disponib",avatar:me?.avatar||""};
+ save();$("loginModal").classList.remove("show");renderMe();connect();
+}
+function sendMessage(){
+ const text=$("text").value.trim();if(!active||!text)return;
+ if(!send({type:"message",to:active,text}))return;
+ $("text").value="";
+}
+function search(){
+ const q=$("search").value.trim();
+ if(me&&ws&&ws.readyState===1)send({type:"search_users",query:q});
+ else renderList();
+}
 
-  document.getElementById("editProfileBtn").onclick=function(){
-    const me=state.me||{name:"Vizitè",status:"Disponib"};
-    document.getElementById("profileName").value=me.name||"";
-    document.getElementById("profileStatus").value=me.status||"";
-    document.getElementById("profilePhoto").value="";
-    show(document.getElementById("profileModal"));
-  };
-  document.getElementById("profileBtn").onclick=function(){document.getElementById("editProfileBtn").click()};
-  document.getElementById("closeProfile").onclick=function(){hide(document.getElementById("profileModal"))};
-  document.getElementById("profileForm").addEventListener("submit",function(e){
-    e.preventDefault();
-    const me=state.me||{};const file=document.getElementById("profilePhoto").files[0];
-    fileToData(file,function(photo){
-      state.me={name:document.getElementById("profileName").value.trim()||"Vizitè",status:document.getElementById("profileStatus").value.trim()||"Disponib",photo:photo||me.photo||""};
-      save();renderMe();hide(document.getElementById("profileModal"));toast("Profile mete ajou");
-    });
-  });
+async function startCall(type){
+ if(!active||!me)return;
+ if(!online.includes(active)){toast("Itilizatè a pa konekte kounye a.");return}
+ callWith=active;callType=type;
+ $("call").classList.add("show");$("callTitle").textContent=(type==="video"?"🎥":"📞")+" Apèl ak "+profile(active).displayName;
+ $("callState").textContent="Koneksyon...";
+ try{
+   localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});
+   $("localVideo").srcObject=localStream;
+   createPeer();
+   const offer=await pc.createOffer();
+   await pc.setLocalDescription(offer);
+   send({type:"call-offer",to:callWith,callType:type,offer});
+ }catch(e){toast("Pa kapab louvri kamera/mikwo: "+e.message);endCall(false)}
+}
+function createPeer(){
+ pc=new RTCPeerConnection({iceServers:[
+   {urls:"stun:stun.l.google.com:19302"},
+   {urls:"stun:stun1.l.google.com:19302"}
+ ]});
+ if(localStream)localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+ pc.ontrack=e=>{$("remoteVideo").srcObject=e.streams[0];$("remoteText").style.display="none"};
+ pc.onicecandidate=e=>{if(e.candidate&&callWith)send({type:"ice",to:callWith,candidate:e.candidate})};
+ pc.onconnectionstatechange=()=>{$("callState").textContent="Koneksyon: "+pc.connectionState;if(["failed","disconnected","closed"].includes(pc.connectionState)){}};
+}
+async function handleSignal(m){
+ if(m.type==="call-end"){endCall(false);return}
+ if(m.type==="call-offer"){
+   pendingOffer=m;callWith=m.from;callType=m.callType||"voice";
+   $("incomingTitle").textContent="📲 Apèl soti nan "+profile(m.from).displayName;
+   $("incomingType").textContent=callType==="video"?"Apèl videyo":"Apèl vwa";
+   $("incoming").classList.add("show");return;
+ }
+ if(m.type==="call-answer"&&pc){
+   await pc.setRemoteDescription(new RTCSessionDescription(m.answer));
+   for(const c of iceQueue){try{await pc.addIceCandidate(c)}catch{}}
+   iceQueue=[];return;
+ }
+ if(m.type==="ice"&&m.candidate){
+   const c=new RTCIceCandidate(m.candidate);
+   if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(c)}catch{}else iceQueue.push(c);
+ }
+}
+async function acceptCall(){
+ $("incoming").classList.remove("show");$("call").classList.add("show");
+ $("callTitle").textContent=(callType==="video"?"🎥":"📞")+" Apèl ak "+profile(callWith).displayName;
+ try{
+  localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:callType==="video"});
+  $("localVideo").srcObject=localStream;createPeer();
+  await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer.offer));
+  for(const c of iceQueue){try{await pc.addIceCandidate(c)}catch{}}iceQueue=[];
+  const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
+  send({type:"call-answer",to:callWith,answer});
+ }catch(e){toast("Pa kapab pran apèl: "+e.message);endCall(true)}
+}
+function rejectCall(){if(callWith)send({type:"call-end",to:callWith});pendingOffer=null;callWith=null;$("incoming").classList.remove("show")}
+function endCall(notify=true){
+ if(notify&&callWith)send({type:"call-end",to:callWith});
+ if(pc){try{pc.close()}catch{}pc=null}
+ if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}
+ $("localVideo").srcObject=null;$("remoteVideo").srcObject=null;$("call").classList.remove("show");$("incoming").classList.remove("show");pendingOffer=null;iceQueue=[];callWith=null;callType=null;
+}
 
-  document.getElementById("newChatBtn").onclick=function(){show(document.getElementById("newChatModal"));setTimeout(()=>document.getElementById("newChatName").focus(),50)};
-  document.getElementById("closeNewChat").onclick=function(){hide(document.getElementById("newChatModal"))};
-  document.getElementById("newChatForm").addEventListener("submit",function(e){
-    e.preventDefault();
-    const name=document.getElementById("newChatName").value.trim();if(!name)return;
-    const c={id:id(),name,status:document.getElementById("newChatStatus").value.trim()||"Disponib",photo:"",group:false,unread:0,messages:[]};
-    state.chats.unshift(c);save();hide(document.getElementById("newChatModal"));this.reset();openChat(c.id);toast("Nouvo Room kreye");
-  });
+$("loginBtn").onclick=()=>{$("loginModal").classList.add("show");$("nameInput").value=me?.username||"";$("statusInput").value=me?.status||"Disponib"}
+$("closeLogin").onclick=()=>$("loginModal").classList.remove("show");
+$("doLogin").onclick=login;
+$("profileBtn").onclick=()=>{if(!me){$("loginModal").classList.add("show");return}const p=profile(me.username);$("profileName").value=p.displayName;$("profileStatus").value=p.status;$("profileModal").classList.add("show")};
+$("closeProfile").onclick=()=>$("profileModal").classList.remove("show");
+$("saveProfile").onclick=()=>{if(!me)return;const displayName=$("profileName").value.trim()||me.username,status=$("profileStatus").value.trim()||"Disponib";me.displayName=displayName;me.status=status;save();send({type:"profile_update",displayName,status});$("profileModal").classList.remove("show")};
+$("sendBtn").onclick=sendMessage;
+$("text").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}else if(active&&e.key.length===1)send({type:"typing",to:active})});
+$("search").oninput=search;
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");filter=b.dataset.filter;renderList()});
+$("emojiBtn").onclick=()=>{$("emoji").style.display=$("emoji").style.display==="none"?"block":"none"};
+$("emoji").innerHTML=emojis.map(e=>"<span>"+e+"</span>").join("");$("emoji").querySelectorAll("span").forEach(s=>s.onclick=()=>{$("text").value+=s.textContent;$("text").focus()});
+$("voiceBtn").onclick=()=>startCall("voice");$("videoBtn").onclick=()=>startCall("video");$("hangup").onclick=()=>endCall(true);$("acceptCall").onclick=acceptCall;$("rejectCall").onclick=rejectCall;
 
-  document.getElementById("sendBtn").onclick=send;
-  document.getElementById("messageInput").addEventListener("input",autoGrow);
-  document.getElementById("messageInput").addEventListener("keydown",function(e){
-    if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}
-  });
-  document.getElementById("attachBtn").onclick=function(){toast("Atachman yo ap pare pou pwochen etap backend la")};
+renderMe();renderList();renderMessages();
+if(me)connect();else setStatus(false,"Pa konekte — klike Konekte");
 
-  const emojis=["😀","😂","😍","🥰","😘","😎","😭","😡","❤️","💚","💯","🔥","👍","👏","🙏","🎉","🤝","🤣","😢","😉","🤗","😴","✨","🌟","📞","🎥","💬","🚀","🇭🇹","🌍"];
-  document.getElementById("emojiGrid").innerHTML=emojis.map(e=>'<button type="button">'+e+'</button>').join("");
-  document.getElementById("emojiGrid").addEventListener("click",function(e){
-    if(e.target.tagName==="BUTTON"){const input=document.getElementById("messageInput");input.value+=e.target.textContent;input.focus();autoGrow()}
-  });
-  document.getElementById("emojiBtn").onclick=function(){document.getElementById("emojiPanel").classList.toggle("show")};
-
-  document.getElementById("searchInput").addEventListener("input",renderList);
-  document.querySelectorAll(".chip").forEach(btn=>btn.onclick=function(){
-    document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));this.classList.add("active");state.filter=this.dataset.filter;renderList();
-  });
-  document.getElementById("backBtn").onclick=function(){document.getElementById("sidebar").classList.add("mobile")};
-
-  function startCall(type){
-    const c=state.chats.find(x=>x.id===state.active);if(!c)return;
-    avatar(document.getElementById("callAvatar"),c);
-    document.getElementById("callName").textContent=c.name;
-    document.getElementById("callType").textContent=type==="video"?"Apèl video":"Apèl vwa";
-    show(document.getElementById("callScreen"));
-    toast("Mòd apèl ouvè");
-  }
-  document.getElementById("voiceBtn").onclick=()=>startCall("voice");
-  document.getElementById("videoBtn").onclick=()=>startCall("video");
-  document.getElementById("hangBtn").onclick=function(){hide(document.getElementById("callScreen"));toast("Apèl fini")};
-  document.getElementById("chatMenuBtn").onclick=function(){toast("Meni Room la pare pou plis fonksyon")};
-
-  document.addEventListener("click",function(e){
-    if(!e.target.closest("#emojiBtn")&&!e.target.closest("#emojiPanel"))document.getElementById("emojiPanel").classList.remove("show");
-  });
-
-  // First-run: always show login if no local profile, so the Konekte flow is accessible.
-  ensureWelcome();
-  renderMe();
-  renderList();
-  openChat(state.active);
-  if(!state.me)show(document.getElementById("loginModal"));
 })();
 </script>
 </body>
