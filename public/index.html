@@ -1,245 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ht">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10bfa3">
-<title>ZIQVONA</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#075e54"><title>ZIQVONA</title>
 <style>
-:root{--turq:#10bfa3;--dark:#102a2b;--bg:#f3f8f7;--card:#fff;--muted:#6d7b7b;--line:#dce8e6;--danger:#d9534f}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--dark)}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#efeae2;color:#111}
 button,input,textarea{font:inherit}button{cursor:pointer;border:0}
-.app{height:100vh;display:flex;overflow:hidden}.side{width:330px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
-.brand{padding:18px 20px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:23px}.logo{width:42px;height:42px;border-radius:13px;background:var(--turq);color:white;display:grid;place-items:center;font-weight:900}
-.me{padding:12px 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}.avatar{width:44px;height:44px;border-radius:50%;background:#dff7f2;display:grid;place-items:center;color:#087e6d;font-weight:800;overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover}
-.meinfo{flex:1}.meinfo b{display:block}.meinfo small{color:var(--muted)}
-.search{margin:12px 14px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;outline:none;width:calc(100% - 28px)}
-.tabs{display:flex;gap:7px;padding:0 14px 10px}.tabs button{background:#eef5f4;padding:8px 10px;border-radius:10px;color:#506565}.tabs button.active{background:var(--turq);color:white}
-.list{overflow:auto;flex:1}.item{padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #eef3f2}.item:hover{background:#f5faf9}.itemmain{flex:1}.itemmain b{display:block}.itemmain small{color:var(--muted)}.dot{width:9px;height:9px;border-radius:50%;background:#b9c4c3}.dot.on{background:#18b67b}
-.bottom{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px}.bottom button{flex:1;padding:10px;border-radius:10px;background:#eef5f4}
-.main{flex:1;display:flex;flex-direction:column;min-width:0}.top{height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 18px;gap:12px}.topinfo{flex:1}.topinfo b{display:block}.topinfo small{color:var(--muted)}.callbtn{background:#e8f8f5;color:#087e6d;padding:10px 12px;border-radius:10px}
-.messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:8px}.empty{margin:auto;text-align:center;color:var(--muted);max-width:420px}.bubble{max-width:72%;padding:10px 13px;border-radius:15px;background:#fff;border:1px solid var(--line);align-self:flex-start;white-space:pre-wrap;word-break:break-word}.bubble.mine{align-self:flex-end;background:#dff8f3;border-color:#c4eee6}.time{font-size:10px;color:#718080;margin-top:5px;text-align:right}
-.compose{background:#fff;border-top:1px solid var(--line);padding:10px;display:flex;gap:8px}.compose textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px;outline:none;min-height:42px;max-height:120px}.compose button{background:var(--turq);color:#fff;border-radius:11px;padding:0 16px}
-.emoji{position:absolute;bottom:72px;left:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;width:240px;box-shadow:0 10px 30px #0002}.emoji span{font-size:25px;cursor:pointer;padding:5px;display:inline-block}
-.modal{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.show{display:flex}.box{background:#fff;border-radius:18px;width:min(430px,100%);padding:22px}.box h2{margin-top:0}.box input,.box textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;margin:6px 0 10px;outline:none}.actions{display:flex;gap:8px;justify-content:flex-end}.primary{background:var(--turq);color:#fff;padding:10px 15px;border-radius:10px}.secondary{background:#edf3f2;padding:10px 15px;border-radius:10px}
-.statusbar{font-size:12px;padding:5px 14px;background:#102a2b;color:#fff;text-align:center}.statusbar.ok{background:#087e6d}.statusbar.bad{background:#b84b47}
-.call{position:fixed;inset:0;background:#102a2b;color:#fff;display:none;z-index:30;flex-direction:column}.call.show{display:flex}.videos{flex:1;display:grid;place-items:center;padding:20px}.remote{width:min(850px,90vw);height:min(65vh,600px);background:#1d4546;border-radius:20px;display:grid;place-items:center;position:relative;overflow:hidden}.remote video{width:100%;height:100%;object-fit:cover}.local{position:absolute;right:18px;bottom:18px;width:180px;height:130px;background:#000;border-radius:12px;overflow:hidden}.local video{width:100%;height:100%;object-fit:cover}.callcontrols{padding:20px;display:flex;justify-content:center;gap:10px}.hang{background:#d9534f;color:#fff;padding:13px 20px;border-radius:25px}.incoming{position:fixed;inset:0;background:#0008;z-index:40;display:none;align-items:center;justify-content:center}.incoming.show{display:flex}.incoming .box{text-align:center}
-@media(max-width:700px){.side{width:90px}.side .brand span,.meinfo,.search,.tabs,.bottom{display:none}.me{justify-content:center}.item{padding:10px;justify-content:center}.itemmain{display:none}.bubble{max-width:88%}.top{padding:0 10px}}
+.app{height:100vh;display:flex;overflow:hidden}.sidebar{width:360px;background:#fff;border-right:1px solid #ddd;display:flex;flex-direction:column}
+.head{height:64px;background:#075e54;color:#fff;display:flex;align-items:center;padding:0 14px;gap:10px}.logo{width:40px;height:40px;border-radius:50%;background:#10bfa3;display:grid;place-items:center;font-weight:900;font-size:20px}.brand{font-weight:800;font-size:20px;flex:1}
+.icon{background:transparent;color:inherit;font-size:20px;padding:7px}.me{padding:10px 14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #eee}.avatar{width:48px;height:48px;border-radius:50%;background:#d9f3ee;color:#075e54;display:grid;place-items:center;font-weight:800;overflow:hidden;flex:none}.avatar img{width:100%;height:100%;object-fit:cover}.who{flex:1;min-width:0}.who b,.contact b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.who small,.contact small{color:#667781}
+.searchbox{padding:8px 12px;background:#f0f2f5}.searchbox input{width:100%;border:0;border-radius:9px;padding:10px 13px;background:#fff;outline:none}
+.contacts{overflow:auto;flex:1}.contact{height:72px;padding:10px 14px;display:flex;gap:11px;align-items:center;border-bottom:1px solid #f0f0f0}.contact:hover,.contact.active{background:#f5f5f5}.preview{flex:1;min-width:0}.preview small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time{font-size:11px;color:#8696a0}.online{width:9px;height:9px;border-radius:50%;background:#25d366}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;background:#efeae2}.chathead{height:64px;background:#fff;border-bottom:1px solid #ddd;display:flex;align-items:center;padding:0 14px;gap:10px}.chathead .who{flex:1}.messages{flex:1;overflow:auto;padding:18px 7%;display:flex;flex-direction:column;gap:5px;background-image:linear-gradient(#efeae2,#efeae2)}.empty{margin:auto;text-align:center;color:#667781}.bubble{max-width:70%;padding:8px 10px 5px;border-radius:8px;background:#fff;align-self:flex-start;box-shadow:0 1px 1px #0001;white-space:pre-wrap;word-break:break-word}.bubble.mine{align-self:flex-end;background:#d9fdd3}.meta{text-align:right;color:#667781;font-size:10px;margin-top:3px}.composer{min-height:62px;background:#f0f2f5;display:flex;align-items:flex-end;gap:8px;padding:9px}.composer textarea{flex:1;border:0;border-radius:22px;padding:11px 15px;resize:none;outline:none;max-height:110px}.send{background:#075e54;color:#fff;width:44px;height:44px;border-radius:50%}.emojiPanel{position:absolute;bottom:65px;left:8px;width:270px;background:#fff;border:1px solid #ddd;border-radius:12px;padding:10px;box-shadow:0 5px 25px #0002}.emojiPanel span{font-size:25px;padding:5px;display:inline-block}
+.overlay{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:50}.overlay.show{display:flex}.modal{background:#fff;border-radius:16px;width:min(420px,92vw);padding:22px}.modal input,.modal textarea{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;margin:6px 0 10px}.actions{display:flex;gap:8px;justify-content:flex-end}.primary{background:#075e54;color:#fff;padding:10px 15px;border-radius:9px}.secondary{background:#eee;padding:10px 15px;border-radius:9px}
+.call{position:fixed;inset:0;background:#102a2b;color:#fff;z-index:100;display:none;flex-direction:column}.call.show{display:flex}.callarea{flex:1;position:relative;display:grid;place-items:center;padding:20px}.remote{width:min(900px,92vw);height:min(68vh,650px);background:#1d4546;border-radius:18px;display:grid;place-items:center;overflow:hidden}.remote video{width:100%;height:100%;object-fit:cover}.local{position:absolute;right:35px;bottom:35px;width:180px;height:130px;background:#000;border-radius:12px;overflow:hidden}.local video{width:100%;height:100%;object-fit:cover}.hang{background:#e53935;color:#fff;padding:14px 20px;border-radius:28px;margin:20px}
+@media(max-width:650px){.sidebar{width:100px}.brand,.me .who,.searchbox{display:none}.me{justify-content:center}.contact{padding:10px;justify-content:center}.contact .preview{display:none}.chathead .back{display:block}.messages{padding:12px}.bubble{max-width:86%}}
 </style>
 </head>
 <body>
-<div id="statusbar" class="statusbar">Sèvè ZIQVONA ap konekte...</div>
 <div class="app">
-<aside class="side">
-  <div class="brand"><div class="logo">Z</div><span>ZIQVONA</span></div>
-  <div class="me" id="meCard"></div>
-  <input id="search" class="search" placeholder="Chèche yon itilizatè...">
-  <div class="tabs"><button class="active" data-filter="all">Tout</button><button data-filter="online">Online</button></div>
-  <div id="list" class="list"></div>
-  <div class="bottom"><button id="profileBtn">Profil</button><button id="loginBtn">Konekte</button></div>
+<aside class="sidebar">
+ <div class="head"><div class="logo">Z</div><div class="brand">ZIQVONA</div><button class="icon" id="newBtn">＋</button><button class="icon" id="profileBtn">⋮</button></div>
+ <div class="me" id="me"></div>
+ <div class="searchbox"><input id="search" placeholder="Chèche kontak oswa non..."></div>
+ <div class="contacts" id="contacts"></div>
 </aside>
 <main class="main">
-  <header class="top"><div id="topInfo" class="topinfo"><b>Byenveni sou ZIQVONA</b><small>Konekte pou kòmanse</small></div><button id="voiceBtn" class="callbtn" style="display:none">📞</button><button id="videoBtn" class="callbtn" style="display:none">🎥</button></header>
-  <section id="messages" class="messages"><div class="empty"><h2>💬 ZIQVONA</h2><p>Chèche yon moun sou bò gòch la pou kòmanse yon konvèsasyon an tan reyèl.</p></div></section>
-  <div class="compose"><button id="emojiBtn" class="secondary">😊</button><textarea id="text" placeholder="Ekri mesaj ou..." disabled></textarea><button id="sendBtn" disabled>Voye</button></div>
+ <div class="chathead"><button class="icon back" id="backBtn" style="display:none;color:#075e54">‹</button><div id="chatAvatar" class="avatar">Z</div><div class="who" id="chatWho"><b>ZIQVONA</b><small>Chwazi yon kontak</small></div><button class="icon" id="voice" style="color:#075e54;display:none">📞</button><button class="icon" id="video" style="color:#075e54;display:none">🎥</button></div>
+ <div class="messages" id="messages"><div class="empty"><h2>💬</h2><p>Chwazi yon kontak pou kòmanse.</p></div></div>
+ <div class="composer"><button class="icon" id="emojiBtn" style="color:#54656f">😊</button><textarea id="text" rows="1" disabled placeholder="Ekri yon mesaj"></textarea><button class="send" id="send" disabled>➤</button></div>
 </main>
 </div>
-<div id="emoji" class="emoji" style="display:none"></div>
-
-<div id="loginModal" class="modal"><div class="box"><h2>Byenveni sou ZIQVONA</h2><p>Chwazi non ou pou konekte ak lòt moun.</p><input id="nameInput" maxlength="30" placeholder="Non ou"><input id="statusInput" maxlength="120" placeholder="Status (eg. Disponib)"><div class="actions"><button class="secondary" id="closeLogin">Fèmen</button><button class="primary" id="doLogin">Konekte</button></div></div></div>
-
-<div id="profileModal" class="modal"><div class="box"><h2>Mon profil</h2><input id="profileName" maxlength="50" placeholder="Non"><textarea id="profileStatus" maxlength="120" placeholder="Status"></textarea><div class="actions"><button class="secondary" id="closeProfile">Fèmen</button><button class="primary" id="saveProfile">Sove</button></div></div></div>
-
-<div id="incoming" class="incoming"><div class="box"><h2 id="incomingTitle">Apèl ap vini</h2><p id="incomingType"></p><div class="actions" style="justify-content:center"><button class="secondary" id="rejectCall">Refize</button><button class="primary" id="acceptCall">Aksepte</button></div></div></div>
-
-<div id="call" class="call"><div style="padding:18px;text-align:center"><b id="callTitle">Apèl ZIQVONA</b><div id="callState">Koneksyon...</div></div><div class="videos"><div class="remote"><span id="remoteText">Ap tann videyo...</span><video id="remoteVideo" autoplay playsinline></video><div class="local"><video id="localVideo" autoplay muted playsinline></video></div></div></div><div class="callcontrols"><button id="hangup" class="hang">⛔ Fini apèl</button></div></div>
+<div id="emojiPanel" class="emojiPanel" style="display:none"></div>
+<div id="login" class="overlay"><div class="modal"><h2>Byenveni sou ZIQVONA</h2><p>Antre non ou pou kòmanse.</p><input id="loginName" maxlength="30" placeholder="Non ou"><input id="loginStatus" maxlength="120" placeholder="Status"><div class="actions"><button class="secondary" id="loginClose">Fèmen</button><button class="primary" id="loginGo">Konekte</button></div></div></div>
+<div id="profileModal" class="overlay"><div class="modal"><h2>Profil mwen</h2><input id="pname" maxlength="50"><textarea id="pstatus" maxlength="120" placeholder="Status"></textarea><div class="actions"><button class="secondary" id="pclose">Fèmen</button><button class="primary" id="psave">Sove</button></div></div></div>
+<div id="incoming" class="overlay"><div class="modal" style="text-align:center"><h2 id="incomingName">Apèl</h2><p id="incomingKind"></p><div class="actions" style="justify-content:center"><button class="secondary" id="reject">Refize</button><button class="primary" id="accept">Aksepte</button></div></div></div>
+<div id="call" class="call"><div style="padding:18px;text-align:center"><b id="callTitle">Apèl ZIQVONA</b><div id="callState">Koneksyon...</div></div><div class="callarea"><div class="remote"><span id="remoteText">Ap tann lòt moun...</span><video id="remoteVideo" autoplay playsinline></video><div class="local"><video id="localVideo" autoplay muted playsinline></video></div></div></div><div style="text-align:center"><button class="hang" id="hang">⛔ Fini apèl</button></div></div>
 
 <script>
-(function(){
 "use strict";
-
-const $=id=>document.getElementById(id);
-const WS_URL=(location.protocol==="https:"?"wss://":"ws://")+location.host;
-let ws=null,reconnectTimer=null,manualClose=false;
-let me=JSON.parse(localStorage.getItem("ziqvona_me")||"null");
-let active=null,profiles={},online=[],filter="all";
-let chats=JSON.parse(localStorage.getItem("ziqvona_chats")||"{}");
-let pc=null,localStream=null,callWith=null,callType=null,pendingOffer=null,iceQueue=[];
-
+const $=x=>document.getElementById(x);
+const WS=(location.protocol==="https:"?"wss://":"ws://")+location.host;
+let me=JSON.parse(localStorage.getItem("zq_me")||"null"), profiles={}, online=[], active=null, chats=JSON.parse(localStorage.getItem("zq_chats")||"{}"), ws=null, reconnect=null;
+let pc=null,stream=null,callWith=null,callType=null,pending=null,ice=[];
 const emojis=["😀","😂","😍","🥰","😎","👍","❤️","🔥","👏","🙏","😊","😭","🤣","🎉","💯","😢","😡","🤝","👋","✨"];
 
-function save(){localStorage.setItem("ziqvona_me",JSON.stringify(me));localStorage.setItem("ziqvona_chats",JSON.stringify(chats))}
+function save(){localStorage.setItem("zq_me",JSON.stringify(me));localStorage.setItem("zq_chats",JSON.stringify(chats))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function fmt(t){try{return new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}catch{return ""}}
-function toast(msg){$("statusbar").textContent=msg;setTimeout(()=>{if(ws&&ws.readyState===1)$("statusbar").textContent="Sèvè ZIQVONA: konekte";},2500)}
-function setStatus(ok,msg){$("statusbar").textContent=msg||"";$("statusbar").className="statusbar "+(ok?"ok":"bad")}
-function send(o){if(ws&&ws.readyState===1){ws.send(JSON.stringify(o));return true}toast("Sèvè a pa konekte.");return false}
-function ensureChat(u){if(!chats[u])chats[u]=[];return chats[u]}
-function profile(u){return profiles[u]||{username:u,displayName:u,status:"",avatar:""}}
-
-function renderMe(){
- if(!me){$("meCard").innerHTML='<div class="avatar">Z</div><div class="meinfo"><b>Pa konekte</b><small>Klike Konekte</small></div>';return}
- const p=profile(me.username);const av=p.avatar?'<img src="'+esc(p.avatar)+'">':esc((p.displayName||me.username)[0]||"Z");
- $("meCard").innerHTML='<div class="avatar">'+av+'</div><div class="meinfo"><b>'+esc(p.displayName||me.username)+'</b><small>'+esc(p.status||"Disponib")+'</small></div>';
-}
-function renderList(){
- const q=$("search").value.trim().toLowerCase();
- let names=Object.keys(profiles).filter(u=>!me||u!==me.username);
- names=names.filter(u=>(filter==="online"?online.includes(u):true));
- names=names.filter(u=>!q||u.toLowerCase().includes(q)||profile(u).displayName.toLowerCase().includes(q));
+function p(u){return profiles[u]||{username:u,displayName:u,status:"Disponib",avatar:""}}
+function av(u){let x=p(u);return x.avatar?'<img src="'+esc(x.avatar)+'">':esc((x.displayName||u||"Z")[0])}
+function send(o){if(ws?.readyState===1){ws.send(JSON.stringify(o));return true}return false}
+function chat(u){return chats[u]||(chats[u]=[])}
+function renderMe(){if(!me){$("me").innerHTML='<div class="avatar">Z</div><div class="who"><b>Pa konekte</b><small>Klike ⋮ pou konekte</small></div>';return}$("me").innerHTML='<div class="avatar">'+av(me.username)+'</div><div class="who"><b>'+esc(p(me.username).displayName)+'</b><small>'+esc(p(me.username).status||"Disponib")+'</small></div>'}
+function renderContacts(){
+ let q=$("search").value.trim().toLowerCase(),names=Object.keys(profiles).filter(u=>!me||u!==me.username);
+ names=names.filter(u=>!q||u.toLowerCase().includes(q)||p(u).displayName.toLowerCase().includes(q));
  names.sort((a,b)=>(online.includes(b)?1:0)-(online.includes(a)?1:0));
- $("list").innerHTML=names.map(u=>{
-   const p=profile(u),av=p.avatar?'<img src="'+esc(p.avatar)+'">':esc((p.displayName||u)[0]||"Z");
-   return '<div class="item" data-user="'+esc(u)+'"><div class="avatar">'+av+'</div><div class="itemmain"><b>'+esc(p.displayName)+'</b><small>@'+esc(u)+' · '+esc(p.status||"Disponib")+'</small></div><span class="dot '+(online.includes(u)?"on":"")+'"></span></div>'
- }).join("") || '<div style="padding:20px;color:#718080;text-align:center">Pa gen rezilta.</div>';
- document.querySelectorAll(".item").forEach(x=>x.onclick=()=>openChat(x.dataset.user));
+ $("contacts").innerHTML=names.map(u=>'<div class="contact '+(active===u?"active":"")+'" data-u="'+esc(u)+'"><div class="avatar">'+av(u)+'</div><div class="preview"><b>'+esc(p(u).displayName)+'</b><small>@'+esc(u)+(online.includes(u)?" · 🟢 online":" · offline")+'</small></div>'+(online.includes(u)?'<span class="online"></span>':'')+'</div>').join("")||'<div style="padding:25px;text-align:center;color:#667781">Pa gen kontak pou kounye a.</div>';
+ document.querySelectorAll(".contact").forEach(x=>x.onclick=()=>openChat(x.dataset.u))
 }
 function renderMessages(){
- const box=$("messages");
- if(!active){box.innerHTML='<div class="empty"><h2>💬 ZIQVONA</h2><p>Chèche yon moun pou kòmanse.</p></div>';return}
- const arr=ensureChat(active);
- if(!arr.length){box.innerHTML='<div class="empty"><h3>Nouvo konvèsasyon</h3><p>Ekri premye mesaj la bay '+esc(profile(active).displayName)+'.</p></div>';return}
- box.innerHTML=arr.map(m=>{
-   const mine=m.from===me.username;
-   return '<div class="bubble '+(mine?"mine":"")+'">'+esc(m.text||"")+'<div class="time">'+fmt(m.time)+(m.read?" ✓✓":m.delivered?" ✓":"")+'</div></div>'
- }).join("");
- box.scrollTop=box.scrollHeight;
+ if(!active){$("messages").innerHTML='<div class="empty"><h2>💬</h2><p>Chwazi yon kontak pou kòmanse.</p></div>';return}
+ let a=chat(active);$("messages").innerHTML=a.length?a.map(m=>'<div class="bubble '+(m.from===me.username?"mine":"")+'">'+esc(m.text||"")+'<div class="meta">'+new Date(m.time).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+(m.read?" ✓✓":m.delivered?" ✓":"")+'</div></div>').join(""):'<div class="empty"><p>Pa gen mesaj. Di bonjou 👋</p></div>';
+ $("messages").scrollTop=$("messages").scrollHeight
 }
-function openChat(u){
- if(!me){$("loginModal").classList.add("show");return}
- active=u;$("topInfo").innerHTML='<b>'+esc(profile(u).displayName)+'</b><small>@'+esc(u)+' · '+(online.includes(u)?"🟢 online":"offline")+'</small>';
- $("text").disabled=false;$("sendBtn").disabled=false;$("voiceBtn").style.display="block";$("videoBtn").style.display="block";
- renderMessages();send({type:"history",with:u});
-}
-function addMessage(m){
- const u=m.from===me.username?m.to:m.from;
- const arr=ensureChat(u);
- if(!arr.some(x=>x.id===m.id))arr.push(m);
- if(arr.length>300)arr.splice(0,arr.length-300);
- save();if(active===u)renderMessages();
-}
-function connect(){
- if(!me)return;
- manualClose=false;
- try{ws=new WebSocket(WS_URL)}catch(e){setStatus(false,"WebSocket pa disponib");return}
- ws.onopen=()=>{setStatus(true,"Sèvè ZIQVONA: konekte");send({type:"login",username:me.username});};
- ws.onmessage=e=>{
-  let m;try{m=JSON.parse(e.data)}catch{return}
-  if(m.type==="welcome")return;
-  if(m.type==="login_ok"){me.username=m.username;profiles=m.profiles||{};online=m.online||[];renderMe();renderList();return}
-  if(m.type==="presence"){profiles=m.profiles||profiles;online=m.online||[];renderMe();renderList();if(active)openChat(active);return}
-  if(m.type==="profiles"){profiles=m.profiles||profiles;renderMe();renderList();if(active)openChat(active);return}
-  if(m.type==="profile"){profiles[m.profile.username]=m.profile;renderMe();renderList();save();return}
-  if(m.type==="search_results"){profiles={...profiles};m.results.forEach(p=>{profiles[p.username]=p});renderList();return}
-  if(m.type==="message"){addMessage(m);if(m.from!==me.username)send({type:"message_delivered",to:m.from,messageId:m.id});return}
-  if(m.type==="history"){const arr=ensureChat(m.with);(m.messages||[]).forEach(x=>{if(!arr.some(y=>y.id===x.id))arr.push(x)});save();if(active===m.with)renderMessages();return}
-  if(m.type==="typing"){if(active===m.from)$("topInfo").innerHTML='<b>'+esc(profile(m.from).displayName)+'</b><small>ap ekri...</small>';setTimeout(()=>{if(active===m.from)openChat(m.from)},1800);return}
-  if(m.type==="message_delivered"){for(const u in chats){const x=chats[u].find(a=>a.id===m.messageId);if(x)x.delivered=true}save();renderMessages();return}
-  if(m.type==="message_read"){for(const u in chats){const x=chats[u].find(a=>a.id===m.messageId);if(x)x.read=true}save();renderMessages();return}
-  if(m.type==="error"){toast(m.message);return}
-  if(["call-offer","call-answer","ice","call-end"].includes(m.type))handleSignal(m);
- };
- ws.onclose=()=>{if(!manualClose){setStatus(false,"Sèvè dekonekte — rekoneksyon...");clearTimeout(reconnectTimer);reconnectTimer=setTimeout(connect,2500)}};
- ws.onerror=()=>{};
-}
-function login(){
- const name=$("nameInput").value.trim();
- if(name.length<2){toast("Mete yon non ki gen omwen 2 karaktè.");return}
- me={username:name,displayName:name,status:$("statusInput").value.trim()||"Disponib",avatar:me?.avatar||""};
- save();$("loginModal").classList.remove("show");renderMe();connect();
-}
-function sendMessage(){
- const text=$("text").value.trim();if(!active||!text)return;
- if(!send({type:"message",to:active,text}))return;
- $("text").value="";
-}
-function search(){
- const q=$("search").value.trim();
- if(me&&ws&&ws.readyState===1)send({type:"search_users",query:q});
- else renderList();
-}
-
-async function startCall(type){
- if(!active||!me)return;
- if(!online.includes(active)){toast("Itilizatè a pa konekte kounye a.");return}
- callWith=active;callType=type;
- $("call").classList.add("show");$("callTitle").textContent=(type==="video"?"🎥":"📞")+" Apèl ak "+profile(active).displayName;
- $("callState").textContent="Koneksyon...";
- try{
-   localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});
-   $("localVideo").srcObject=localStream;
-   createPeer();
-   const offer=await pc.createOffer();
-   await pc.setLocalDescription(offer);
-   send({type:"call-offer",to:callWith,callType:type,offer});
- }catch(e){toast("Pa kapab louvri kamera/mikwo: "+e.message);endCall(false)}
-}
-function createPeer(){
- pc=new RTCPeerConnection({iceServers:[
-   {urls:"stun:stun.l.google.com:19302"},
-   {urls:"stun:stun1.l.google.com:19302"}
- ]});
- if(localStream)localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
- pc.ontrack=e=>{$("remoteVideo").srcObject=e.streams[0];$("remoteText").style.display="none"};
- pc.onicecandidate=e=>{if(e.candidate&&callWith)send({type:"ice",to:callWith,candidate:e.candidate})};
- pc.onconnectionstatechange=()=>{$("callState").textContent="Koneksyon: "+pc.connectionState;if(["failed","disconnected","closed"].includes(pc.connectionState)){}};
-}
-async function handleSignal(m){
- if(m.type==="call-end"){endCall(false);return}
- if(m.type==="call-offer"){
-   pendingOffer=m;callWith=m.from;callType=m.callType||"voice";
-   $("incomingTitle").textContent="📲 Apèl soti nan "+profile(m.from).displayName;
-   $("incomingType").textContent=callType==="video"?"Apèl videyo":"Apèl vwa";
-   $("incoming").classList.add("show");return;
- }
- if(m.type==="call-answer"&&pc){
-   await pc.setRemoteDescription(new RTCSessionDescription(m.answer));
-   for(const c of iceQueue){try{await pc.addIceCandidate(c)}catch{}}
-   iceQueue=[];return;
- }
- if(m.type==="ice"&&m.candidate){
-   const c=new RTCIceCandidate(m.candidate);
-   if(pc&&pc.remoteDescription)try{await pc.addIceCandidate(c)}catch{}else iceQueue.push(c);
- }
-}
-async function acceptCall(){
- $("incoming").classList.remove("show");$("call").classList.add("show");
- $("callTitle").textContent=(callType==="video"?"🎥":"📞")+" Apèl ak "+profile(callWith).displayName;
- try{
-  localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:callType==="video"});
-  $("localVideo").srcObject=localStream;createPeer();
-  await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer.offer));
-  for(const c of iceQueue){try{await pc.addIceCandidate(c)}catch{}}iceQueue=[];
-  const answer=await pc.createAnswer();await pc.setLocalDescription(answer);
-  send({type:"call-answer",to:callWith,answer});
- }catch(e){toast("Pa kapab pran apèl: "+e.message);endCall(true)}
-}
-function rejectCall(){if(callWith)send({type:"call-end",to:callWith});pendingOffer=null;callWith=null;$("incoming").classList.remove("show")}
-function endCall(notify=true){
- if(notify&&callWith)send({type:"call-end",to:callWith});
- if(pc){try{pc.close()}catch{}pc=null}
- if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}
- $("localVideo").srcObject=null;$("remoteVideo").srcObject=null;$("call").classList.remove("show");$("incoming").classList.remove("show");pendingOffer=null;iceQueue=[];callWith=null;callType=null;
-}
-
-$("loginBtn").onclick=()=>{$("loginModal").classList.add("show");$("nameInput").value=me?.username||"";$("statusInput").value=me?.status||"Disponib"}
-$("closeLogin").onclick=()=>$("loginModal").classList.remove("show");
-$("doLogin").onclick=login;
-$("profileBtn").onclick=()=>{if(!me){$("loginModal").classList.add("show");return}const p=profile(me.username);$("profileName").value=p.displayName;$("profileStatus").value=p.status;$("profileModal").classList.add("show")};
-$("closeProfile").onclick=()=>$("profileModal").classList.remove("show");
-$("saveProfile").onclick=()=>{if(!me)return;const displayName=$("profileName").value.trim()||me.username,status=$("profileStatus").value.trim()||"Disponib";me.displayName=displayName;me.status=status;save();send({type:"profile_update",displayName,status});$("profileModal").classList.remove("show")};
-$("sendBtn").onclick=sendMessage;
-$("text").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}else if(active&&e.key.length===1)send({type:"typing",to:active})});
-$("search").oninput=search;
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");filter=b.dataset.filter;renderList()});
-$("emojiBtn").onclick=()=>{$("emoji").style.display=$("emoji").style.display==="none"?"block":"none"};
-$("emoji").innerHTML=emojis.map(e=>"<span>"+e+"</span>").join("");$("emoji").querySelectorAll("span").forEach(s=>s.onclick=()=>{$("text").value+=s.textContent;$("text").focus()});
-$("voiceBtn").onclick=()=>startCall("voice");$("videoBtn").onclick=()=>startCall("video");$("hangup").onclick=()=>endCall(true);$("acceptCall").onclick=acceptCall;$("rejectCall").onclick=rejectCall;
-
-renderMe();renderList();renderMessages();
-if(me)connect();else setStatus(false,"Pa konekte — klike Konekte");
-
+function openChat(u){if(!me){$("login").classList.add("show");return}active=u;$("chatAvatar").innerHTML=av(u);$("chatWho").innerHTML='<b>'+esc(p(u).displayName)+'</b><small>@'+esc(u)+' · '+(online.includes(u)?"online":"offline")+'</small>';$("text").disabled=false;$("send").disabled=false;$("voice").style.display="block";$("video").style.display="block";renderContacts();renderMessages();send({type:"history",with:u})}
+function add(m){let u=m.from===me.username?m.to:m.from,a=chat(u);if(!a.some(x=>x.id===m.id))a.push(m);if(a.length>500)a.splice(0,a.length-500);save();if(active===u)renderMessages()}
+function connect(){if(!me)return;try{ws=new WebSocket(WS)}catch{return}ws.onopen=()=>send({type:"login",username:me.username});ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
+ if(m.type==="login_ok"){profiles=m.profiles||{};online=m.online||[];renderMe();renderContacts();return}
+ if(m.type==="presence"){profiles=m.profiles||profiles;online=m.online||[];renderMe();renderContacts();if(active){let u=active;$("chatWho").innerHTML='<b>'+esc(p(u).displayName)+'</b><small>@'+esc(u)+' · '+(online.includes(u)?"online":"offline")+'</small>'}return}
+ if(m.type==="profiles"){profiles={...profiles,...m.profiles};renderMe();renderContacts();return}
+ if(m.type==="search_results"){m.results.forEach(x=>profiles[x.username]=x);renderContacts();return}
+ if(m.type==="profile"){profiles[m.profile.username]=m.profile;save();renderMe();renderContacts();return}
+ if(m.type==="message"){add(m);if(m.from!==me.username)send({type:"message_delivered",to:m.from,messageId:m.id});return}
+ if(m.type==="history"){let a=chat(m.with);(m.messages||[]).forEach(x=>{if(!a.some(y=>y.id===x.id))a.push(x)});save();if(active===m.with)renderMessages();return}
+ if(m.type==="message_delivered"){Object.values(chats).forEach(a=>a.forEach(x=>{if(x.id===m.messageId)x.delivered=true}));save();renderMessages();return}
+ if(m.type==="message_read"){Object.values(chats).forEach(a=>a.forEach(x=>{if(x.id===m.messageId)x.read=true}));save();renderMessages();return}
+ if(m.type==="error"){alert(m.message);return}
+ if(["call-offer","call-answer","ice","call-end"].includes(m.type))signal(m)
+};ws.onclose=()=>{clearTimeout(reconnect);reconnect=setTimeout(connect,2000)}}
+function doLogin(){let n=$("loginName").value.trim();if(n.length<2){alert("Mete yon non.");return}me={username:n,displayName:n,status:$("loginStatus").value.trim()||"Disponib",avatar:me?.avatar||""};save();$("login").classList.remove("show");connect()}
+function sendMsg(){let t=$("text").value.trim();if(!active||!t)return;if(send({type:"message",to:active,text:t}))$("text").value=""}
+function profileOpen(){if(!me){$("login").classList.add("show");return}let x=p(me.username);$("pname").value=x.displayName;$("pstatus").value=x.status;$("profileModal").classList.add("show")}
+function saveProfile(){let n=$("pname").value.trim()||me.username,s=$("pstatus").value.trim()||"Disponib";me.displayName=n;me.status=s;save();send({type:"profile_update",displayName:n,status:s});$("profileModal").classList.remove("show")}
+async function makeCall(type){if(!active||!online.includes(active)){alert("Moun nan pa online.");return}callWith=active;callType=type;$("call").classList.add("show");$("callTitle").textContent=(type==="video"?"🎥":"📞")+" "+p(active).displayName;try{stream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});$("localVideo").srcObject=stream;peer();let offer=await pc.createOffer();await pc.setLocalDescription(offer);send({type:"call-offer",to:callWith,callType:type,offer:pc.localDescription})}catch(e){alert("Kamera/mikwo pa disponib: "+e.message);end(false)}}
+function peer(){pc=new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"},{urls:"stun:stun.cloudflare.com:3478"}]});stream?.getTracks().forEach(t=>pc.addTrack(t,stream));pc.ontrack=e=>{$("remoteVideo").srcObject=e.streams[0];$("remoteText").style.display="none"};pc.onicecandidate=e=>{if(e.candidate&&callWith)send({type:"ice",to:callWith,candidate:e.candidate})};pc.onconnectionstatechange=()=>{$("callState").textContent="Koneksyon: "+pc.connectionState}}
+async function signal(m){if(m.type==="call-end"){end(false);return}if(m.type==="call-offer"){pending=m;callWith=m.from;callType=m.callType||"voice";$("incomingName").textContent="📲 "+p(m.from).displayName;$("incomingKind").textContent=callType==="video"?"Apèl videyo ap vini":"Apèl vwa ap vini";$("incoming").classList.add("show");return}if(m.type==="call-answer"&&pc){await pc.setRemoteDescription(m.answer);for(let c of ice)try{await pc.addIceCandidate(c)}catch{}ice=[];return}if(m.type==="ice"&&m.candidate){if(pc?.remoteDescription)try{await pc.addIceCandidate(m.candidate)}catch{}else ice.push(m.candidate)}}
+async function accept(){ $("incoming").classList.remove("show");$("call").classList.add("show");$("callTitle").textContent=(callType==="video"?"🎥":"📞")+" "+p(callWith).displayName;try{stream=await navigator.mediaDevices.getUserMedia({audio:true,video:callType==="video"});$("localVideo").srcObject=stream;peer();await pc.setRemoteDescription(pending.offer);for(let c of ice)try{await pc.addIceCandidate(c)}catch{}ice=[];let a=await pc.createAnswer();await pc.setLocalDescription(a);send({type:"call-answer",to:callWith,answer:pc.localDescription})}catch(e){alert(e.message);end(true)}}
+function reject(){if(callWith)send({type:"call-end",to:callWith});pending=null;callWith=null;$("incoming").classList.remove("show")}
+function end(notify=true){if(notify&&callWith)send({type:"call-end",to:callWith});try{pc?.close()}catch{}pc=null;stream?.getTracks().forEach(t=>t.stop());stream=null;$("localVideo").srcObject=null;$("remoteVideo").srcObject=null;$("call").classList.remove("show");pending=null;ice=[];callWith=null;callType=null}
+$("profileBtn").onclick=profileOpen;$("newBtn").onclick=()=>{$("search").focus()};$("loginGo").onclick=doLogin;$("loginClose").onclick=()=>$("login").classList.remove("show");$("pclose").onclick=()=>$("profileModal").classList.remove("show");$("psave").onclick=saveProfile;$("send").onclick=sendMsg;$("text").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg()}else if(active&&e.key.length===1)send({type:"typing",to:active})});$("search").oninput=()=>{let q=$("search").value;send({type:"search_users",query:q});renderContacts()};$("voice").onclick=()=>makeCall("voice");$("video").onclick=()=>makeCall("video");$("hang").onclick=()=>end(true);$("accept").onclick=accept;$("reject").onclick=reject;$("emojiBtn").onclick=()=>{$("emojiPanel").style.display=$("emojiPanel").style.display==="none"?"block":"none"};$("emojiPanel").innerHTML=emojis.map(x=>"<span>"+x+"</span>").join("");$("emojiPanel").querySelectorAll("span").forEach(x=>x.onclick=()=>{$("text").value+=x.textContent;$("text").focus()});
+renderMe();renderContacts();renderMessages();if(me)connect();else $("login").classList.add("show");
 })();
 </script>
-</body>
-</html>
+</body></html>
