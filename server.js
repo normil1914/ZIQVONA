@@ -15,39 +15,37 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 10000;
 
-/* =========================
-   EXPRESS
-========================= */
+const users = new Map();
 
 app.use(express.json());
 
 app.use(
-  express.static(path.join(__dirname, "public"))
+  express.static(
+    path.join(__dirname, "public")
+  )
 );
 
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
     app: "ZIQVONA",
-    version: "2.1.0",
+    version: "2.2.1",
     technology: "Node.js + Express + Socket.IO"
   });
 });
 
-app.get("*", (req, res) => {
+app.use((req, res) => {
   res.sendFile(
-    path.join(__dirname, "public", "index.html")
+    path.join(
+      __dirname,
+      "public",
+      "index.html"
+    )
   );
 });
 
-/* =========================
-   ONLINE USERS
-========================= */
-
-const users = new Map();
-
-function cleanText(value, max = 500) {
-  return String(value || "")
+function clean(value, max = 500) {
+  return String(value ?? "")
     .trim()
     .slice(0, max);
 }
@@ -58,226 +56,262 @@ function publicUser(user) {
     name: user.name,
     avatar: user.avatar || "",
     status: user.status || "Online",
-    online: true,
-    joinedAt: user.joinedAt
+    online: true
   };
 }
 
-function getUsers() {
-  return Array.from(users.values())
+function sendContacts() {
+  const contacts = Array.from(users.values())
     .map(publicUser)
     .sort((a, b) =>
       a.name.localeCompare(b.name)
     );
-}
 
-function sendOnlineUsers() {
-  io.emit("online-users", {
-    users: getUsers()
-  });
+  io.emit("contacts", contacts);
 }
-
-/* =========================
-   SOCKET.IO
-========================= */
 
 io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
+  console.log(
+    "ZIQVONA connection:",
+    socket.id
+  );
 
-  /* =========================
-     REGISTER USER
-  ========================= */
-
-  socket.on("register-user", (data = {}) => {
-    const name =
-      cleanText(data.name, 30) ||
-      "ZIQVONA User";
-
-    const avatar =
-      cleanText(data.avatar, 500);
-
-    const status =
-      cleanText(data.status, 80) ||
-      "Online";
-
+  socket.on("register", (data = {}) => {
     const user = {
       id: socket.id,
-      name,
-      avatar,
-      status,
-      online: true,
-      joinedAt: Date.now()
+
+      name:
+        clean(data.name, 40) ||
+        "ZIQVONA User",
+
+      avatar:
+        clean(data.avatar, 2000),
+
+      status:
+        clean(data.status, 100) ||
+        "Online"
     };
 
-    users.set(socket.id, user);
-
-    socket.data.name = name;
-
-    socket.emit("registered", {
-      user: publicUser(user)
-    });
-
-    sendOnlineUsers();
-
-    socket.broadcast.emit("user-online", {
-      user: publicUser(user)
-    });
-
-    console.log(`${name} is ONLINE`);
-  });
-
-  /* =========================
-     UPDATE PROFILE
-  ========================= */
-
-  socket.on("profile-update", (data = {}) => {
-    const user = users.get(socket.id);
-
-    if (!user) return;
-
-    if (data.name !== undefined) {
-      const newName =
-        cleanText(data.name, 30);
-
-      if (newName) {
-        user.name = newName;
-      }
-    }
-
-    if (data.avatar !== undefined) {
-      user.avatar =
-        cleanText(data.avatar, 500);
-    }
-
-    if (data.status !== undefined) {
-      user.status =
-        cleanText(data.status, 80) ||
-        "Online";
-    }
-
-    socket.data.name = user.name;
-
-    users.set(socket.id, user);
-
-    io.emit("user-updated", {
-      user: publicUser(user)
-    });
-
-    sendOnlineUsers();
-  });
-
-  /* =========================
-     GLOBAL CHAT
-  ========================= */
-
-  socket.on("global-message", (data = {}) => {
-    const sender = users.get(socket.id);
-
-    if (!sender) return;
-
-    const text =
-      cleanText(data.text, 2000);
-
-    if (!text) return;
-
-    const message = {
-      id:
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2),
-
-      senderId: socket.id,
-
-      senderName: sender.name,
-
-      senderAvatar: sender.avatar || "",
-
-      text,
-
-      time: new Date().toISOString()
-    };
-
-    io.emit("global-message", message);
-  });
-
-  /* =========================
-     PRIVATE CHAT
-  ========================= */
-
-  socket.on("private-message", (data = {}) => {
-    const sender = users.get(socket.id);
-
-    if (!sender) return;
-
-    const targetId =
-      cleanText(data.targetId, 100);
-
-    const text =
-      cleanText(data.text, 2000);
-
-    if (!targetId || !text) return;
-
-    if (!users.has(targetId)) {
-      socket.emit("message-error", {
-        message:
-          "Itilizatè sa a pa online kounye a."
-      });
-
-      return;
-    }
-
-    const message = {
-      id:
-        Date.now() +
-        "-" +
-        Math.random()
-          .toString(36)
-          .slice(2),
-
-      senderId: socket.id,
-
-      senderName: sender.name,
-
-      senderAvatar: sender.avatar || "",
-
-      targetId,
-
-      text,
-
-      time: new Date().toISOString()
-    };
-
-    io.to(targetId).emit(
-      "private-message",
-      message
+    users.set(
+      socket.id,
+      user
     );
 
-    socket.emit(
-      "private-message",
-      message
+    socket.emit("me", {
+      ...publicUser(user)
+    });
+
+    sendContacts();
+
+    console.log(
+      user.name,
+      "is ONLINE"
     );
   });
-
-  /* =========================
-     TYPING
-  ========================= */
 
   socket.on(
-    "private-typing",
+    "update-profile",
     (data = {}) => {
-      const targetId =
-        cleanText(data.targetId, 100);
+      const user =
+        users.get(socket.id);
 
-      if (!targetId) return;
+      if (!user) {
+        return;
+      }
+
+      if (
+        data.name !== undefined
+      ) {
+        user.name =
+          clean(data.name, 40) ||
+          user.name;
+      }
+
+      if (
+        data.avatar !== undefined
+      ) {
+        user.avatar =
+          clean(
+            data.avatar,
+            2000
+          );
+      }
+
+      if (
+        data.status !== undefined
+      ) {
+        user.status =
+          clean(
+            data.status,
+            100
+          ) ||
+          "Online";
+      }
+
+      users.set(
+        socket.id,
+        user
+      );
+
+      socket.emit("me", {
+        ...publicUser(user)
+      });
+
+      sendContacts();
+    }
+  );
+
+  socket.on(
+    "global-message",
+    (data = {}) => {
+      const user =
+        users.get(socket.id);
+
+      if (!user) {
+        return;
+      }
+
+      const text =
+        clean(data.text, 2000);
+
+      if (!text) {
+        return;
+      }
+
+      const message = {
+        id:
+          Date.now() +
+          "-" +
+          Math.random()
+            .toString(36)
+            .slice(2),
+
+        senderId:
+          user.id,
+
+        senderName:
+          user.name,
+
+        senderAvatar:
+          user.avatar || "",
+
+        text,
+
+        time:
+          new Date().toISOString()
+      };
+
+      io.emit(
+        "global-message",
+        message
+      );
+    }
+  );
+
+  socket.on(
+    "private-message",
+    (data = {}) => {
+      const user =
+        users.get(socket.id);
+
+      if (!user) {
+        return;
+      }
+
+      const targetId =
+        clean(
+          data.targetId,
+          100
+        );
+
+      const text =
+        clean(
+          data.text,
+          2000
+        );
+
+      if (
+        !targetId ||
+        !text
+      ) {
+        return;
+      }
+
+      if (
+        !users.has(targetId)
+      ) {
+        socket.emit(
+          "message-error",
+          {
+            message:
+              "Kontak sa a pa online kounye a."
+          }
+        );
+
+        return;
+      }
+
+      const message = {
+        id:
+          Date.now() +
+          "-" +
+          Math.random()
+            .toString(36)
+            .slice(2),
+
+        senderId:
+          user.id,
+
+        senderName:
+          user.name,
+
+        senderAvatar:
+          user.avatar || "",
+
+        targetId,
+
+        text,
+
+        time:
+          new Date().toISOString()
+      };
 
       io.to(targetId).emit(
-        "private-typing",
+        "private-message",
+        message
+      );
+
+      socket.emit(
+        "private-message",
+        message
+      );
+    }
+  );
+
+  socket.on(
+    "typing",
+    (data = {}) => {
+      const targetId =
+        clean(
+          data.targetId,
+          100
+        );
+
+      if (!targetId) {
+        return;
+      }
+
+      const user =
+        users.get(socket.id);
+
+      io.to(targetId).emit(
+        "typing",
         {
-          userId: socket.id,
+          from:
+            socket.id,
+
           name:
-            socket.data.name ||
+            user?.name ||
             "ZIQVONA User"
         }
       );
@@ -285,155 +319,56 @@ io.on("connection", (socket) => {
   );
 
   socket.on(
-    "private-stop-typing",
+    "stop-typing",
     (data = {}) => {
       const targetId =
-        cleanText(data.targetId, 100);
+        clean(
+          data.targetId,
+          100
+        );
 
-      if (!targetId) return;
+      if (!targetId) {
+        return;
+      }
 
       io.to(targetId).emit(
-        "private-stop-typing",
+        "stop-typing",
         {
-          userId: socket.id
+          from:
+            socket.id
         }
       );
     }
   );
 
-  /* =========================
-     WEBRTC CALL
-  ========================= */
+  socket.on(
+    "disconnect",
+    () => {
+      const user =
+        users.get(socket.id);
 
-  socket.on("call-user", (data = {}) => {
-    const targetId =
-      cleanText(data.targetId, 100);
+      users.delete(
+        socket.id
+      );
 
-    if (!targetId) return;
+      sendContacts();
 
-    if (!users.has(targetId)) {
-      socket.emit("call-error", {
-        message:
-          "Itilizatè a pa online."
-      });
-
-      return;
+      if (user) {
+        console.log(
+          user.name,
+          "is OFFLINE"
+        );
+      }
     }
-
-    io.to(targetId).emit(
-      "incoming-call",
-      {
-        from: socket.id,
-
-        fromName:
-          socket.data.name ||
-          "ZIQVONA User",
-
-        callType:
-          data.callType === "voice"
-            ? "voice"
-            : "video",
-
-        offer:
-          data.offer || null
-      }
-    );
-  });
-
-  socket.on("accept-call", (data = {}) => {
-    const targetId =
-      cleanText(data.targetId, 100);
-
-    if (!targetId) return;
-
-    io.to(targetId).emit(
-      "call-accepted",
-      {
-        from: socket.id,
-        answer: data.answer || null
-      }
-    );
-  });
-
-  socket.on("reject-call", (data = {}) => {
-    const targetId =
-      cleanText(data.targetId, 100);
-
-    if (!targetId) return;
-
-    io.to(targetId).emit(
-      "call-rejected",
-      {
-        from: socket.id
-      }
-    );
-  });
-
-  socket.on("ice-candidate", (data = {}) => {
-    const targetId =
-      cleanText(data.targetId, 100);
-
-    if (!targetId) return;
-
-    io.to(targetId).emit(
-      "ice-candidate",
-      {
-        from: socket.id,
-        candidate:
-          data.candidate || null
-      }
-    );
-  });
-
-  socket.on("end-call", (data = {}) => {
-    const targetId =
-      cleanText(data.targetId, 100);
-
-    if (!targetId) return;
-
-    io.to(targetId).emit(
-      "call-ended",
-      {
-        from: socket.id
-      }
-    );
-  });
-
-  /* =========================
-     DISCONNECT
-  ========================= */
-
-  socket.on("disconnect", () => {
-    const user =
-      users.get(socket.id);
-
-    if (!user) return;
-
-    users.delete(socket.id);
-
-    io.emit("user-offline", {
-      id: socket.id,
-      name: user.name
-    });
-
-    sendOnlineUsers();
-
-    console.log(
-      `${user.name} is OFFLINE`
-    );
-  });
+  );
 });
-
-/* =========================
-   START SERVER
-========================= */
 
 server.listen(
   PORT,
   "0.0.0.0",
   () => {
     console.log(
-      `ZIQVONA 2.1.0 running on port ${PORT}`
+      `ZIQVONA 2.2.1 running on port ${PORT}`
     );
   }
 );
