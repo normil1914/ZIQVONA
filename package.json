@@ -1,7 +1,8 @@
 {
   "name": "ziqvona",
-  "version": "2.1.0",
-  "description": "ZIQVONA Global Online Chat",
+  "version": "2.2.1",
+  "private": true,
+  "description": "ZIQVONA contacts-first chat",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
