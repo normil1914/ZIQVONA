@@ -1,11 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ht">
+
 <head>
-<meta charset="UTF-8">
+
+<meta charset="utf-8">
 
 <meta
   name="viewport"
-  content="width=device-width, initial-scale=1.0"
+  content="width=device-width,initial-scale=1"
 >
 
 <meta
@@ -13,848 +15,904 @@
   content="#10bfa3"
 >
 
-<title>ZIQVONA — Global Online</title>
+<title>ZIQVONA — Kontak</title>
+
+<script src="/socket.io/socket.io.js"></script>
 
 <style>
 
-:root {
-  --turq: #10bfa3;
-  --turq-dark: #079b85;
-  --bg: #f3f7f6;
-  --white: #ffffff;
-  --text: #172321;
-  --muted: #74827f;
-  --border: #e4ebe9;
-  --danger: #e74c3c;
-  --green: #20c997;
+:root{
+  --turquoise:#10bfa3;
+  --turquoise-dark:#078f7c;
+  --text:#12302d;
+  --muted:#728582;
+  --line:#d8eee9;
+  --white:#ffffff;
+  --background:#eaf9f6;
 }
 
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
-body {
-  margin: 0;
+html,
+body{
+  margin:0;
+  width:100%;
+  height:100%;
   font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
     Arial,
+    Helvetica,
     sans-serif;
-
-  background: var(--bg);
-  color: var(--text);
-
-  height: 100vh;
-  overflow: hidden;
+  color:var(--text);
 }
 
-button,
-input {
-  font: inherit;
+body{
+  overflow:hidden;
+  background:
+    radial-gradient(
+      circle at center,
+      #ffffff 0%,
+      #eaf9f6 55%,
+      #dff6f1 100%
+    );
 }
 
-/* =========================
-   LOGIN
-========================= */
+/*
+  ZIQVONA BACKGROUND LOGO
+*/
 
-#loginScreen {
-  position: fixed;
-  inset: 0;
+body::before{
+  content:"ZIQVONA";
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position:fixed;
+
+  inset:0;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-size:
+    clamp(
+      80px,
+      17vw,
+      240px
+    );
+
+  font-weight:900;
+
+  letter-spacing:10px;
+
+  color:
+    rgba(
+      16,
+      191,
+      163,
+      .075
+    );
+
+  pointer-events:none;
+
+  z-index:0;
+}
+
+/*
+  MAIN APP
+*/
+
+.app{
+  position:relative;
+
+  z-index:1;
+
+  width:100%;
+
+  height:100vh;
+
+  display:grid;
+
+  grid-template-columns:
+    370px
+    1fr;
+}
+
+/*
+  LEFT CONTACT PANEL
+*/
+
+.left{
+  height:100%;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .97
+    );
+
+  border-right:
+    1px solid
+    var(--line);
+
+  display:flex;
+
+  flex-direction:column;
+}
+
+/*
+  HEADER
+*/
+
+.header{
+  height:76px;
+
+  padding:
+    14px 18px;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  border-bottom:
+    1px solid
+    var(--line);
+}
+
+.logo{
+  width:50px;
+
+  height:50px;
+
+  border-radius:16px;
 
   background:
     linear-gradient(
-      135deg,
+      145deg,
       #10bfa3,
-      #087e70
+      #057e70
     );
 
-  z-index: 1000;
-}
+  color:white;
 
-.loginCard {
-  width: min(92%, 430px);
+  display:grid;
 
-  background: white;
+  place-items:center;
 
-  border-radius: 24px;
+  font-weight:1000;
 
-  padding: 35px;
+  font-size:27px;
 
   box-shadow:
-    0 25px 70px
-    rgba(0,0,0,.22);
-
-  text-align: center;
+    0 8px 22px
+    rgba(
+      16,
+      191,
+      163,
+      .20
+    );
 }
 
-.logoCircle {
-  width: 80px;
-  height: 80px;
+.logoText b{
+  display:block;
 
-  margin: 0 auto 18px;
+  font-size:21px;
 
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--turq);
-
-  color: white;
-
-  font-size: 42px;
-  font-weight: 900;
+  letter-spacing:.5px;
 }
 
-.loginCard h1 {
-  margin: 0;
+.logoText span{
+  color:var(--muted);
 
-  font-size: 32px;
+  font-size:12px;
 }
 
-.loginCard p {
-  color: var(--muted);
+/*
+  MY PROFILE
+*/
 
-  line-height: 1.5;
-}
+.profile{
+  margin:14px;
 
-.loginCard input {
-  width: 100%;
-
-  padding: 15px;
-
-  margin-top: 12px;
-
-  border: 1px solid var(--border);
-
-  border-radius: 12px;
-
-  outline: none;
-}
-
-.loginCard input:focus {
-  border-color: var(--turq);
-}
-
-.primaryButton {
-  width: 100%;
-
-  margin-top: 15px;
-
-  padding: 15px;
-
-  border: 0;
-
-  border-radius: 12px;
-
-  background: var(--turq);
-
-  color: white;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.primaryButton:hover {
-  background: var(--turq-dark);
-}
-
-/* =========================
-   APP
-========================= */
-
-#app {
-  display: none;
-
-  height: 100vh;
-}
-
-.app {
-  display: flex;
-
-  height: 100%;
-}
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar {
-  width: 350px;
-
-  background: white;
-
-  border-right:
-    1px solid var(--border);
-
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebarHeader {
-  padding: 20px;
-
-  border-bottom:
-    1px solid var(--border);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.brandLogo {
-  width: 45px;
-  height: 45px;
-
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--turq);
-
-  color: white;
-
-  font-weight: 900;
-
-  font-size: 22px;
-}
-
-.brandText strong {
-  display: block;
-
-  font-size: 20px;
-}
-
-.brandText span {
-  color: var(--green);
-
-  font-size: 13px;
-}
-
-.searchBox {
-  margin-top: 18px;
-}
-
-.searchBox input {
-  width: 100%;
-
-  padding: 12px 14px;
+  padding:12px;
 
   border:
-    1px solid var(--border);
+    1px solid
+    var(--line);
 
-  border-radius: 12px;
+  border-radius:17px;
 
-  outline: none;
+  background:#f8fffd;
+
+  display:flex;
+
+  gap:11px;
+
+  align-items:center;
 }
 
-.onlineTitle {
+.avatar{
+  width:46px;
+
+  height:46px;
+
+  border-radius:50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #10bfa3,
+      #078f7c
+    );
+
+  color:white;
+
+  display:grid;
+
+  place-items:center;
+
+  font-weight:900;
+
+  overflow:hidden;
+
+  flex:none;
+}
+
+.avatar img{
+  width:100%;
+
+  height:100%;
+
+  object-fit:cover;
+}
+
+.ptext{
+  min-width:0;
+
+  flex:1;
+}
+
+.ptext b{
+  display:block;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+}
+
+.ptext span{
+  color:var(--muted);
+
+  font-size:12px;
+}
+
+.icon{
+  border:0;
+
+  background:#e8f8f4;
+
+  color:var(--turquoise-dark);
+
+  width:40px;
+
+  height:40px;
+
+  border-radius:12px;
+
+  font-size:18px;
+
+  cursor:pointer;
+}
+
+.icon:hover{
+  background:#d9f5ef;
+}
+
+/*
+  SEARCH
+*/
+
+.search{
   padding:
-    18px 20px 8px;
-
-  font-size: 13px;
-
-  font-weight: 800;
-
-  color: var(--muted);
-
-  text-transform: uppercase;
+    0 14px 10px;
 }
 
-.usersList {
-  flex: 1;
-
-  overflow-y: auto;
-}
-
-.userItem {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  padding: 13px 18px;
-
-  cursor: pointer;
-
-  border-bottom:
-    1px solid #f0f3f2;
-}
-
-.userItem:hover {
-  background: #f4faf8;
-}
-
-.userItem.active {
-  background: #e7f8f4;
-}
-
-.avatar {
-  width: 46px;
-  height: 46px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: var(--turq);
-
-  color: white;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-weight: 800;
-
-  position: relative;
-
-  overflow: hidden;
-}
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-}
-
-.onlineDot {
-  position: absolute;
-
-  width: 12px;
-  height: 12px;
-
-  background: #20c997;
+.search input{
+  width:100%;
 
   border:
-    2px solid white;
+    1px solid
+    var(--line);
 
-  border-radius: 50%;
+  border-radius:13px;
 
-  right: -1px;
-  bottom: -1px;
+  padding:13px;
+
+  outline:0;
+
+  font-size:14px;
+
+  background:white;
 }
 
-.userInfo {
-  min-width: 0;
-  flex: 1;
+.search input:focus{
+  border-color:
+    var(--turquoise);
 }
 
-.userName {
-  font-weight: 700;
+/*
+  CONTACT TITLE
+*/
 
-  white-space: nowrap;
+.label{
+  padding:
+    7px 18px;
 
-  overflow: hidden;
+  color:var(--muted);
 
-  text-overflow: ellipsis;
+  font-size:11px;
+
+  font-weight:900;
+
+  text-transform:uppercase;
+
+  letter-spacing:.8px;
 }
 
-.userStatus {
-  color: var(--muted);
+/*
+  CONTACT LIST
+*/
 
-  font-size: 13px;
+.contacts{
+  overflow:auto;
 
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
+  padding:
+    0 9px 18px;
 }
 
-/* =========================
-   CHAT
-========================= */
+.contact{
+  display:flex;
 
-.chat {
-  flex: 1;
+  align-items:center;
 
-  display: flex;
+  gap:11px;
 
-  flex-direction: column;
+  padding:12px;
 
-  min-width: 0;
+  border-radius:14px;
+
+  cursor:pointer;
+
+  transition:.15s;
 }
 
-.chatHeader {
-  height: 75px;
+.contact:hover{
+  background:#eefbf8;
+}
 
-  background: white;
+.contact.active{
+  background:#e3f8f3;
+}
+
+.ci{
+  flex:1;
+
+  min-width:0;
+}
+
+.ci b{
+  display:block;
+
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
+}
+
+.ci span{
+  font-size:12px;
+
+  color:var(--muted);
+}
+
+.online{
+  width:9px;
+
+  height:9px;
+
+  border-radius:50%;
+
+  background:#19c978;
+
+  flex:none;
+}
+
+.emptyContacts{
+  padding:20px;
+
+  color:var(--muted);
+
+  font-size:13px;
+
+  text-align:center;
+}
+
+/*
+  RIGHT SIDE
+*/
+
+.right{
+  height:100%;
+
+  display:flex;
+
+  flex-direction:column;
+
+  min-width:0;
+}
+
+/*
+  CHAT HEADER
+*/
+
+.top{
+  height:76px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      .94
+    );
 
   border-bottom:
-    1px solid var(--border);
+    1px solid
+    var(--line);
 
-  display: flex;
+  display:flex;
 
-  align-items: center;
-
-  justify-content: space-between;
+  align-items:center;
 
   padding:
     0 20px;
+
+  gap:12px;
 }
 
-.chatUser {
-  display: flex;
+.topAvatar{
+  width:44px;
 
-  align-items: center;
+  height:44px;
 
-  gap: 12px;
-}
-
-.chatUserName {
-  font-weight: 800;
-}
-
-.chatUserStatus {
-  font-size: 13px;
-
-  color: var(--green);
-}
-
-.callButtons {
-  display: flex;
-
-  gap: 8px;
-}
-
-.callButton {
-  width: 42px;
-  height: 42px;
-
-  border: 0;
-
-  border-radius: 50%;
-
-  background: #e8f8f4;
-
-  cursor: pointer;
-
-  font-size: 18px;
-}
-
-.callButton:hover {
-  background: #d4f2eb;
-}
-
-.messages {
-  flex: 1;
-
-  overflow-y: auto;
-
-  padding: 25px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 10px;
-}
-
-.welcome {
-  margin: auto;
-
-  text-align: center;
-
-  max-width: 500px;
-}
-
-.welcomeLogo {
-  width: 90px;
-  height: 90px;
-
-  margin: auto;
-
-  border-radius: 50%;
-
-  background: var(--turq);
-
-  color: white;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  font-size: 44px;
-  font-weight: 900;
-}
-
-.welcome h2 {
-  margin-bottom: 5px;
-}
-
-.welcome p {
-  color: var(--muted);
-}
-
-.messageRow {
-  display: flex;
-}
-
-.messageRow.mine {
-  justify-content: flex-end;
-}
-
-.messageBubble {
-  max-width: min(70%, 600px);
-
-  padding:
-    10px 14px;
-
-  border-radius: 16px;
-
-  background: white;
-
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.06);
-}
-
-.messageRow.mine
-.messageBubble {
-  background: var(--turq);
-
-  color: white;
-}
-
-.messageSender {
-  font-size: 12px;
-
-  font-weight: 800;
-
-  margin-bottom: 4px;
-}
-
-.messageTime {
-  font-size: 10px;
-
-  opacity: .65;
-
-  margin-top: 4px;
-
-  text-align: right;
-}
-
-.typing {
-  height: 25px;
-
-  padding:
-    0 25px;
-
-  color: var(--muted);
-
-  font-size: 13px;
-}
-
-/* =========================
-   INPUT
-========================= */
-
-.messageInputArea {
-  background: white;
-
-  border-top:
-    1px solid var(--border);
-
-  padding: 12px;
-
-  display: flex;
-
-  gap: 8px;
-}
-
-.emojiButton {
-  width: 45px;
-
-  border: 0;
-
-  border-radius: 12px;
-
-  background: #f1f5f4;
-
-  cursor: pointer;
-
-  font-size: 20px;
-}
-
-.messageInput {
-  flex: 1;
-
-  min-width: 0;
-
-  border:
-    1px solid var(--border);
-
-  border-radius: 12px;
-
-  padding:
-    12px 14px;
-
-  outline: none;
-}
-
-.sendButton {
-  width: 90px;
-
-  border: 0;
-
-  border-radius: 12px;
-
-  background: var(--turq);
-
-  color: white;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-/* =========================
-   CALL WINDOW
-========================= */
-
-#callOverlay {
-  display: none;
-
-  position: fixed;
-
-  inset: 0;
-
-  background: #101514;
-
-  z-index: 2000;
-}
-
-.callTop {
-  position: absolute;
-
-  top: 0;
-  left: 0;
-  right: 0;
-
-  height: 65px;
-
-  padding: 15px 20px;
-
-  color: white;
-
-  display: flex;
-
-  justify-content: space-between;
-
-  align-items: center;
-
-  z-index: 5;
-}
-
-.callVideos {
-  width: 100%;
-  height: 100%;
-
-  position: relative;
-}
-
-#remoteVideo {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  background: #000;
-}
-
-#localVideo {
-  position: absolute;
-
-  right: 20px;
-  bottom: 90px;
-
-  width: 180px;
-  height: 130px;
-
-  object-fit: cover;
-
-  border-radius: 15px;
-
-  background: #222;
-
-  border: 2px solid white;
-}
-
-.callControls {
-  position: absolute;
-
-  bottom: 20px;
-
-  left: 0;
-  right: 0;
-
-  display: flex;
-
-  justify-content: center;
-
-  gap: 12px;
-
-  z-index: 5;
-}
-
-.endCall {
-  width: 60px;
-  height: 60px;
-
-  border: 0;
-
-  border-radius: 50%;
-
-  background: var(--danger);
-
-  color: white;
-
-  font-size: 22px;
-
-  cursor: pointer;
-}
-
-/* =========================
-   INCOMING CALL
-========================= */
-
-#incomingCall {
-  display: none;
-
-  position: fixed;
-
-  inset: 0;
+  border-radius:50%;
 
   background:
-    rgba(0,0,0,.75);
+    linear-gradient(
+      145deg,
+      #10bfa3,
+      #078f7c
+    );
 
-  z-index: 3000;
+  color:white;
 
-  align-items: center;
+  display:grid;
 
-  justify-content: center;
+  place-items:center;
+
+  font-weight:900;
+
+  overflow:hidden;
 }
 
-.incomingCard {
-  width: min(90%, 380px);
+.topAvatar img{
+  width:100%;
 
-  background: white;
+  height:100%;
 
-  border-radius: 22px;
-
-  padding: 30px;
-
-  text-align: center;
+  object-fit:cover;
 }
 
-.incomingCard h2 {
-  margin-top: 5px;
+.tt{
+  flex:1;
+
+  min-width:0;
 }
 
-.incomingActions {
-  display: flex;
+.tt b{
+  display:block;
 
-  gap: 10px;
+  font-size:18px;
 
-  margin-top: 20px;
+  white-space:nowrap;
+
+  overflow:hidden;
+
+  text-overflow:ellipsis;
 }
 
-.acceptButton,
-.rejectButton {
-  flex: 1;
+.tt span{
+  font-size:12px;
 
-  padding: 14px;
-
-  border: 0;
-
-  border-radius: 12px;
-
-  cursor: pointer;
-
-  font-weight: 700;
+  color:var(--muted);
 }
 
-.acceptButton {
-  background: var(--turq);
+.global{
+  border:0;
 
-  color: white;
+  background:
+    var(--turquoise);
+
+  color:white;
+
+  padding:
+    11px 15px;
+
+  border-radius:12px;
+
+  font-weight:800;
+
+  cursor:pointer;
 }
 
-.rejectButton {
-  background: #eee;
+.global:hover{
+  background:
+    var(--turquoise-dark);
 }
 
-/* =========================
-   MOBILE
-========================= */
+/*
+  MESSAGES
+*/
 
-@media (max-width: 750px) {
+.messages{
+  flex:1;
 
-  .sidebar {
-    width: 90px;
+  overflow:auto;
+
+  padding:24px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:9px;
+}
+
+.welcome{
+  margin:auto;
+
+  text-align:center;
+
+  color:var(--muted);
+
+  max-width:450px;
+}
+
+.welcomeMark{
+  width:90px;
+
+  height:90px;
+
+  border-radius:28px;
+
+  margin:
+    auto auto 14px;
+
+  display:grid;
+
+  place-items:center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #10bfa3,
+      #057e70
+    );
+
+  color:white;
+
+  font-size:48px;
+
+  font-weight:1000;
+
+  box-shadow:
+    0 15px 35px
+    rgba(
+      16,
+      191,
+      163,
+      .20
+    );
+}
+
+.welcome h2{
+  color:var(--text);
+
+  margin:
+    8px 0;
+}
+
+.welcome p{
+  line-height:1.6;
+}
+
+/*
+  MESSAGE
+*/
+
+.msg{
+  max-width:
+    min(
+      680px,
+      80%
+    );
+
+  background:white;
+
+  border:
+    1px solid
+    var(--line);
+
+  padding:
+    10px 13px;
+
+  border-radius:17px;
+
+  box-shadow:
+    0 3px 12px
+    rgba(
+      0,
+      0,
+      0,
+      .03
+    );
+}
+
+.msg.mine{
+  align-self:flex-end;
+
+  background:#d9f8f1;
+}
+
+.msg b{
+  font-size:12px;
+
+  color:
+    var(--turquoise-dark);
+}
+
+.msg p{
+  margin:5px 0;
+
+  white-space:pre-wrap;
+
+  word-break:break-word;
+}
+
+.msg time{
+  font-size:10px;
+
+  color:#899b98;
+}
+
+/*
+  TYPING
+*/
+
+.typing{
+  height:22px;
+
+  padding:
+    0 22px;
+
+  color:var(--muted);
+
+  font-size:12px;
+}
+
+/*
+  COMPOSER
+*/
+
+.composer{
+  display:flex;
+
+  gap:8px;
+
+  padding:
+    12px 16px;
+
+  background:white;
+
+  border-top:
+    1px solid
+    var(--line);
+}
+
+.composer input{
+  flex:1;
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius:14px;
+
+  padding:13px;
+
+  outline:0;
+
+  font-size:15px;
+}
+
+.composer input:focus{
+  border-color:
+    var(--turquoise);
+}
+
+.send{
+  border:0;
+
+  background:
+    var(--turquoise);
+
+  color:white;
+
+  padding:
+    0 18px;
+
+  border-radius:13px;
+
+  font-weight:800;
+
+  cursor:pointer;
+}
+
+.send:hover{
+  background:
+    var(--turquoise-dark);
+}
+
+/*
+  PROFILE MODAL
+*/
+
+.overlay{
+  position:fixed;
+
+  inset:0;
+
+  background:
+    rgba(
+      6,
+      58,
+      51,
+      .67
+    );
+
+  display:none;
+
+  align-items:center;
+
+  justify-content:center;
+
+  z-index:5;
+}
+
+.modal{
+  background:white;
+
+  width:
+    min(
+      430px,
+      92vw
+    );
+
+  padding:23px;
+
+  border-radius:22px;
+
+  box-shadow:
+    0 20px 70px
+    rgba(
+      0,
+      0,
+      0,
+      .25
+    );
+}
+
+.modal h2{
+  margin:
+    0 0 6px;
+}
+
+.modal p{
+  color:var(--muted);
+
+  font-size:13px;
+}
+
+.modal input{
+  width:100%;
+
+  padding:13px;
+
+  border:
+    1px solid
+    var(--line);
+
+  border-radius:12px;
+
+  margin:6px 0;
+
+  outline:0;
+}
+
+.actions{
+  display:flex;
+
+  justify-content:flex-end;
+
+  gap:8px;
+
+  margin-top:9px;
+}
+
+.actions button{
+  border:0;
+
+  padding:
+    11px 15px;
+
+  border-radius:11px;
+
+  cursor:pointer;
+
+  font-weight:800;
+}
+
+.save{
+  background:
+    var(--turquoise);
+
+  color:white;
+}
+
+/*
+  MOBILE
+*/
+
+@media(max-width:760px){
+
+  .app{
+    grid-template-columns:1fr;
   }
 
-  .brandText,
-  .searchBox,
-  .onlineTitle,
-  .userInfo {
-    display: none;
+  .left{
+    display:none;
   }
 
-  .sidebarHeader {
-    padding: 12px;
-
-    display: flex;
-
-    justify-content: center;
+  .messages{
+    padding:14px;
   }
 
-  .userItem {
-    justify-content: center;
-
-    padding: 12px 8px;
+  .top{
+    height:65px;
   }
 
-  .chatHeader {
-    padding: 0 12px;
+  .msg{
+    max-width:91%;
   }
 
-  .chatUserName {
-    max-width: 130px;
-
-    overflow: hidden;
-
-    white-space: nowrap;
-
-    text-overflow: ellipsis;
-  }
-
-  .messageBubble {
-    max-width: 85%;
-  }
-
-  .sendButton {
-    width: 60px;
-  }
-
-  #localVideo {
-    width: 120px;
-    height: 90px;
-  }
 }
 
 </style>
@@ -862,1097 +920,996 @@ input {
 
 <body>
 
-<!-- =========================
-     LOGIN
-========================= -->
+<div class="app">
 
-<section id="loginScreen">
+<!-- CONTACTS -->
 
-  <div class="loginCard">
+<aside class="left">
 
-    <div class="logoCircle">
+  <div class="header">
+
+    <div class="logo">
       Z
     </div>
 
-    <h1>ZIQVONA</h1>
+    <div class="logoText">
+
+      <b>ZIQVONA</b>
+
+      <span>
+        Kontak yo
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- MY PROFILE -->
+
+  <div class="profile">
+
+    <div
+      class="avatar"
+      id="myAvatar"
+    >
+      Z
+    </div>
+
+    <div class="ptext">
+
+      <b id="myName">
+        ZIQVONA User
+      </b>
+
+      <span id="myStatus">
+        Online
+      </span>
+
+    </div>
+
+    <button
+      class="icon"
+      id="edit"
+      title="Modifye profil"
+    >
+      ✎
+    </button>
+
+  </div>
+
+
+  <!-- SEARCH -->
+
+  <div class="search">
+
+    <input
+      id="search"
+      placeholder="Chèche kontak..."
+      autocomplete="off"
+    >
+
+  </div>
+
+
+  <div class="label">
+    Kontak yo
+  </div>
+
+
+  <div
+    class="contacts"
+    id="contacts"
+  ></div>
+
+</aside>
+
+
+<!-- CHAT -->
+
+<main class="right">
+
+  <div class="top">
+
+    <div
+      class="topAvatar"
+      id="topAvatar"
+    >
+      Z
+    </div>
+
+    <div class="tt">
+
+      <b id="title">
+        Kontak ZIQVONA
+      </b>
+
+      <span id="sub">
+        Moun online yo ap parèt isit la
+      </span>
+
+    </div>
+
+    <button
+      class="global"
+      id="global"
+    >
+      🌎 Global
+    </button>
+
+  </div>
+
+
+  <div
+    class="messages"
+    id="messages"
+  >
+
+    <div class="welcome">
+
+      <div class="welcomeMark">
+        Z
+      </div>
+
+      <h2>
+        Byenveni sou ZIQVONA
+      </h2>
+
+      <p>
+        Kontak yo chaje dirèkteman
+        lè ou antre.
+        Chwazi yon kontak pou kòmanse
+        yon chat prive.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="typing"
+    id="typing"
+  ></div>
+
+
+  <form
+    class="composer"
+    id="form"
+  >
+
+    <button
+      type="button"
+      class="icon"
+      id="emoji"
+    >
+      😊
+    </button>
+
+    <input
+      id="input"
+      placeholder="Ekri yon mesaj..."
+      autocomplete="off"
+    >
+
+    <button
+      class="send"
+      type="submit"
+    >
+      Voye
+    </button>
+
+  </form>
+
+</main>
+
+</div>
+
+
+<!-- PROFILE WINDOW -->
+
+<div
+  class="overlay"
+  id="overlay"
+>
+
+  <div class="modal">
+
+    <h2>
+      Profil mwen
+    </h2>
 
     <p>
-      Chat • Voice • Video • Global Online
+      Chanje non ak status ou.
     </p>
 
     <input
       id="nameInput"
-      type="text"
-      maxlength="30"
-      placeholder="Enter your name"
-      autocomplete="name"
+      maxlength="40"
+      placeholder="Non ou"
     >
 
     <input
       id="statusInput"
-      type="text"
-      maxlength="80"
-      placeholder="Status (optional)"
-      value="Online"
+      maxlength="100"
+      placeholder="Status ou"
     >
 
-    <button
-      class="primaryButton"
-      id="loginButton"
-    >
-      Connect to ZIQVONA
-    </button>
+    <div class="actions">
+
+      <button
+        id="close"
+        type="button"
+      >
+        Fèmen
+      </button>
+
+      <button
+        class="save"
+        id="save"
+        type="button"
+      >
+        Sove
+      </button>
+
+    </div>
 
   </div>
 
-</section>
+</div>
 
 
-<!-- =========================
-     APP
-========================= -->
+<script>
 
-<section id="app">
+const socket =
+  io();
 
-  <div class="app">
 
-    <!-- SIDEBAR -->
+/*
+  USER DATA
+*/
 
-    <aside class="sidebar">
+let me =
+  JSON.parse(
+    localStorage.getItem(
+      "ziqvona_me"
+    ) || "null"
+  ) || {
 
-      <div class="sidebarHeader">
+    name:
+      "ZIQVONA User",
 
-        <div class="brand">
+    status:
+      "Online",
 
-          <div class="brandLogo">
-            Z
+    avatar:
+      ""
+
+  };
+
+
+let contacts = [];
+
+let selected =
+  null;
+
+let globalMode =
+  false;
+
+let globalMessages =
+  [];
+
+let privateMessages =
+  {};
+
+let typingTimer;
+
+
+/*
+  SHORT SELECTOR
+*/
+
+const $ =
+  id =>
+    document.getElementById(id);
+
+
+/*
+  SECURITY
+*/
+
+function escapeHtml(
+  value
+){
+
+  return String(
+    value
+  ).replace(
+    /[&<>"']/g,
+    character => {
+
+      const map = {
+
+        "&":
+          "&amp;",
+
+        "<":
+          "&lt;",
+
+        ">":
+          "&gt;",
+
+        '"':
+          "&quot;",
+
+        "'":
+          "&#039;"
+
+      };
+
+      return map[
+        character
+      ];
+
+    }
+  );
+
+}
+
+
+/*
+  INITIAL
+*/
+
+function initial(
+  name
+){
+
+  return (
+    name ||
+    "Z"
+  )
+    .trim()
+    .slice(
+      0,
+      1
+    )
+    .toUpperCase();
+
+}
+
+
+/*
+  AVATAR
+*/
+
+function avatar(
+  user
+){
+
+  if(
+    user &&
+    user.avatar
+  ){
+
+    return `
+      <img
+        src="${escapeHtml(
+          user.avatar
+        )}"
+        alt=""
+      >
+    `;
+
+  }
+
+  return initial(
+    user?.name
+  );
+
+}
+
+
+/*
+  CONNECT USER
+*/
+
+socket.emit(
+  "register",
+  me
+);
+
+
+/*
+  SERVER RETURNS ME
+*/
+
+socket.on(
+  "me",
+  user => {
+
+    me =
+      user;
+
+    localStorage.setItem(
+      "ziqvona_me",
+      JSON.stringify(
+        me
+      )
+    );
+
+    updateMe();
+
+  }
+);
+
+
+/*
+  CONTACT LIST
+*/
+
+socket.on(
+  "contacts",
+  list => {
+
+    contacts =
+      list;
+
+    renderContacts();
+
+    if(
+      selected
+    ){
+
+      const updated =
+        contacts.find(
+          user =>
+            user.id ===
+            selected.id
+        );
+
+      if(
+        updated
+      ){
+
+        selected =
+          updated;
+
+      }
+
+      updateTop();
+
+    }
+
+  }
+);
+
+
+/*
+  GLOBAL MESSAGE
+*/
+
+socket.on(
+  "global-message",
+  message => {
+
+    globalMessages.push(
+      message
+    );
+
+    if(
+      globalMode
+    ){
+
+      renderMessages();
+
+    }
+
+  }
+);
+
+
+/*
+  PRIVATE MESSAGE
+*/
+
+socket.on(
+  "private-message",
+  message => {
+
+    const key =
+      [
+        message.senderId,
+        message.targetId
+      ]
+        .sort()
+        .join(":");
+
+    if(
+      !privateMessages[key]
+    ){
+
+      privateMessages[key] =
+        [];
+
+    }
+
+    privateMessages[key].push(
+      message
+    );
+
+    if(
+      selected &&
+      !globalMode &&
+      [
+        message.senderId,
+        message.targetId
+      ].includes(
+        selected.id
+      )
+    ){
+
+      renderMessages();
+
+    }
+
+  }
+);
+
+
+/*
+  TYPING
+*/
+
+socket.on(
+  "typing",
+  data => {
+
+    if(
+      selected &&
+      !globalMode &&
+      data.from ===
+        selected.id
+    ){
+
+      $("typing").textContent =
+        data.name +
+        " ap ekri...";
+
+    }
+
+  }
+);
+
+
+/*
+  STOP TYPING
+*/
+
+socket.on(
+  "stop-typing",
+  data => {
+
+    if(
+      selected?.id ===
+      data.from
+    ){
+
+      $("typing").textContent =
+        "";
+
+    }
+
+  }
+);
+
+
+/*
+  UPDATE MY PROFILE
+*/
+
+function updateMe(){
+
+  $("myName")
+    .textContent =
+    me.name;
+
+  $("myStatus")
+    .textContent =
+    me.status ||
+    "Online";
+
+  $("myAvatar")
+    .innerHTML =
+    avatar(
+      me
+    );
+
+}
+
+
+/*
+  CONTACTS
+*/
+
+function renderContacts(){
+
+  const query =
+    $("search")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const list =
+    contacts.filter(
+      user =>
+
+        user.id !==
+        me.id &&
+
+        (
+          !query ||
+
+          user.name
+            .toLowerCase()
+            .includes(
+              query
+            )
+        )
+    );
+
+
+  if(
+    list.length === 0
+  ){
+
+    $("contacts")
+      .innerHTML = `
+        <div
+          class="emptyContacts"
+        >
+          Pa gen lòt moun
+          online pou kounye a.
+        </div>
+      `;
+
+    return;
+
+  }
+
+
+  $("contacts")
+    .innerHTML =
+
+    list.map(
+      user => `
+
+        <div
+          class="contact ${
+            selected?.id === user.id &&
+            !globalMode
+              ? "active"
+              : ""
+          }"
+          data-id="${user.id}"
+        >
+
+          <div class="avatar">
+            ${avatar(user)}
           </div>
 
-          <div class="brandText">
+          <div class="ci">
 
-            <strong>ZIQVONA</strong>
+            <b>
+              ${escapeHtml(
+                user.name
+              )}
+            </b>
 
             <span>
-              Global Online
+              ${escapeHtml(
+                user.status ||
+                "Online"
+              )}
             </span>
 
           </div>
 
-        </div>
-
-        <div class="searchBox">
-
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="Search people..."
-          >
+          <i
+            class="online"
+          ></i>
 
         </div>
 
-      </div>
-
-      <div class="onlineTitle">
-        People Online
-      </div>
-
-      <div
-        id="usersList"
-        class="usersList"
-      ></div>
-
-    </aside>
+      `
+    ).join("");
 
 
-    <!-- CHAT -->
+  document
+    .querySelectorAll(
+      ".contact"
+    )
+    .forEach(
+      element => {
 
-    <main class="chat">
+        element.onclick =
+          () => {
 
-      <header class="chatHeader">
+            const user =
+              contacts.find(
+                contact =>
+                  contact.id ===
+                  element.dataset.id
+              );
 
-        <div class="chatUser">
+            if(
+              !user
+            ){
 
-          <div
-            id="chatAvatar"
-            class="avatar"
-          >
-            Z
-            <span class="onlineDot"></span>
-          </div>
+              return;
 
-          <div>
+            }
 
-            <div
-              id="chatUserName"
-              class="chatUserName"
-            >
-              ZIQVONA Global Chat
-            </div>
+            selected =
+              user;
 
-            <div
-              id="chatUserStatus"
-              class="chatUserStatus"
-            >
-              Everyone online
-            </div>
+            globalMode =
+              false;
 
-          </div>
+            $("typing")
+              .textContent =
+              "";
 
-        </div>
+            updateTop();
 
-        <div
-          id="callButtons"
-          class="callButtons"
-          style="display:none"
-        >
+            renderContacts();
 
-          <button
-            id="voiceCallButton"
-            class="callButton"
-            title="Voice call"
-          >
-            📞
-          </button>
+            renderMessages();
 
-          <button
-            id="videoCallButton"
-            class="callButton"
-            title="Video call"
-          >
-            🎥
-          </button>
+          };
 
-        </div>
+      }
+    );
 
-      </header>
+}
 
 
-      <section
-        id="messages"
-        class="messages"
-      >
+/*
+  TOP BAR
+*/
 
-        <div
-          id="welcome"
-          class="welcome"
-        >
+function updateTop(){
 
-          <div class="welcomeLogo">
-            Z
+  if(
+    globalMode
+  ){
+
+    $("title")
+      .textContent =
+      "Global Chat";
+
+    $("sub")
+      .textContent =
+      "Tout moun ki konekte sou ZIQVONA";
+
+    $("topAvatar")
+      .innerHTML =
+      "🌎";
+
+    return;
+
+  }
+
+
+  $("title")
+    .textContent =
+    selected?.name ||
+    "Kontak ZIQVONA";
+
+
+  $("sub")
+    .textContent =
+    selected?.status ||
+    "Moun online yo ap parèt isit la";
+
+
+  $("topAvatar")
+    .innerHTML =
+    avatar(
+      selected
+    );
+
+}
+
+
+/*
+  MESSAGE RENDER
+*/
+
+function renderMessages(){
+
+  let list =
+    [];
+
+
+  if(
+    globalMode
+  ){
+
+    list =
+      globalMessages;
+
+  }
+
+  else if(
+    selected
+  ){
+
+    const key =
+      [
+        selected.id,
+        me.id
+      ]
+        .sort()
+        .join(":");
+
+
+    list =
+      privateMessages[key] ||
+      [];
+
+  }
+
+
+  if(
+    list.length === 0
+  ){
+
+    $("messages")
+      .innerHTML = `
+
+        <div class="welcome">
+
+          <div class="welcomeMark">
+
+            ${
+              globalMode
+                ? "🌎"
+                : initial(
+                    selected?.name
+                  )
+            }
+
           </div>
 
           <h2>
-            Welcome to ZIQVONA
+
+            ${
+              globalMode
+                ? "Global Chat"
+                : escapeHtml(
+                    selected?.name ||
+                    "Kontak ZIQVONA"
+                  )
+            }
+
           </h2>
 
           <p>
-            Everyone connected to ZIQVONA
-            can appear here as online.
-          </p>
 
-          <p>
-            Select a person to start
-            a private conversation.
+            ${
+              globalMode
+                ? "Voye yon mesaj pou tout moun online."
+                : "Voye premye mesaj la pou kòmanse chat prive."
+            }
+
           </p>
 
         </div>
 
-      </section>
-
-
-      <div
-        id="typing"
-        class="typing"
-      ></div>
-
-
-      <form
-        id="messageForm"
-        class="messageInputArea"
-      >
-
-        <button
-          type="button"
-          id="emojiButton"
-          class="emojiButton"
-        >
-          😊
-        </button>
-
-        <input
-          id="messageInput"
-          class="messageInput"
-          type="text"
-          placeholder="Write a message..."
-          autocomplete="off"
-        >
-
-        <button
-          type="submit"
-          class="sendButton"
-        >
-          Send
-        </button>
-
-      </form>
-
-    </main>
-
-  </div>
-
-</section>
-
-
-<!-- =========================
-     INCOMING CALL
-========================= -->
-
-<div id="incomingCall">
-
-  <div class="incomingCard">
-
-    <div
-      id="incomingAvatar"
-      class="avatar"
-      style="
-        width:80px;
-        height:80px;
-        margin:auto;
-        font-size:30px;
-      "
-    >
-      Z
-    </div>
-
-    <h2 id="incomingName">
-      Incoming call
-    </h2>
-
-    <p id="incomingType">
-      ZIQVONA call
-    </p>
-
-    <div class="incomingActions">
-
-      <button
-        id="rejectButton"
-        class="rejectButton"
-      >
-        Reject
-      </button>
-
-      <button
-        id="acceptButton"
-        class="acceptButton"
-      >
-        Accept
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- =========================
-     CALL OVERLAY
-========================= -->
-
-<div id="callOverlay">
-
-  <div class="callTop">
-
-    <strong id="callName">
-      ZIQVONA Call
-    </strong>
-
-    <span id="callType">
-      Video
-    </span>
-
-  </div>
-
-  <div class="callVideos">
-
-    <video
-      id="remoteVideo"
-      autoplay
-      playsinline
-    ></video>
-
-    <video
-      id="localVideo"
-      autoplay
-      muted
-      playsinline
-    ></video>
-
-  </div>
-
-  <div class="callControls">
-
-    <button
-      id="endCallButton"
-      class="endCall"
-      title="End call"
-    >
-      ☎
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- Socket.IO client comes from our own Node server -->
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-
-/* =========================
-   SOCKET
-========================= */
-
-const socket = io();
-
-/* =========================
-   STATE
-========================= */
-
-let currentUser = null;
-
-let onlineUsers = [];
-
-let selectedUser = null;
-
-let globalChat = true;
-
-let typingTimer = null;
-
-let incomingCallData = null;
-
-let peerConnection = null;
-
-let localStream = null;
-
-let currentCallTarget = null;
-
-let currentCallType = "video";
-
-let pendingOffer = null;
-
-
-/* =========================
-   DOM
-========================= */
-
-const loginScreen =
-  document.getElementById(
-    "loginScreen"
-  );
-
-const app =
-  document.getElementById("app");
-
-const nameInput =
-  document.getElementById(
-    "nameInput"
-  );
-
-const statusInput =
-  document.getElementById(
-    "statusInput"
-  );
-
-const loginButton =
-  document.getElementById(
-    "loginButton"
-  );
-
-const usersList =
-  document.getElementById(
-    "usersList"
-  );
-
-const searchInput =
-  document.getElementById(
-    "searchInput"
-  );
-
-const messages =
-  document.getElementById(
-    "messages"
-  );
-
-const messageForm =
-  document.getElementById(
-    "messageForm"
-  );
-
-const messageInput =
-  document.getElementById(
-    "messageInput"
-  );
-
-const typing =
-  document.getElementById(
-    "typing"
-  );
-
-const chatUserName =
-  document.getElementById(
-    "chatUserName"
-  );
-
-const chatUserStatus =
-  document.getElementById(
-    "chatUserStatus"
-  );
-
-const chatAvatar =
-  document.getElementById(
-    "chatAvatar"
-  );
-
-const callButtons =
-  document.getElementById(
-    "callButtons"
-  );
-
-const voiceCallButton =
-  document.getElementById(
-    "voiceCallButton"
-  );
-
-const videoCallButton =
-  document.getElementById(
-    "videoCallButton"
-  );
-
-const incomingCall =
-  document.getElementById(
-    "incomingCall"
-  );
-
-const incomingName =
-  document.getElementById(
-    "incomingName"
-  );
-
-const incomingType =
-  document.getElementById(
-    "incomingType"
-  );
-
-const incomingAvatar =
-  document.getElementById(
-    "incomingAvatar"
-  );
-
-const acceptButton =
-  document.getElementById(
-    "acceptButton"
-  );
-
-const rejectButton =
-  document.getElementById(
-    "rejectButton"
-  );
-
-const callOverlay =
-  document.getElementById(
-    "callOverlay"
-  );
-
-const callName =
-  document.getElementById(
-    "callName"
-  );
-
-const callType =
-  document.getElementById(
-    "callType"
-  );
-
-const localVideo =
-  document.getElementById(
-    "localVideo"
-  );
-
-const remoteVideo =
-  document.getElementById(
-    "remoteVideo"
-  );
-
-const endCallButton =
-  document.getElementById(
-    "endCallButton"
-  );
-
-
-/* =========================
-   LOGIN
-========================= */
-
-function login() {
-
-  const name =
-    nameInput.value.trim();
-
-  const status =
-    statusInput.value.trim() ||
-    "Online";
-
-  if (!name) {
-
-    alert(
-      "Please enter your name."
-    );
-
-    nameInput.focus();
+      `;
 
     return;
-  }
-
-  localStorage.setItem(
-    "ziqvonaName",
-    name
-  );
-
-  localStorage.setItem(
-    "ziqvonaStatus",
-    status
-  );
-
-  currentUser = {
-    name,
-    status
-  };
-
-  socket.emit(
-    "register-user",
-    {
-      name,
-      status,
-      avatar: ""
-    }
-  );
-}
-
-loginButton.addEventListener(
-  "click",
-  login
-);
-
-nameInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key === "Enter"
-    ) {
-      login();
-    }
 
   }
-);
 
 
-/* =========================
-   RESTORE NAME
-========================= */
+  $("messages")
+    .innerHTML =
 
-const savedName =
-  localStorage.getItem(
-    "ziqvonaName"
-  );
+    list.map(
+      message => `
 
-const savedStatus =
-  localStorage.getItem(
-    "ziqvonaStatus"
-  );
+        <div
+          class="msg ${
+            message.senderId ===
+            me.id
+              ? "mine"
+              : ""
+          }"
+        >
 
-if (savedName) {
-  nameInput.value =
-    savedName;
-}
+          <b>
 
-if (savedStatus) {
-  statusInput.value =
-    savedStatus;
-}
+            ${
+              escapeHtml(
+                message.senderId ===
+                me.id
+                  ? "Ou"
+                  : message.senderName
+              )
+            }
 
+          </b>
 
-/* =========================
-   REGISTERED
-========================= */
+          <p>
 
-socket.on(
-  "registered",
-  ({ user }) => {
+            ${escapeHtml(
+              message.text
+            )}
 
-    currentUser = user;
+          </p>
 
-    loginScreen.style.display =
-      "none";
+          <time>
 
-    app.style.display =
-      "block";
+            ${
+              new Date(
+                message.time
+              ).toLocaleTimeString(
+                [],
+                {
+                  hour:"2-digit",
+                  minute:"2-digit"
+                }
+              )
+            }
 
-    openGlobalChat();
+          </time>
 
-    messageInput.focus();
-  }
-);
+        </div>
 
+      `
+    ).join("");
 
-/* =========================
-   ONLINE USERS
-========================= */
 
-socket.on(
-  "online-users",
-  ({ users }) => {
+  $("messages")
+    .scrollTop =
+    $("messages")
+      .scrollHeight;
 
-    onlineUsers = users || [];
-
-    renderUsers();
-  }
-);
-
-
-/* =========================
-   USER ONLINE
-========================= */
-
-socket.on(
-  "user-online",
-  ({ user }) => {
-
-    const existing =
-      onlineUsers.find(
-        u => u.id === user.id
-      );
-
-    if (!existing) {
-
-      onlineUsers.push(user);
-
-    } else {
-
-      Object.assign(
-        existing,
-        user
-      );
-
-    }
-
-    renderUsers();
-  }
-);
-
-
-/* =========================
-   USER UPDATED
-========================= */
-
-socket.on(
-  "user-updated",
-  ({ user }) => {
-
-    const index =
-      onlineUsers.findIndex(
-        u => u.id === user.id
-      );
-
-    if (index !== -1) {
-
-      onlineUsers[index] =
-        user;
-    }
-
-    if (
-      selectedUser &&
-      selectedUser.id === user.id
-    ) {
-
-      selectedUser = user;
-
-      updateChatHeader();
-    }
-
-    renderUsers();
-  }
-);
-
-
-/* =========================
-   USER OFFLINE
-========================= */
-
-socket.on(
-  "user-offline",
-  ({ id }) => {
-
-    onlineUsers =
-      onlineUsers.filter(
-        user => user.id !== id
-      );
-
-    if (
-      selectedUser &&
-      selectedUser.id === id
-    ) {
-
-      selectedUser = null;
-
-      openGlobalChat();
-    }
-
-    renderUsers();
-  }
-);
-
-
-/* =========================
-   RENDER USERS
-========================= */
-
-function renderUsers() {
-
-  const query =
-    searchInput.value
-      .trim()
-      .toLowerCase();
-
-  usersList.innerHTML = "";
-
-  const filtered =
-    onlineUsers.filter(
-      user => {
-
-        if (
-          currentUser &&
-          user.id === currentUser.id
-        ) {
-          return false;
-        }
-
-        return (
-          user.name
-            .toLowerCase()
-            .includes(query)
-        );
-      }
-    );
-
-  if (!filtered.length) {
-
-    const empty =
-      document.createElement("div");
-
-    empty.style.padding =
-      "25px";
-
-    empty.style.color =
-      "#74827f";
-
-    empty.style.textAlign =
-      "center";
-
-    empty.textContent =
-      "No other people online";
-
-    usersList.appendChild(
-      empty
-    );
-
-    return;
-  }
-
-  filtered.forEach(
-    user => {
-
-      const item =
-        document.createElement(
-          "div"
-        );
-
-      item.className =
-        "userItem";
-
-      if (
-        selectedUser &&
-        selectedUser.id === user.id
-      ) {
-
-        item.classList.add(
-          "active"
-        );
-      }
-
-      const avatar =
-        createAvatar(
-          user,
-          true
-        );
-
-      const info =
-        document.createElement(
-          "div"
-        );
-
-      info.className =
-        "userInfo";
-
-      const name =
-        document.createElement(
-          "div"
-        );
-
-      name.className =
-        "userName";
-
-      name.textContent =
-        user.name;
-
-      const status =
-        document.createElement(
-          "div"
-        );
-
-      status.className =
-        "userStatus";
-
-      status.textContent =
-        user.status ||
-        "Online";
-
-      info.appendChild(name);
-      info.appendChild(status);
-
-      item.appendChild(avatar);
-      item.appendChild(info);
-
-      item.addEventListener(
-        "click",
-        () => {
-
-          selectUser(user);
-        }
-      );
-
-      usersList.appendChild(
-        item
-      );
-    }
-  );
 }
 
 
-/* =========================
-   AVATAR
-========================= */
-
-function createAvatar(
-  user,
-  online = false
-) {
-
-  const avatar =
-    document.createElement(
-      "div"
-    );
-
-  avatar.className =
-    "avatar";
-
-  if (user.avatar) {
-
-    const img =
-      document.createElement(
-        "img"
-      );
-
-    img.src =
-      user.avatar;
-
-    img.alt =
-      user.name;
-
-    avatar.appendChild(
-      img
-    );
-
-  } else {
-
-    avatar.textContent =
-      (user.name || "Z")
-        .charAt(0)
-        .toUpperCase();
-  }
-
-  if (online) {
-
-    const dot =
-      document.createElement(
-        "span"
-      );
-
-    dot.className =
-      "onlineDot";
-
-    avatar.appendChild(dot);
-  }
-
-  return avatar;
-}
-
-
-/* =========================
-   SELECT USER
-========================= */
-
-function selectUser(user) {
-
-  selectedUser = user;
-
-  globalChat = false;
-
-  updateChatHeader();
-
-  clearMessages();
-
-  renderUsers();
-
-  messageInput.placeholder =
-    `Message ${user.name}...`;
-
-  messageInput.focus();
-}
-
-
-/* =========================
-   GLOBAL CHAT
-========================= */
-
-function openGlobalChat() {
-
-  globalChat = true;
-
-  selectedUser = null;
-
-  chatUserName.textContent =
-    "ZIQVONA Global Chat";
-
-  chatUserStatus.textContent =
-    `${onlineUsers.length} people online`;
-
-  chatAvatar.innerHTML =
-    "Z<span class='onlineDot'></span>";
-
-  callButtons.style.display =
-    "none";
-
-  clearMessages();
-
-  messageInput.placeholder =
-    "Message everyone...";
-
-  renderUsers();
-}
-
-
-/* =========================
-   HEADER
-========================= */
-
-function updateChatHeader() {
-
-  if (!selectedUser) {
-
-    openGlobalChat();
-
-    return;
-  }
-
-  chatUserName.textContent =
-    selectedUser.name;
-
-  chatUserStatus.textContent =
-    selectedUser.status ||
-    "Online";
-
-  chatAvatar.innerHTML = "";
-
-  if (selectedUser.avatar) {
-
-    const img =
-      document.createElement(
-        "img"
-      );
-
-    img.src =
-      selectedUser.avatar;
-
-    img.alt =
-      selectedUser.name;
-
-    chatAvatar.appendChild(
-      img
-    );
-
-  } else {
-
-    chatAvatar.textContent =
-      selectedUser.name
-        .charAt(0)
-        .toUpperCase();
-  }
-
-  const dot =
-    document.createElement(
-      "span"
-    );
-
-  dot.className =
-    "onlineDot";
-
-  chatAvatar.appendChild(dot);
-
-  callButtons.style.display =
-    "flex";
-}
-
-
-/* =========================
-   CLEAR MESSAGES
-========================= */
-
-function clearMessages() {
-
-  messages.innerHTML = "";
-}
-
-
-/* =========================
-   MESSAGE FORM
-========================= */
-
-messageForm.addEventListener(
-  "submit",
-  (event) => {
+/*
+  SEND MESSAGE
+*/
+
+$("form")
+  .onsubmit =
+  event => {
 
     event.preventDefault();
 
+
     const text =
-      messageInput.value.trim();
+      $("input")
+        .value
+        .trim();
 
-    if (!text) return;
 
-    if (globalChat) {
+    if(
+      !text
+    ){
+
+      return;
+
+    }
+
+
+    if(
+      globalMode
+    ){
 
       socket.emit(
         "global-message",
@@ -1961,1007 +1918,226 @@ messageForm.addEventListener(
         }
       );
 
-    } else if (selectedUser) {
+    }
+
+    else if(
+      selected
+    ){
 
       socket.emit(
         "private-message",
         {
           targetId:
-            selectedUser.id,
+            selected.id,
 
           text
         }
       );
+
     }
 
-    messageInput.value = "";
 
-    socket.emit(
-      "private-stop-typing",
-      {
-        targetId:
-          selectedUser
-            ? selectedUser.id
-            : ""
-      }
-    );
-  }
-);
+    $("input")
+      .value =
+      "";
+
+    $("typing")
+      .textContent =
+      "";
+
+  };
 
 
-/* =========================
-   GLOBAL MESSAGE
-========================= */
+/*
+  TYPING
+*/
 
-socket.on(
-  "global-message",
-  (message) => {
-
-    if (!globalChat) return;
-
-    addMessage(
-      message,
-      message.senderId ===
-      socket.id
-    );
-  }
-);
-
-
-/* =========================
-   PRIVATE MESSAGE
-========================= */
-
-socket.on(
-  "private-message",
-  (message) => {
-
-    const isMine =
-      message.senderId ===
-      socket.id;
-
-    if (isMine) {
-
-      if (
-        !selectedUser ||
-        selectedUser.id !==
-        message.targetId
-      ) {
-        return;
-      }
-
-    } else {
-
-      if (
-        !selectedUser ||
-        selectedUser.id !==
-        message.senderId
-      ) {
-
-        const sender =
-          onlineUsers.find(
-            u =>
-              u.id ===
-              message.senderId
-          );
-
-        if (sender) {
-
-          selectUser(sender);
-
-        } else {
-
-          return;
-        }
-      }
-    }
-
-    addMessage(
-      message,
-      isMine
-    );
-  }
-);
-
-
-/* =========================
-   ADD MESSAGE
-========================= */
-
-function addMessage(
-  message,
-  mine
-) {
-
-  const row =
-    document.createElement(
-      "div"
-    );
-
-  row.className =
-    "messageRow";
-
-  if (mine) {
-    row.classList.add(
-      "mine"
-    );
-  }
-
-  const bubble =
-    document.createElement(
-      "div"
-    );
-
-  bubble.className =
-    "messageBubble";
-
-  if (!mine) {
-
-    const sender =
-      document.createElement(
-        "div"
-      );
-
-    sender.className =
-      "messageSender";
-
-    sender.textContent =
-      message.senderName;
-
-    bubble.appendChild(
-      sender
-    );
-  }
-
-  const text =
-    document.createElement(
-      "div"
-    );
-
-  text.textContent =
-    message.text;
-
-  bubble.appendChild(text);
-
-  const time =
-    document.createElement(
-      "div"
-    );
-
-  time.className =
-    "messageTime";
-
-  time.textContent =
-    formatTime(message.time);
-
-  bubble.appendChild(time);
-
-  row.appendChild(
-    bubble
-  );
-
-  messages.appendChild(
-    row
-  );
-
-  messages.scrollTop =
-    messages.scrollHeight;
-}
-
-
-/* =========================
-   TIME
-========================= */
-
-function formatTime(time) {
-
-  try {
-
-    return new Date(time)
-      .toLocaleTimeString(
-        [],
-        {
-          hour: "2-digit",
-          minute: "2-digit"
-        }
-      );
-
-  } catch {
-
-    return "";
-  }
-}
-
-
-/* =========================
-   SEARCH
-========================= */
-
-searchInput.addEventListener(
-  "input",
-  renderUsers
-);
-
-
-/* =========================
-   EMOJI
-========================= */
-
-document
-  .getElementById(
-    "emojiButton"
-  )
-  .addEventListener(
-    "click",
-    () => {
-
-      messageInput.value +=
-        " 😊";
-
-      messageInput.focus();
-    }
-  );
-
-
-/* =========================
-   TYPING
-========================= */
-
-messageInput.addEventListener(
-  "input",
+$("input")
+  .oninput =
   () => {
 
-    if (
-      globalChat ||
-      !selectedUser
-    ) {
+    if(
+      !selected ||
+      globalMode
+    ){
+
       return;
+
     }
 
+
     socket.emit(
-      "private-typing",
+      "typing",
       {
         targetId:
-          selectedUser.id
+          selected.id
       }
     );
+
 
     clearTimeout(
       typingTimer
     );
+
 
     typingTimer =
       setTimeout(
         () => {
 
           socket.emit(
-            "private-stop-typing",
+            "stop-typing",
             {
               targetId:
-                selectedUser.id
+                selected.id
             }
           );
 
         },
-        1000
+        700
       );
-  }
-);
 
-
-/* =========================
-   TYPING RECEIVED
-========================= */
-
-socket.on(
-  "private-typing",
-  ({ userId, name }) => {
-
-    if (
-      selectedUser &&
-      selectedUser.id ===
-      userId
-    ) {
-
-      typing.textContent =
-        `${name} is typing...`;
-    }
-  }
-);
-
-socket.on(
-  "private-stop-typing",
-  ({ userId }) => {
-
-    if (
-      selectedUser &&
-      selectedUser.id ===
-      userId
-    ) {
-
-      typing.textContent =
-        "";
-    }
-  }
-);
-
-
-/* =========================
-   WEBRTC CONFIG
-========================= */
-
-const rtcConfig = {
-
-  iceServers: [
-
-    {
-      urls:
-        "stun:stun.l.google.com:19302"
-    },
-
-    {
-      urls:
-        "stun:stun1.l.google.com:19302"
-    }
-
-  ]
-
-};
-
-
-/* =========================
-   CREATE PEER
-========================= */
-
-function createPeerConnection(
-  targetId
-) {
-
-  peerConnection =
-    new RTCPeerConnection(
-      rtcConfig
-    );
-
-  peerConnection.onicecandidate =
-    (event) => {
-
-      if (
-        event.candidate
-      ) {
-
-        socket.emit(
-          "ice-candidate",
-          {
-            targetId,
-            candidate:
-              event.candidate
-          }
-        );
-      }
-    };
-
-  peerConnection.ontrack =
-    (event) => {
-
-      if (
-        event.streams &&
-        event.streams[0]
-      ) {
-
-        remoteVideo.srcObject =
-          event.streams[0];
-      }
-    };
-
-  peerConnection.onconnectionstatechange =
-    () => {
-
-      if (
-        peerConnection &&
-        (
-          peerConnection.connectionState ===
-            "failed" ||
-
-          peerConnection.connectionState ===
-            "disconnected"
-        )
-      ) {
-
-        endCall(false);
-      }
-    };
-
-  return peerConnection;
-}
-
-
-/* =========================
-   GET MEDIA
-========================= */
-
-async function getMedia(
-  type
-) {
-
-  const constraints = {
-
-    audio: true,
-
-    video:
-      type === "video"
   };
 
-  return navigator.mediaDevices
-    .getUserMedia(
-      constraints
-    );
-}
+
+/*
+  GLOBAL CHAT
+*/
+
+$("global")
+  .onclick =
+  () => {
+
+    selected =
+      null;
+
+    globalMode =
+      true;
+
+    $("typing")
+      .textContent =
+      "";
+
+    updateTop();
+
+    renderContacts();
+
+    renderMessages();
+
+  };
 
 
-/* =========================
-   START CALL
-========================= */
+/*
+  SEARCH
+*/
 
-async function startCall(
-  type
-) {
-
-  if (!selectedUser) {
-
-    alert(
-      "Select someone online first."
-    );
-
-    return;
-  }
-
-  currentCallTarget =
-    selectedUser.id;
-
-  currentCallType =
-    type;
-
-  try {
-
-    localStream =
-      await getMedia(type);
-
-    localVideo.srcObject =
-      localStream;
-
-    createPeerConnection(
-      currentCallTarget
-    );
-
-    localStream
-      .getTracks()
-      .forEach(
-        track => {
-
-          peerConnection.addTrack(
-            track,
-            localStream
-          );
-        }
-      );
-
-    const offer =
-      await peerConnection
-        .createOffer();
-
-    await peerConnection
-      .setLocalDescription(
-        offer
-      );
-
-    socket.emit(
-      "call-user",
-      {
-        targetId:
-          currentCallTarget,
-
-        callType:
-          currentCallType,
-
-        offer
-      }
-    );
-
-    showCallOverlay(
-      selectedUser.name,
-      type
-    );
-
-  } catch (error) {
-
-    console.error(
-      "CALL ERROR:",
-      error
-    );
-
-    alert(
-      "Camera/microphone access was not allowed."
-    );
-
-    cleanupCall();
-  }
-}
+$("search")
+  .oninput =
+  renderContacts;
 
 
-/* =========================
-   INCOMING CALL
-========================= */
+/*
+  EMOJI
+*/
 
-socket.on(
-  "incoming-call",
-  (data) => {
+$("emoji")
+  .onclick =
+  () => {
 
-    incomingCallData =
-      data;
+    $("input")
+      .value +=
+      " 😊";
 
-    incomingName.textContent =
-      data.fromName;
+    $("input")
+      .focus();
 
-    incomingType.textContent =
-      data.callType === "voice"
-        ? "Incoming voice call"
-        : "Incoming video call";
+  };
 
-    incomingAvatar.textContent =
-      (data.fromName || "Z")
-        .charAt(0)
-        .toUpperCase();
 
-    incomingCall.style.display =
+/*
+  PROFILE WINDOW
+*/
+
+$("edit")
+  .onclick =
+  () => {
+
+    $("nameInput")
+      .value =
+      me.name || "";
+
+    $("statusInput")
+      .value =
+      me.status ||
+      "Online";
+
+    $("overlay")
+      .style.display =
       "flex";
-  }
-);
+
+  };
 
 
-/* =========================
-   ACCEPT CALL
-========================= */
-
-acceptButton.addEventListener(
-  "click",
-  async () => {
-
-    if (!incomingCallData) {
-      return;
-    }
-
-    const data =
-      incomingCallData;
-
-    incomingCall.style.display =
-      "none";
-
-    currentCallTarget =
-      data.from;
-
-    currentCallType =
-      data.callType;
-
-    pendingOffer =
-      data.offer;
-
-    try {
-
-      localStream =
-        await getMedia(
-          currentCallType
-        );
-
-      localVideo.srcObject =
-        localStream;
-
-      createPeerConnection(
-        currentCallTarget
-      );
-
-      localStream
-        .getTracks()
-        .forEach(
-          track => {
-
-            peerConnection.addTrack(
-              track,
-              localStream
-            );
-          }
-        );
-
-      await peerConnection
-        .setRemoteDescription(
-          new RTCSessionDescription(
-            pendingOffer
-          )
-        );
-
-      const answer =
-        await peerConnection
-          .createAnswer();
-
-      await peerConnection
-        .setLocalDescription(
-          answer
-        );
-
-      socket.emit(
-        "accept-call",
-        {
-          targetId:
-            currentCallTarget,
-
-          answer
-        }
-      );
-
-      showCallOverlay(
-        data.fromName,
-        currentCallType
-      );
-
-      incomingCallData =
-        null;
-
-    } catch (error) {
-
-      console.error(
-        "ACCEPT CALL ERROR:",
-        error
-      );
-
-      alert(
-        "Could not accept the call."
-      );
-
-      cleanupCall();
-    }
-  }
-);
-
-
-/* =========================
-   REJECT CALL
-========================= */
-
-rejectButton.addEventListener(
-  "click",
+$("close")
+  .onclick =
   () => {
 
-    if (
-      incomingCallData
-    ) {
-
-      socket.emit(
-        "reject-call",
-        {
-          targetId:
-            incomingCallData.from
-        }
-      );
-    }
-
-    incomingCallData =
-      null;
-
-    incomingCall.style.display =
+    $("overlay")
+      .style.display =
       "none";
-  }
-);
+
+  };
 
 
-/* =========================
-   CALL ACCEPTED
-========================= */
+/*
+  SAVE PROFILE
+*/
 
-socket.on(
-  "call-accepted",
-  async ({
-    answer
-  }) => {
-
-    if (
-      !peerConnection ||
-      !answer
-    ) {
-      return;
-    }
-
-    try {
-
-      await peerConnection
-        .setRemoteDescription(
-          new RTCSessionDescription(
-            answer
-          )
-        );
-
-    } catch (error) {
-
-      console.error(
-        "ANSWER ERROR:",
-        error
-      );
-    }
-  }
-);
-
-
-/* =========================
-   ICE
-========================= */
-
-socket.on(
-  "ice-candidate",
-  async ({
-    candidate
-  }) => {
-
-    if (
-      !peerConnection ||
-      !candidate
-    ) {
-      return;
-    }
-
-    try {
-
-      await peerConnection
-        .addIceCandidate(
-          new RTCIceCandidate(
-            candidate
-          )
-        );
-
-    } catch (error) {
-
-      console.error(
-        "ICE ERROR:",
-        error
-      );
-    }
-  }
-);
-
-
-/* =========================
-   CALL REJECTED
-========================= */
-
-socket.on(
-  "call-rejected",
+$("save")
+  .onclick =
   () => {
 
-    alert(
-      "The call was rejected."
+    me.name =
+      $("nameInput")
+        .value
+        .trim() ||
+      "ZIQVONA User";
+
+
+    me.status =
+      $("statusInput")
+        .value
+        .trim() ||
+      "Online";
+
+
+    localStorage.setItem(
+      "ziqvona_me",
+      JSON.stringify(
+        me
+      )
     );
 
-    cleanupCall();
-  }
-);
-
-
-/* =========================
-   CALL ENDED
-========================= */
-
-socket.on(
-  "call-ended",
-  () => {
-
-    cleanupCall();
-  }
-);
-
-
-/* =========================
-   CALL ERROR
-========================= */
-
-socket.on(
-  "call-error",
-  ({ message }) => {
-
-    alert(
-      message ||
-      "Call could not start."
-    );
-
-    cleanupCall();
-  }
-);
-
-
-/* =========================
-   SHOW CALL
-========================= */
-
-function showCallOverlay(
-  name,
-  type
-) {
-
-  callName.textContent =
-    name;
-
-  callType.textContent =
-    type === "voice"
-      ? "Voice call"
-      : "Video call";
-
-  callOverlay.style.display =
-    "block";
-
-  if (type === "voice") {
-
-    localVideo.style.display =
-      "none";
-
-  } else {
-
-    localVideo.style.display =
-      "block";
-  }
-}
-
-
-/* =========================
-   END CALL
-========================= */
-
-endCallButton.addEventListener(
-  "click",
-  () => {
-
-    endCall(true);
-  }
-);
-
-function endCall(
-  notify = true
-) {
-
-  if (
-    notify &&
-    currentCallTarget
-  ) {
 
     socket.emit(
-      "end-call",
-      {
-        targetId:
-          currentCallTarget
-      }
+      "update-profile",
+      me
     );
-  }
-
-  cleanupCall();
-}
 
 
-/* =========================
-   CLEANUP CALL
-========================= */
+    $("overlay")
+      .style.display =
+      "none";
 
-function cleanupCall() {
-
-  if (peerConnection) {
-
-    peerConnection.close();
-
-    peerConnection =
-      null;
-  }
-
-  if (localStream) {
-
-    localStream
-      .getTracks()
-      .forEach(
-        track => track.stop()
-      );
-
-    localStream =
-      null;
-  }
-
-  localVideo.srcObject =
-    null;
-
-  remoteVideo.srcObject =
-    null;
-
-  callOverlay.style.display =
-    "none";
-
-  currentCallTarget =
-    null;
-
-  pendingOffer =
-    null;
-
-  incomingCallData =
-    null;
-
-  incomingCall.style.display =
-    "none";
-}
+  };
 
 
-/* =========================
-   CALL BUTTONS
-========================= */
+/*
+  START UI
+*/
 
-voiceCallButton.addEventListener(
-  "click",
-  () => {
+updateMe();
 
-    startCall("voice");
-  }
-);
-
-videoCallButton.addEventListener(
-  "click",
-  () => {
-
-    startCall("video");
-  }
-);
-
-
-/* =========================
-   SOCKET STATUS
-========================= */
-
-socket.on(
-  "connect",
-  () => {
-
-    console.log(
-      "ZIQVONA Socket.IO connected:",
-      socket.id
-    );
-  }
-);
-
-socket.on(
-  "disconnect",
-  () => {
-
-    console.log(
-      "ZIQVONA Socket.IO disconnected"
-    );
-  }
-);
-
-socket.on(
-  "connect_error",
-  (error) => {
-
-    console.error(
-      "Socket.IO connection error:",
-      error
-    );
-  }
-);
-
-
-/* =========================
-   MESSAGE ERROR
-========================= */
-
-socket.on(
-  "message-error",
-  ({ message }) => {
-
-    alert(
-      message ||
-      "Message could not be sent."
-    );
-  }
-);
+updateTop();
 
 </script>
 
