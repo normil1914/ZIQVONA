@@ -1,330 +1,530 @@
 const express = require("express");
 const http = require("http");
 const path = require("path");
+const crypto = require("crypto");
 const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+
+const PORT = process.env.PORT || 10000;
 
 const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
   },
-  transports: ["websocket", "polling"]
+  transports: ["websocket", "polling"],
+  maxHttpBufferSize: 20 * 1024 * 1024
 });
 
-const PORT = process.env.PORT || 10000;
+app.use(express.json({ limit: "1mb" }));
 
-// ----------------------------------------------------
-// EXPRESS
-// ----------------------------------------------------
+/* =========================
+   LIMITS
+========================= */
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+const MAX_USERS = 1200;
+const MAX_USERNAME = 32;
+const MAX_TEXT = 4000;
+const MAX_HISTORY = 5000;
+const MAX_STATUS = 120;
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 
-app.use(express.static(path.join(__dirname, "public")));
+/* =========================
+   MEMORY DATA
+========================= */
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+const users = new Map();
+const profiles = new Map();
+const contacts = new Map();
+const conversations = new Map();
+const calls = new Map();
+
+/* =========================
+   HELPERS
+========================= */
+
+function normalizeUsername(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .slice(0, MAX_USERNAME);
+}
+
+function cleanDisplayName(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, MAX_USERNAME);
+}
+
+function validUsername(username) {
+  return /^[a-zA-Z0-9_.-]{2,32}$/.test(username);
+}
+
+function conversationId(a, b) {
+  return [a, b].sort().join("::");
+}
+
+function publicUser(username) {
+  const key = normalizeUsername(username);
+  const user = users.get(key);
+
+  if (!user) return null;
+
+  const profile = profiles.get(key) || {};
+
+  return {
+    username: key,
+    displayName: profile.displayName || user.displayName || key,
+    online: !!user.online,
+    avatar: profile.avatar || "",
+    status: profile.status || ""
+  };
+}
+
+function allUsers() {
+  return Array.from(users.keys())
+    .map(publicUser)
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a.online !== b.online) return a.online ? -1 : 1;
+      return a.displayName.localeCompare(b.displayName);
+    });
+}
+
+function getContacts(username) {
+  const set = contacts.get(username) || new Set();
+
+  return Array.from(set)
+    .map(publicUser)
+    .filter(Boolean)
+    .sort((a, b) => {
+      if (a.online !== b.online) return a.online ? -1 : 1;
+      return a.displayName.localeCompare(b.displayName);
+    });
+}
+
+function addContact(owner, target) {
+  if (!contacts.has(owner)) {
+    contacts.set(owner, new Set());
+  }
+
+  contacts.get(owner).add(target);
+}
+
+function removeContact(owner, target) {
+  if (contacts.has(owner)) {
+    contacts.get(owner).delete(target);
+  }
+}
+
+function sendContacts(username) {
+  const user = users.get(username);
+
+  if (!user || !user.socketId) return;
+
+  io.to(user.socketId).emit("contacts:update", {
+    contacts: getContacts(username)
+  });
+}
+
+function sendUsers(username) {
+  const user = users.get(username);
+
+  if (!user || !user.socketId) return;
+
+  io.to(user.socketId).emit("users:update", {
+    users: allUsers()
+  });
+}
+
+function getSocketForUser(username) {
+  const user = users.get(username);
+
+  if (!user || !user.socketId) return null;
+
+  return io.sockets.sockets.get(user.socketId) || null;
+}
+
+function isParticipant(call, username) {
+  return call &&
+    (call.caller === username || call.callee === username);
+}
+
+function otherParticipant(call, username) {
+  if (!call) return null;
+  return call.caller === username ? call.callee : call.caller;
+}
+
+function emitToUser(username, event, payload) {
+  const socket = getSocketForUser(username);
+
+  if (socket) {
+    socket.emit(event, payload);
+  }
+}
+
+function buildIceServers() {
+  const servers = [
+    {
+      urls: [
+        "stun:stun.l.google.com:19302",
+        "stun:stun1.l.google.com:19302"
+      ]
+    }
+  ];
+
+  const turnUsername = process.env.TURN_USERNAME;
+  const turnPassword = process.env.TURN_PASSWORD;
+  const turnHost =
+    process.env.TURN_HOST || "global.relay.metered.ca";
+
+  if (turnUsername && turnPassword) {
+    servers.push(
+      {
+        urls: `turn:${turnHost}:80`,
+        username: turnUsername,
+        credential: turnPassword
+      },
+      {
+        urls: `turn:${turnHost}:80?transport=tcp`,
+        username: turnUsername,
+        credential: turnPassword
+      },
+      {
+        urls: `turn:${turnHost}:443`,
+        username: turnUsername,
+        credential: turnPassword
+      },
+      {
+        urls: `turns:${turnHost}:443?transport=tcp`,
+        username: turnUsername,
+        credential: turnPassword
+      }
+    );
+  }
+
+  return servers;
+}
+
+/* =========================
+   HTTP
+========================= */
 
 app.get("/health", (req, res) => {
   res.json({
     ok: true,
     app: "ZIQVONA",
-    online: users.size,
-    time: new Date().toISOString()
+    users: users.size,
+    online: Array.from(users.values()).filter(u => u.online).length,
+    turnConfigured: !!(
+      process.env.TURN_USERNAME &&
+      process.env.TURN_PASSWORD
+    )
   });
 });
 
-// ----------------------------------------------------
-// MEMORY STORAGE
-// ----------------------------------------------------
+app.get("/api/turn", (req, res) => {
+  res.json({
+    iceServers: buildIceServers(),
+    turnConfigured: !!(
+      process.env.TURN_USERNAME &&
+      process.env.TURN_PASSWORD
+    )
+  });
+});
 
-// username -> user object
-const users = new Map();
+app.use(express.static(path.join(__dirname, "public")));
 
-// socket.id -> username
-const socketUsers = new Map();
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
-// username -> socket.id
-const userSockets = new Map();
-
-// conversationId -> messages[]
-const conversations = new Map();
-
-// username -> profile
-const profiles = new Map();
-
-// ----------------------------------------------------
-// LIMITS
-// ----------------------------------------------------
-
-const MAX_USERNAME = 40;
-const MAX_MESSAGE = 4000;
-const MAX_STATUS = 120;
-const MAX_HISTORY = 500;
-const MAX_USERS = 1200;
-
-// ----------------------------------------------------
-// HELPERS
-// ----------------------------------------------------
-
-function cleanText(value, maxLength = MAX_MESSAGE) {
-  if (typeof value !== "string") return "";
-  return value.trim().slice(0, maxLength);
-}
-
-function normalizeUsername(username) {
-  return cleanText(username, MAX_USERNAME)
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function userKey(username) {
-  return username.toLowerCase();
-}
-
-function makeConversationId(a, b) {
-  return [userKey(a), userKey(b)].sort().join("__");
-}
-
-function now() {
-  return new Date().toISOString();
-}
-
-function getPublicUsers() {
-  return Array.from(users.values()).map(user => ({
-    username: user.username,
-    online: user.online,
-    profile: profiles.get(user.username) || {
-      avatar: "",
-      status: ""
-    }
-  }));
-}
-
-function sendUserList() {
-  io.emit("users:update", getPublicUsers());
-}
-
-// ----------------------------------------------------
-// SOCKET.IO
-// ----------------------------------------------------
+/* =========================
+   SOCKET.IO
+========================= */
 
 io.on("connection", socket => {
-  console.log("ZIQVONA socket connected:", socket.id);
+  let username = null;
 
-  // --------------------------------------------------
-  // LOGIN / REGISTER
-  // --------------------------------------------------
+  /* =========================
+     LOGIN
+  ========================= */
 
-  socket.on("user:login", data => {
-    try {
-      const username = normalizeUsername(data?.username);
+  socket.on("login", data => {
+    const requested = cleanDisplayName(data?.username);
+    const key = normalizeUsername(requested);
 
-      if (!username) {
-        socket.emit("login:error", {
-          message: "Tanpri antre non itilizatè a."
-        });
-        return;
-      }
-
-      if (username.length < 2) {
-        socket.emit("login:error", {
-          message: "Non itilizatè a dwe gen omwen 2 karaktè."
-        });
-        return;
-      }
-
-      const key = userKey(username);
-
-      // Si user deja konekte sou yon lòt device,
-      // dekonekte ansyen socket la.
-      const oldSocketId = userSockets.get(key);
-
-      if (oldSocketId && oldSocketId !== socket.id) {
-        const oldSocket = io.sockets.sockets.get(oldSocketId);
-
-        if (oldSocket) {
-          oldSocket.emit("session:replaced");
-          oldSocket.disconnect(true);
-        }
-
-        socketUsers.delete(oldSocketId);
-      }
-
-      const existingProfile = profiles.get(username) || {
-        avatar: "",
-        status: ""
-      };
-
-      const user = {
-        username,
-        online: true,
-        socketId: socket.id,
-        connectedAt: now()
-      };
-
-      users.set(key, user);
-      socketUsers.set(socket.id, key);
-      userSockets.set(key, socket.id);
-
-      if (!profiles.has(username)) {
-        profiles.set(username, existingProfile);
-      }
-
-      socket.username = username;
-      socket.userKey = key;
-
-      socket.emit("login:success", {
-        username,
-        profile: profiles.get(username),
-        users: getPublicUsers()
-      });
-
-      socket.broadcast.emit("user:online", {
-        username
-      });
-
-      sendUserList();
-
-      console.log("ZIQVONA login:", username);
-    } catch (error) {
-      console.error("LOGIN ERROR:", error);
-
+    if (!validUsername(key)) {
       socket.emit("login:error", {
-        message: "Erè pandan koneksyon an."
+        message:
+          "Non itilizatè a dwe gen 2-32 karaktè: lèt, chif, _, -, oswa ."
       });
-    }
-  });
-
-  // --------------------------------------------------
-  // GET USERS
-  // --------------------------------------------------
-
-  socket.on("users:get", () => {
-    socket.emit("users:update", getPublicUsers());
-  });
-
-  // --------------------------------------------------
-  // PROFILE
-  // --------------------------------------------------
-
-  socket.on("profile:update", data => {
-    if (!socket.username) return;
-
-    const username = socket.username;
-
-    const current = profiles.get(username) || {
-      avatar: "",
-      status: ""
-    };
-
-    const avatar =
-      typeof data?.avatar === "string"
-        ? data.avatar.slice(0, 2 * 1024 * 1024)
-        : current.avatar;
-
-    const status = cleanText(
-      data?.status ?? current.status,
-      MAX_STATUS
-    );
-
-    const profile = {
-      avatar,
-      status
-    };
-
-    profiles.set(username, profile);
-
-    socket.emit("profile:updated", {
-      username,
-      profile
-    });
-
-    io.emit("profile:changed", {
-      username,
-      profile
-    });
-
-    sendUserList();
-  });
-
-  // --------------------------------------------------
-  // PRIVATE CHAT JOIN
-  // --------------------------------------------------
-
-  socket.on("chat:join", data => {
-    if (!socket.username) return;
-
-    const target = normalizeUsername(data?.username);
-
-    if (!target) return;
-
-    const conversationId = makeConversationId(
-      socket.username,
-      target
-    );
-
-    socket.join(conversationId);
-
-    const history = conversations.get(conversationId) || [];
-
-    socket.emit("chat:history", {
-      conversationId,
-      with: target,
-      messages: history
-    });
-  });
-
-  // --------------------------------------------------
-  // PRIVATE MESSAGE
-  // --------------------------------------------------
-
-  socket.on("message:send", data => {
-    if (!socket.username) return;
-
-    const to = normalizeUsername(data?.to);
-    const text = cleanText(data?.text);
-
-    if (!to || !text) return;
-
-    const targetKey = userKey(to);
-
-    const targetUser = users.get(targetKey);
-
-    if (!targetUser) {
-      socket.emit("message:error", {
-        message: "Itilizatè sa a pa konekte kounye a."
-      });
-
       return;
     }
 
-    const conversationId = makeConversationId(
-      socket.username,
-      to
-    );
-
-    const message = {
-      id:
-        Date.now().toString(36) +
-        Math.random().toString(36).slice(2),
-      conversationId,
-      from: socket.username,
-      to,
-      text,
-      type: "text",
-      createdAt: now()
-    };
-
-    if (!conversations.has(conversationId)) {
-      conversations.set(conversationId, []);
+    if (!users.has(key) && users.size >= MAX_USERS) {
+      socket.emit("login:error", {
+        message: "ZIQVONA rive nan limit itilizatè aktyèl la."
+      });
+      return;
     }
 
-    const history = conversations.get(conversationId);
+    username = key;
+
+    if (!profiles.has(key)) {
+      profiles.set(key, {
+        displayName: requested || key,
+        avatar: "",
+        status: ""
+      });
+    }
+
+    if (!contacts.has(key)) {
+      contacts.set(key, new Set());
+    }
+
+    const existing = users.get(key);
+
+    if (existing?.socketId && existing.socketId !== socket.id) {
+      const oldSocket = io.sockets.sockets.get(existing.socketId);
+
+      if (oldSocket) {
+        oldSocket.emit("session:replaced");
+        oldSocket.disconnect(true);
+      }
+    }
+
+    users.set(key, {
+      username: key,
+      displayName: requested || key,
+      socketId: socket.id,
+      online: true,
+      connectedAt: Date.now()
+    });
+
+    socket.data.username = key;
+
+    socket.emit("login:success", {
+      user: publicUser(key),
+      users: allUsers(),
+      contacts: getContacts(key),
+      profile: profiles.get(key)
+    });
+
+    io.emit("users:update", {
+      users: allUsers()
+    });
+  });
+
+  /* =========================
+     PROFILE
+  ========================= */
+
+  socket.on("profile:update", data => {
+    if (!username) return;
+
+    const oldProfile = profiles.get(username) || {};
+
+    const displayName =
+      cleanDisplayName(data?.displayName) ||
+      oldProfile.displayName ||
+      username;
+
+    const status = String(data?.status || "")
+      .trim()
+      .slice(0, MAX_STATUS);
+
+    let avatar = oldProfile.avatar || "";
+
+    if (typeof data?.avatar === "string") {
+      if (
+        data.avatar === "" ||
+        /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(data.avatar)
+      ) {
+        if (Buffer.byteLength(data.avatar, "utf8") <= 3 * 1024 * 1024) {
+          avatar = data.avatar;
+        }
+      }
+    }
+
+    profiles.set(username, {
+      displayName,
+      avatar,
+      status
+    });
+
+    const user = users.get(username);
+
+    if (user) {
+      user.displayName = displayName;
+      users.set(username, user);
+    }
+
+    socket.emit("profile:updated", {
+      profile: profiles.get(username)
+    });
+
+    io.emit("users:update", {
+      users: allUsers()
+    });
+
+    for (const key of users.keys()) {
+      sendContacts(key);
+    }
+  });
+
+  /* =========================
+     CONTACTS
+  ========================= */
+
+  socket.on("contact:add", data => {
+    if (!username) return;
+
+    const target = normalizeUsername(data?.username);
+
+    if (!users.has(target) || target === username) {
+      socket.emit("contact:error", {
+        message: "Moun sa pa disponib."
+      });
+      return;
+    }
+
+    addContact(username, target);
+
+    sendContacts(username);
+
+    socket.emit("contact:added", {
+      username: target
+    });
+  });
+
+  socket.on("contact:remove", data => {
+    if (!username) return;
+
+    const target = normalizeUsername(data?.username);
+
+    removeContact(username, target);
+
+    sendContacts(username);
+
+    socket.emit("contact:removed", {
+      username: target
+    });
+  });
+
+  /* =========================
+     CHAT JOIN
+  ========================= */
+
+  socket.on("chat:join", data => {
+    if (!username) return;
+
+    const target = normalizeUsername(data?.username);
+
+    if (!users.has(target) || target === username) {
+      socket.emit("chat:error", {
+        message: "Moun sa pa egziste oswa li pa disponib."
+      });
+      return;
+    }
+
+    const room = conversationId(username, target);
+
+    socket.join(room);
+
+    addContact(username, target);
+
+    const history = conversations.get(room) || [];
+
+    socket.emit("chat:history", {
+      with: target,
+      messages: history
+    });
+
+    sendContacts(username);
+  });
+
+  /* =========================
+     MESSAGES
+  ========================= */
+
+  socket.on("message:send", data => {
+    if (!username) return;
+
+    const target = normalizeUsername(data?.to);
+
+    if (!target || target === username || !users.has(target)) {
+      socket.emit("message:error", {
+        message: "Destinatè a pa disponib."
+      });
+      return;
+    }
+
+    const type = data?.type === "image" ? "image" : "text";
+
+    let message;
+
+    if (type === "text") {
+      const text = String(data?.text || "").trim();
+
+      if (!text) return;
+
+      if (text.length > MAX_TEXT) {
+        socket.emit("message:error", {
+          message: "Mesaj la twò long."
+        });
+        return;
+      }
+
+      message = {
+        id: crypto.randomUUID(),
+        from: username,
+        to: target,
+        type: "text",
+        text,
+        createdAt: Date.now()
+      };
+    } else {
+      const image = String(data?.data || "");
+
+      if (
+        !/^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(image)
+      ) {
+        socket.emit("message:error", {
+          message: "Foto a pa valid."
+        });
+        return;
+      }
+
+      if (Buffer.byteLength(image, "utf8") > MAX_IMAGE_BYTES) {
+        socket.emit("message:error", {
+          message: "Foto a twò gwo. Eseye yon foto ki pi piti."
+        });
+        return;
+      }
+
+      message = {
+        id: crypto.randomUUID(),
+        from: username,
+        to: target,
+        type: "image",
+        data: image,
+        fileName: String(data?.fileName || "photo.jpg").slice(0, 100),
+        createdAt: Date.now()
+      };
+    }
+
+    const room = conversationId(username, target);
+
+    if (!conversations.has(room)) {
+      conversations.set(room, []);
+    }
+
+    const history = conversations.get(room);
 
     history.push(message);
 
@@ -332,322 +532,260 @@ io.on("connection", socket => {
       history.splice(0, history.length - MAX_HISTORY);
     }
 
-    // Voye sèlman bay moun k ap pale yo
-    const targetSocketId = userSockets.get(targetKey);
+    conversations.set(room, history);
 
-    socket.emit("message:new", message);
+    /* Automatically make both people contacts after messaging. */
+    addContact(username, target);
+    addContact(target, username);
 
-    if (targetSocketId) {
-      io.to(targetSocketId).emit("message:new", message);
-    }
+    emitToUser(username, "message:new", message);
+    emitToUser(target, "message:new", message);
+
+    sendContacts(username);
+    sendContacts(target);
   });
 
-  // --------------------------------------------------
-  // TYPING
-  // --------------------------------------------------
+  /* =========================
+     TYPING
+  ========================= */
 
-  socket.on("typing:start", data => {
-    if (!socket.username) return;
+  socket.on("typing", data => {
+    if (!username) return;
 
-    const to = normalizeUsername(data?.to);
+    const target = normalizeUsername(data?.to);
 
-    if (!to) return;
+    if (!target) return;
 
-    const targetSocketId = userSockets.get(userKey(to));
-
-    if (!targetSocketId) return;
-
-    io.to(targetSocketId).emit("typing:start", {
-      from: socket.username
+    emitToUser(target, "typing", {
+      from: username,
+      typing: !!data?.typing
     });
   });
 
-  socket.on("typing:stop", data => {
-    if (!socket.username) return;
-
-    const to = normalizeUsername(data?.to);
-
-    if (!to) return;
-
-    const targetSocketId = userSockets.get(userKey(to));
-
-    if (!targetSocketId) return;
-
-    io.to(targetSocketId).emit("typing:stop", {
-      from: socket.username
-    });
-  });
-
-  // --------------------------------------------------
-  // CALL: START
-  // --------------------------------------------------
+  /* =========================
+     CALL START
+  ========================= */
 
   socket.on("call:start", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const to = normalizeUsername(data?.to);
-    const callType =
-      data?.type === "video"
-        ? "video"
-        : "audio";
+    const target = normalizeUsername(data?.to);
+    const type = data?.type === "video" ? "video" : "audio";
 
-    if (!to) return;
-
-    const targetSocketId = userSockets.get(userKey(to));
-
-    if (!targetSocketId) {
+    if (!target || target === username || !users.has(target)) {
       socket.emit("call:error", {
-        message: `${to} pa online kounye a.`
+        message: "Moun ou vle rele a pa disponib."
       });
-
       return;
     }
 
-    const callId =
-      Date.now().toString(36) +
-      Math.random().toString(36).slice(2);
+    const targetSocket = getSocketForUser(target);
 
-    const callerProfile =
-      profiles.get(socket.username) || {
-        avatar: "",
-        status: ""
-      };
+    if (!targetSocket) {
+      socket.emit("call:error", {
+        message: "Moun sa pa online kounye a."
+      });
+      return;
+    }
 
-    io.to(targetSocketId).emit("call:incoming", {
+    const callId = crypto.randomUUID();
+
+    const call = {
+      id: callId,
+      caller: username,
+      callee: target,
+      type,
+      state: "ringing",
+      createdAt: Date.now()
+    };
+
+    calls.set(callId, call);
+
+    targetSocket.emit("call:incoming", {
       callId,
-      from: socket.username,
-      type: callType,
-      profile: callerProfile
+      from: username,
+      type
     });
 
     socket.emit("call:started", {
       callId,
-      to,
-      type: callType
+      to: target,
+      type
     });
-
-    console.log(
-      `CALL START ${socket.username} -> ${to} (${callType})`
-    );
   });
 
-  // --------------------------------------------------
-  // CALL ACCEPT
-  // --------------------------------------------------
+  /* =========================
+     CALL ACCEPT
+  ========================= */
 
   socket.on("call:accept", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const callId = cleanText(data?.callId, 100);
-    const from = normalizeUsername(data?.from);
+    const callId = String(data?.callId || "");
+    const call = calls.get(callId);
 
-    if (!callId || !from) return;
+    if (!call || call.callee !== username) return;
 
-    const callerSocketId = userSockets.get(userKey(from));
+    call.state = "accepted";
+    calls.set(callId, call);
 
-    if (!callerSocketId) return;
-
-    io.to(callerSocketId).emit("call:accepted", {
+    emitToUser(call.caller, "call:accepted", {
       callId,
-      from: socket.username
+      by: username,
+      type: call.type
     });
-
-    console.log(
-      `CALL ACCEPT ${socket.username} <- ${from}`
-    );
   });
 
-  // --------------------------------------------------
-  // CALL REJECT
-  // --------------------------------------------------
+  /* =========================
+     CALL REJECT
+  ========================= */
 
   socket.on("call:reject", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const callId = cleanText(data?.callId, 100);
-    const from = normalizeUsername(data?.from);
+    const callId = String(data?.callId || "");
+    const call = calls.get(callId);
 
-    if (!callId || !from) return;
+    if (!isParticipant(call, username)) return;
 
-    const callerSocketId = userSockets.get(userKey(from));
+    const other = otherParticipant(call, username);
 
-    if (!callerSocketId) return;
-
-    io.to(callerSocketId).emit("call:rejected", {
+    emitToUser(other, "call:rejected", {
       callId,
-      from: socket.username
+      by: username
     });
+
+    calls.delete(callId);
   });
 
-  // --------------------------------------------------
-  // CALL END
-  // --------------------------------------------------
+  /* =========================
+     CALL END
+  ========================= */
 
   socket.on("call:end", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const callId = cleanText(data?.callId, 100);
-    const to = normalizeUsername(data?.to);
+    const callId = String(data?.callId || "");
+    const call = calls.get(callId);
 
-    if (!to) return;
+    if (!isParticipant(call, username)) return;
 
-    const targetSocketId = userSockets.get(userKey(to));
+    const other = otherParticipant(call, username);
 
-    if (!targetSocketId) return;
-
-    io.to(targetSocketId).emit("call:ended", {
+    emitToUser(other, "call:ended", {
       callId,
-      from: socket.username
+      by: username
     });
 
     socket.emit("call:ended", {
       callId,
-      from: socket.username
+      by: username
     });
+
+    calls.delete(callId);
   });
 
-  // --------------------------------------------------
-  // WEBRTC SIGNALING
-  // --------------------------------------------------
-
-  /*
-    Sa a se pati ki pèmèt 2 telefòn yo voye:
-
-    - offer
-    - answer
-    - ICE candidates
-
-    Socket.IO pa transpòte son/video.
-    Li sèlman ede 2 devices yo jwenn youn lòt.
-  */
+  /* =========================
+     WEBRTC OFFER
+  ========================= */
 
   socket.on("webrtc:offer", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const to = normalizeUsername(data?.to);
+    const call = calls.get(String(data?.callId || ""));
 
-    if (!to || !data?.offer) return;
+    if (!isParticipant(call, username)) return;
 
-    const targetSocketId = userSockets.get(userKey(to));
+    const other = otherParticipant(call, username);
 
-    if (!targetSocketId) {
-      socket.emit("webrtc:error", {
-        message: `${to} pa konekte.`
-      });
-
-      return;
-    }
-
-    io.to(targetSocketId).emit("webrtc:offer", {
-      from: socket.username,
-      offer: data.offer,
-      callId: data.callId || null
+    emitToUser(other, "webrtc:offer", {
+      callId: call.id,
+      offer: data.offer
     });
   });
+
+  /* =========================
+     WEBRTC ANSWER
+  ========================= */
 
   socket.on("webrtc:answer", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const to = normalizeUsername(data?.to);
+    const call = calls.get(String(data?.callId || ""));
 
-    if (!to || !data?.answer) return;
+    if (!isParticipant(call, username)) return;
 
-    const targetSocketId = userSockets.get(userKey(to));
+    const other = otherParticipant(call, username);
 
-    if (!targetSocketId) return;
-
-    io.to(targetSocketId).emit("webrtc:answer", {
-      from: socket.username,
-      answer: data.answer,
-      callId: data.callId || null
+    emitToUser(other, "webrtc:answer", {
+      callId: call.id,
+      answer: data.answer
     });
   });
+
+  /* =========================
+     WEBRTC ICE
+  ========================= */
 
   socket.on("webrtc:ice-candidate", data => {
-    if (!socket.username) return;
+    if (!username) return;
 
-    const to = normalizeUsername(data?.to);
+    const call = calls.get(String(data?.callId || ""));
 
-    if (!to || !data?.candidate) return;
+    if (!isParticipant(call, username)) return;
 
-    const targetSocketId = userSockets.get(userKey(to));
+    const other = otherParticipant(call, username);
 
-    if (!targetSocketId) return;
-
-    io.to(targetSocketId).emit("webrtc:ice-candidate", {
-      from: socket.username,
-      candidate: data.candidate,
-      callId: data.callId || null
+    emitToUser(other, "webrtc:ice-candidate", {
+      callId: call.id,
+      candidate: data.candidate
     });
   });
 
-  // --------------------------------------------------
-  // DISCONNECT
-  // --------------------------------------------------
+  /* =========================
+     DISCONNECT
+  ========================= */
 
-  socket.on("disconnect", reason => {
-    const key = socketUsers.get(socket.id);
+  socket.on("disconnect", () => {
+    if (!username) return;
 
-    if (!key) {
-      console.log(
-        "Socket disconnected:",
-        socket.id,
-        reason
-      );
-
-      return;
-    }
-
-    const user = users.get(key);
+    const user = users.get(username);
 
     if (user && user.socketId === socket.id) {
       user.online = false;
+      user.socketId = null;
 
-      socketUsers.delete(socket.id);
-      userSockets.delete(key);
+      users.set(username, user);
+    }
 
-      // Nou kenbe user la nan users Map la
-      // pou pwofil li toujou egziste.
-      users.set(key, user);
+    for (const [callId, call] of calls.entries()) {
+      if (!isParticipant(call, username)) continue;
 
-      io.emit("user:offline", {
-        username: user.username
+      const other = otherParticipant(call, username);
+
+      emitToUser(other, "call:ended", {
+        callId,
+        by: username
       });
 
-      sendUserList();
-
-      console.log(
-        `ZIQVONA offline: ${user.username}`
-      );
+      calls.delete(callId);
     }
+
+    io.emit("users:update", {
+      users: allUsers()
+    });
   });
 });
 
-// ----------------------------------------------------
-// SERVER START
-// ----------------------------------------------------
+/* =========================
+   START
+========================= */
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log("=================================");
-  console.log("       ZIQVONA SERVER");
-  console.log("=================================");
-  console.log(`Port: ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log("Socket.IO: READY");
-  console.log("WebRTC signaling: READY");
-  console.log("Private messaging: READY");
-  console.log("Profiles: READY");
-  console.log("=================================");
-});
-
-// ----------------------------------------------------
-// ERROR HANDLING
-// ----------------------------------------------------
-
-process.on("uncaughtException", error => {
-  console.error("UNCAUGHT EXCEPTION:", error);
-});
-
-process.on("unhandledRejection", error => {
-  console.error("UNHANDLED REJECTION:", error);
+server.listen(PORT, () => {
+  console.log(`ZIQVONA running on port ${PORT}`);
+  console.log(
+    `TURN configured: ${
+      !!(process.env.TURN_USERNAME && process.env.TURN_PASSWORD)
+    }`
+  );
 });
