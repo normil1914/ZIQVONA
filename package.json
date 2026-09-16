@@ -1,13 +1,14 @@
 {
   "name": "ziqvona",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "ZIQVONA real-time contacts-first chat",
+  "description": "ZIQVONA secure real-time chat with Supabase Auth, PostgreSQL, Socket.IO and WebRTC",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "express": "^4.21.2",
     "socket.io": "^4.8.1"
   }
