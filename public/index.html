@@ -2,45 +2,49 @@
 <html lang="ht">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#10bfa3">
+<meta name="description" content="ZIQVONA — Connect, Chat, Call.">
 <title>ZIQVONA — Room</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/socket.io/socket.io.js"></script>
 
 <style>
 :root{
   --turq:#10bfa3;
-  --turq-dark:#079d87;
-  --bg:#eef5f4;
+  --turq-dark:#079d88;
+  --bg:#f3f7f6;
   --panel:#ffffff;
-  --text:#172321;
-  --muted:#71807d;
-  --border:#e2ecea;
-  --bubble:#d9fdd3;
-  --danger:#ef4444;
-  --shadow:0 12px 35px rgba(16,60,55,.12);
+  --panel2:#f7faf9;
+  --text:#172522;
+  --muted:#73827e;
+  --line:#e3ece9;
+  --danger:#e34d5a;
+  --shadow:0 15px 45px rgba(17,52,45,.10);
+  --radius:18px;
 }
 
 *{
   box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
 html,body{
-  margin:0;
   width:100%;
   height:100%;
+  overflow:hidden;
   font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:var(--bg);
   color:var(--text);
 }
 
-button,input{
+button,
+input,
+textarea{
   font:inherit;
 }
 
 button{
+  border:0;
   cursor:pointer;
 }
 
@@ -48,314 +52,317 @@ button{
   display:none!important;
 }
 
-/* ================= LOGIN ================= */
+/* =========================
+   AUTH
+========================= */
 
-#loginPage{
-  min-height:100vh;
+.auth-page{
+  width:100%;
+  height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px;
+  padding:20px;
   background:
-    radial-gradient(circle at top left,rgba(16,191,163,.25),transparent 35%),
-    radial-gradient(circle at bottom right,rgba(16,191,163,.18),transparent 35%),
-    #edf8f6;
+    radial-gradient(circle at 15% 15%,rgba(16,191,163,.18),transparent 35%),
+    radial-gradient(circle at 85% 85%,rgba(16,191,163,.12),transparent 35%),
+    #eef6f4;
 }
 
 .auth-card{
-  width:100%;
-  max-width:440px;
+  width:min(440px,100%);
   background:#fff;
-  border:1px solid var(--border);
+  border:1px solid rgba(16,191,163,.12);
   border-radius:28px;
-  padding:34px;
   box-shadow:var(--shadow);
+  padding:32px;
 }
 
-.brand{
-  text-align:center;
-  margin-bottom:25px;
+.logo-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
 }
 
 .logo{
-  width:82px;
-  height:82px;
-  margin:auto;
-  border-radius:25px;
-  background:linear-gradient(135deg,#10bfa3,#078d7b);
+  width:78px;
+  height:78px;
+  border-radius:23px;
+  background:linear-gradient(145deg,#10bfa3,#078f7d);
   display:flex;
   align-items:center;
   justify-content:center;
   color:white;
   font-weight:900;
-  font-size:25px;
-  letter-spacing:-2px;
-  box-shadow:0 15px 30px rgba(16,191,163,.25);
+  font-size:28px;
+  box-shadow:0 12px 30px rgba(16,191,163,.28);
 }
 
-.brand h1{
-  margin:15px 0 4px;
-  font-size:31px;
-  letter-spacing:1px;
+.auth-title{
+  text-align:center;
+  font-size:29px;
+  font-weight:900;
+  letter-spacing:-.7px;
 }
 
-.brand p{
-  margin:0;
+.auth-subtitle{
+  text-align:center;
   color:var(--muted);
+  margin-top:7px;
+  margin-bottom:25px;
+  font-size:14px;
 }
 
 .auth-tabs{
-  display:flex;
-  background:#f0f5f4;
-  padding:5px;
-  border-radius:14px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  background:#eef5f3;
+  padding:4px;
+  border-radius:13px;
   margin-bottom:20px;
 }
 
-.auth-tabs button{
-  flex:1;
-  border:0;
+.auth-tab{
   padding:11px;
   border-radius:10px;
   background:transparent;
   color:var(--muted);
-  font-weight:700;
+  font-weight:800;
 }
 
-.auth-tabs button.active{
+.auth-tab.active{
   background:white;
   color:var(--turq-dark);
   box-shadow:0 3px 10px rgba(0,0,0,.06);
 }
 
-.field{
+.form-group{
   margin-bottom:14px;
 }
 
-.field label{
+.form-group label{
   display:block;
+  font-size:12px;
+  font-weight:800;
   margin-bottom:7px;
-  font-size:13px;
-  font-weight:700;
-  color:#566561;
+  color:#53635f;
 }
 
-.field input{
+.input{
   width:100%;
   height:48px;
-  border:1px solid var(--border);
+  border:1px solid var(--line);
   border-radius:13px;
   padding:0 14px;
   outline:none;
-  background:#fbfdfd;
+  background:#fbfdfc;
+  color:var(--text);
+  transition:.2s;
 }
 
-.field input:focus{
+.input:focus{
   border-color:var(--turq);
-  box-shadow:0 0 0 3px rgba(16,191,163,.12);
+  box-shadow:0 0 0 3px rgba(16,191,163,.10);
 }
 
-.auth-main-btn{
+.auth-btn{
   width:100%;
-  height:50px;
-  border:0;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--turq),var(--turq-dark));
-  color:white;
-  font-weight:800;
-  margin-top:5px;
-}
-
-.auth-main-btn:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-
-.auth-secondary{
-  width:100%;
-  height:46px;
-  border:1px solid var(--border);
+  height:49px;
   border-radius:13px;
-  background:white;
-  color:#44524f;
-  font-weight:700;
-  margin-top:10px;
+  background:var(--turq);
+  color:#fff;
+  font-weight:900;
+  margin-top:5px;
+  transition:.2s;
 }
 
-.auth-note{
+.auth-btn:hover{
+  background:var(--turq-dark);
+  transform:translateY(-1px);
+}
+
+.auth-btn:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none;
+}
+
+.secondary-btn{
+  width:100%;
+  height:44px;
+  border-radius:12px;
+  background:#eef6f4;
+  color:var(--turq-dark);
+  font-weight:800;
+}
+
+.forgot-btn{
+  background:transparent;
+  color:var(--turq-dark);
+  font-size:13px;
+  font-weight:800;
+  margin-top:13px;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.auth-message{
+  margin-top:14px;
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:13px;
+  line-height:1.45;
+  display:none;
+}
+
+.auth-message.show{
+  display:block;
+}
+
+.auth-message.error{
+  background:#fff0f1;
+  color:#b62d39;
+}
+
+.auth-message.success{
+  background:#eafaf6;
+  color:#087c69;
+}
+
+.small-note{
   text-align:center;
-  margin-top:18px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.5;
+  color:#87948f;
+  font-size:11px;
+  margin-top:17px;
+  line-height:1.45;
 }
 
-/* ================= APP ================= */
+/* =========================
+   APP
+========================= */
 
 #app{
   width:100%;
-  height:100vh;
-  display:grid;
-  grid-template-columns:360px 1fr;
-  overflow:hidden;
-  background:#dce9e7;
+  height:100%;
 }
 
-.sidebar{
+.app-shell{
+  width:100%;
+  height:100%;
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr);
   background:white;
-  border-right:1px solid var(--border);
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+  border-right:1px solid var(--line);
+  background:#fff;
   display:flex;
   flex-direction:column;
   min-width:0;
 }
 
-.side-top{
-  padding:18px 16px 12px;
-  border-bottom:1px solid var(--border);
+.sidebar-header{
+  padding:17px;
+  border-bottom:1px solid var(--line);
 }
 
-.my-row{
+.brand-row{
   display:flex;
   align-items:center;
-  gap:11px;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:15px;
 }
 
-.avatar{
-  width:48px;
-  height:48px;
-  border-radius:50%;
-  overflow:hidden;
-  background:#dff7f2;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex:none;
-  color:var(--turq-dark);
-  font-weight:900;
-}
-
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.my-info{
-  flex:1;
-  min-width:0;
-}
-
-.my-info strong{
-  display:block;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.my-info span{
-  display:block;
-  color:var(--muted);
-  font-size:12px;
-  margin-top:2px;
-}
-
-.icon-btn{
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:12px;
-  background:#f0f6f5;
-  color:#40514e;
-  font-size:19px;
-}
-
-.icon-btn:hover{
-  background:#e4f3f0;
-}
-
-.search{
-  margin-top:14px;
-  position:relative;
-}
-
-.search input{
-  width:100%;
-  height:44px;
-  border:1px solid var(--border);
-  border-radius:13px;
-  padding:0 14px 0 40px;
-  outline:none;
-  background:#f8fbfb;
-}
-
-.search span{
-  position:absolute;
-  left:14px;
-  top:11px;
-  color:#7d8b89;
-}
-
-.tabs{
-  display:flex;
-  gap:5px;
-  margin-top:12px;
-}
-
-.tabs button{
-  flex:1;
-  border:0;
-  background:#f4f8f7;
-  color:#687673;
-  padding:9px 5px;
-  border-radius:10px;
-  font-size:12px;
-  font-weight:800;
-}
-
-.tabs button.active{
-  background:#dff8f3;
-  color:#078d7b;
-}
-
-.people{
-  flex:1;
-  overflow-y:auto;
-  padding:8px;
-}
-
-.person{
+.brand{
   display:flex;
   align-items:center;
   gap:10px;
-  padding:11px 9px;
-  border-radius:14px;
+}
+
+.brand-mini{
+  width:39px;
+  height:39px;
+  border-radius:12px;
+  background:linear-gradient(145deg,#10bfa3,#078f7d);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:15px;
+}
+
+.brand-name{
+  font-weight:950;
+  letter-spacing:.4px;
+}
+
+.icon-btn{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  background:#f1f6f4;
+  color:#52625e;
+  font-size:18px;
+}
+
+.profile-mini{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:11px;
+  border-radius:15px;
+  background:#f5faf8;
   cursor:pointer;
 }
 
-.person:hover{
-  background:#f3f8f7;
+.avatar{
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  object-fit:cover;
+  flex:0 0 auto;
+  background:#dff5ef;
 }
 
-.person.active{
-  background:#e4f7f3;
+.avatar.large{
+  width:76px;
+  height:76px;
 }
 
-.person-info{
+.avatar-fallback{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(145deg,#10bfa3,#078f7d);
+  color:#fff;
+  font-weight:900;
+}
+
+.profile-mini-info{
   min-width:0;
   flex:1;
 }
 
-.person-info strong{
-  display:block;
+.profile-mini-name{
+  font-weight:850;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
 }
 
-.person-info small{
-  display:block;
-  margin-top:3px;
+.profile-mini-status{
   color:var(--muted);
+  font-size:12px;
+  margin-top:2px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -364,43 +371,111 @@ button{
 .online-dot{
   width:9px;
   height:9px;
+  background:#20c997;
   border-radius:50%;
-  background:#b9c5c2;
-  flex:none;
+  display:inline-block;
+  margin-right:5px;
 }
 
-.online-dot.on{
-  background:#22c55e;
+.search-wrap{
+  padding:12px 15px 8px;
 }
 
-.person-actions{
-  display:flex;
-  gap:5px;
-}
-
-.small-btn{
+.search{
+  width:100%;
+  height:43px;
   border:0;
-  border-radius:9px;
-  padding:7px 9px;
-  background:#e8f7f4;
-  color:#078d7b;
+  background:#f1f6f4;
+  border-radius:13px;
+  padding:0 14px;
+  outline:none;
+}
+
+.filters{
+  display:flex;
+  gap:7px;
+  padding:5px 15px 12px;
+}
+
+.filter{
+  flex:1;
+  padding:9px 5px;
+  border-radius:10px;
+  background:#f3f7f6;
+  color:#687873;
+  font-size:12px;
+  font-weight:850;
+}
+
+.filter.active{
+  background:#dff7f1;
+  color:#078b77;
+}
+
+.people-list{
+  flex:1;
+  overflow:auto;
+  padding:2px 8px 12px;
+}
+
+.person{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:11px 9px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.person:hover{
+  background:#f4f8f7;
+}
+
+.person.active{
+  background:#eaf8f5;
+}
+
+.person-info{
+  min-width:0;
+  flex:1;
+}
+
+.person-name{
+  font-weight:850;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.person-username{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:2px;
+}
+
+.person-status{
+  color:var(--muted);
   font-size:11px;
-  font-weight:800;
+  margin-top:2px;
 }
 
-.small-btn.danger{
-  background:#fff0f0;
-  color:#dc3636;
+.empty{
+  padding:35px 20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
 }
 
-/* ================= CHAT ================= */
+/* =========================
+   CHAT
+========================= */
 
 .chat{
   min-width:0;
   display:flex;
   flex-direction:column;
-  background:#efeae2;
-  position:relative;
+  background:#edf4f2;
 }
 
 .chat-empty{
@@ -412,62 +487,61 @@ button{
   padding:30px;
 }
 
-.empty-card{
-  max-width:460px;
+.chat-empty-box{
+  max-width:430px;
 }
 
-.empty-logo{
-  width:100px;
-  height:100px;
-  border-radius:30px;
-  background:linear-gradient(135deg,var(--turq),var(--turq-dark));
+.chat-empty-logo{
+  width:84px;
+  height:84px;
+  margin:auto auto 18px;
+  border-radius:25px;
+  background:linear-gradient(145deg,#10bfa3,#078f7d);
+  color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
-  font-weight:900;
-  font-size:30px;
-  margin:0 auto 20px;
+  font-size:28px;
+  font-weight:950;
 }
 
-.empty-card h2{
-  margin:0 0 8px;
+.chat-empty h2{
+  font-size:25px;
+  margin-bottom:7px;
 }
 
-.empty-card p{
-  margin:0;
-  color:#6d7775;
+.chat-empty p{
+  color:var(--muted);
   line-height:1.5;
 }
 
 .chat-header{
   height:70px;
   background:white;
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid var(--line);
   display:flex;
   align-items:center;
-  padding:0 15px;
   gap:11px;
+  padding:10px 16px;
 }
 
-.back-mobile{
+.back-btn{
   display:none;
 }
 
-.chat-person{
-  flex:1;
+.chat-user{
   min-width:0;
+  flex:1;
 }
 
-.chat-person strong{
-  display:block;
+.chat-user-name{
+  font-weight:900;
 }
 
-.chat-person span{
-  display:block;
+.chat-user-status{
   color:var(--muted);
   font-size:12px;
-  margin-top:3px;
+  margin-top:2px;
 }
 
 .call-actions{
@@ -475,92 +549,147 @@ button{
   gap:7px;
 }
 
-.messages{
-  flex:1;
-  overflow-y:auto;
-  padding:20px 5%;
-  display:flex;
-  flex-direction:column;
-  gap:5px;
+.call-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  background:#eef7f4;
+  color:#078b77;
+  font-size:18px;
 }
 
-.day-label{
-  align-self:center;
-  background:rgba(255,255,255,.75);
-  color:#6f7775;
-  font-size:11px;
-  padding:6px 11px;
-  border-radius:10px;
-  margin:5px 0 12px;
+.messages{
+  flex:1;
+  overflow:auto;
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(16,191,163,.045),transparent 25%),
+    radial-gradient(circle at 80% 80%,rgba(16,191,163,.035),transparent 25%),
+    #edf4f2;
 }
 
 .message-row{
   display:flex;
-  margin:2px 0;
+  max-width:76%;
 }
 
 .message-row.mine{
+  align-self:flex-end;
   justify-content:flex-end;
 }
 
+.message-row.theirs{
+  align-self:flex-start;
+}
+
 .bubble{
-  max-width:min(70%,600px);
-  background:white;
-  border-radius:13px;
-  padding:8px 10px 6px;
-  box-shadow:0 1px 2px rgba(0,0,0,.06);
+  padding:9px 12px 7px;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 2px 7px rgba(24,55,49,.05);
   word-break:break-word;
 }
 
 .mine .bubble{
-  background:var(--bubble);
-  border-top-right-radius:4px;
+  background:#d8f8f0;
+  border-bottom-right-radius:5px;
 }
 
-.other .bubble{
-  border-top-left-radius:4px;
+.theirs .bubble{
+  border-bottom-left-radius:5px;
 }
 
-.msg-text{
+.message-body{
   white-space:pre-wrap;
-  line-height:1.4;
+  line-height:1.42;
+  font-size:14px;
 }
 
-.msg-time{
-  display:block;
+.message-time{
+  color:#81908c;
+  font-size:9px;
   text-align:right;
-  color:#84908d;
-  font-size:10px;
   margin-top:4px;
 }
 
+.message-image{
+  max-width:280px;
+  max-height:320px;
+  border-radius:12px;
+  display:block;
+  margin-bottom:4px;
+}
+
 .typing{
-  min-height:20px;
-  padding:0 6%;
-  color:#71807d;
-  font-size:12px;
+  min-height:23px;
+  padding:0 22px;
+  color:#74837f;
+  font-size:11px;
+  background:#edf4f2;
 }
 
 .composer{
   background:white;
-  border-top:1px solid var(--border);
-  padding:10px 14px;
-  position:relative;
+  border-top:1px solid var(--line);
+  padding:10px 12px;
+  display:flex;
+  align-items:flex-end;
+  gap:8px;
 }
+
+.composer-btn{
+  width:42px;
+  height:42px;
+  border-radius:13px;
+  background:#f0f6f4;
+  color:#5f706b;
+  flex:0 0 auto;
+}
+
+.message-input{
+  min-height:42px;
+  max-height:110px;
+  flex:1;
+  resize:none;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px 13px;
+  outline:none;
+}
+
+.message-input:focus{
+  border-color:var(--turq);
+}
+
+.send-btn{
+  width:44px;
+  height:44px;
+  border-radius:13px;
+  background:var(--turq);
+  color:#fff;
+  font-weight:900;
+}
+
+/* =========================
+   EMOJI
+========================= */
 
 .emoji-panel{
   position:absolute;
-  bottom:68px;
-  left:14px;
-  width:310px;
-  max-height:260px;
+  bottom:73px;
+  left:10px;
+  width:290px;
+  max-height:230px;
   overflow:auto;
-  padding:12px;
-  background:white;
-  border:1px solid var(--border);
-  border-radius:16px;
+  background:#fff;
+  border:1px solid var(--line);
   box-shadow:var(--shadow);
-  z-index:20;
+  border-radius:17px;
+  padding:10px;
+  z-index:50;
 }
 
 .emoji-grid{
@@ -569,54 +698,25 @@ button{
   gap:4px;
 }
 
-.emoji-grid button{
-  border:0;
+.emoji{
   background:transparent;
-  font-size:23px;
   border-radius:8px;
-  padding:4px;
+  padding:6px;
+  font-size:20px;
 }
 
-.emoji-grid button:hover{
-  background:#f0f5f4;
+.emoji:hover{
+  background:#eef6f4;
 }
 
-.composer-row{
-  display:flex;
-  align-items:center;
-  gap:7px;
-}
-
-.composer-row input{
-  flex:1;
-  min-width:0;
-  height:45px;
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:0 14px;
-  outline:none;
-}
-
-.composer-row input:focus{
-  border-color:var(--turq);
-}
-
-.send-btn{
-  width:46px;
-  height:45px;
-  border:0;
-  border-radius:13px;
-  background:var(--turq);
-  color:white;
-  font-size:18px;
-}
-
-/* ================= MODAL ================= */
+/* =========================
+   MODALS
+========================= */
 
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(10,30,27,.55);
+  background:rgba(10,28,24,.48);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -625,240 +725,265 @@ button{
 }
 
 .modal-card{
-  width:100%;
-  max-width:440px;
+  width:min(460px,100%);
+  max-height:90vh;
+  overflow:auto;
   background:white;
-  border-radius:24px;
-  padding:24px;
-  box-shadow:0 25px 80px rgba(0,0,0,.25);
+  border-radius:23px;
+  box-shadow:0 25px 70px rgba(0,0,0,.22);
+  padding:22px;
 }
 
-.modal-card h3{
-  margin:0 0 18px;
+.modal-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.modal-title{
+  font-size:20px;
+  font-weight:900;
+}
+
+.close-btn{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:#f1f6f4;
+  color:#63716d;
+  font-size:19px;
+}
+
+.profile-center{
+  display:flex;
+  justify-content:center;
+  margin-bottom:18px;
+}
+
+.profile-avatar-btn{
+  position:relative;
+  cursor:pointer;
+}
+
+.avatar-edit{
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:27px;
+  height:27px;
+  border-radius:50%;
+  background:var(--turq);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  border:3px solid white;
 }
 
 .modal-actions{
   display:flex;
-  gap:9px;
-  margin-top:18px;
+  gap:8px;
+  margin-top:17px;
 }
 
 .modal-actions button{
   flex:1;
-  height:45px;
+  height:44px;
   border-radius:12px;
-  border:0;
-  font-weight:800;
+  font-weight:850;
 }
 
-.cancel{
-  background:#eef3f2;
-  color:#51605d;
-}
-
-.save{
+.save-btn{
   background:var(--turq);
   color:white;
 }
 
-.profile-preview{
-  display:flex;
-  justify-content:center;
-  margin-bottom:16px;
+.cancel-btn{
+  background:#eef5f3;
+  color:#53635f;
 }
 
-.big-avatar{
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  overflow:hidden;
-  background:#e0f8f4;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--turq-dark);
-  font-size:30px;
-  font-weight:900;
-}
-
-.big-avatar img{
+.logout-btn{
   width:100%;
-  height:100%;
-  object-fit:cover;
+  margin-top:10px;
+  height:43px;
+  border-radius:12px;
+  background:#fff0f1;
+  color:#c03542;
+  font-weight:850;
 }
 
-.file-input{
+.delete-contact-btn{
   width:100%;
-  margin-top:5px;
+  margin-top:10px;
+  height:43px;
+  border-radius:12px;
+  background:#fff4e9;
+  color:#a85d14;
+  font-weight:850;
 }
 
-/* ================= INCOMING CALL ================= */
+/* =========================
+   CALL
+========================= */
 
-.incoming-card{
-  text-align:center;
-}
-
-.call-avatar{
-  width:105px;
-  height:105px;
-  border-radius:50%;
-  overflow:hidden;
-  margin:0 auto 15px;
-  background:#dff8f3;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--turq-dark);
-  font-size:35px;
-  font-weight:900;
-}
-
-.call-avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.incoming-card h2{
-  margin:0;
-}
-
-.incoming-card p{
-  color:var(--muted);
-  margin:7px 0 20px;
-}
-
-.call-buttons{
-  display:flex;
-  gap:12px;
-}
-
-.call-buttons button{
-  flex:1;
-  height:50px;
-  border:0;
-  border-radius:14px;
-  color:white;
-  font-weight:900;
-}
-
-.accept{
-  background:#20b56e;
-}
-
-.reject{
-  background:#e74c4c;
-}
-
-/* ================= CALL SCREEN ================= */
-
-#callScreen{
+.call-overlay{
   position:fixed;
   inset:0;
-  background:#071311;
+  background:#081b17;
   z-index:200;
   display:flex;
   flex-direction:column;
 }
 
 .call-top{
-  height:65px;
+  height:70px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 20px;
+  padding:12px 18px;
   color:white;
+  z-index:3;
 }
 
-.call-title strong{
-  display:block;
-}
-
-.call-title span{
-  font-size:12px;
-  color:#9db1ad;
-}
-
-.video-stage{
-  flex:1;
-  position:relative;
-  overflow:hidden;
+.call-person{
   display:flex;
   align-items:center;
-  justify-content:center;
+  gap:10px;
 }
 
-#remoteVideo{
+.call-person .avatar{
+  width:42px;
+  height:42px;
+}
+
+.call-name{
+  font-weight:900;
+}
+
+.call-state{
+  color:#b5c9c4;
+  font-size:12px;
+  margin-top:2px;
+}
+
+.remote-video{
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
-  object-fit:contain;
-  background:#000;
+  object-fit:cover;
+  background:#102c26;
 }
 
-#localVideo{
+.local-video{
   position:absolute;
   right:20px;
-  bottom:20px;
-  width:min(28vw,240px);
-  height:min(22vw,180px);
+  bottom:105px;
+  width:min(28vw,230px);
+  aspect-ratio:3/4;
   object-fit:cover;
-  background:#111;
-  border-radius:16px;
-  border:2px solid rgba(255,255,255,.5);
+  border-radius:17px;
+  background:#1d3b35;
+  border:2px solid rgba(255,255,255,.3);
   z-index:2;
 }
 
-.voice-stage{
-  flex:1;
+.call-controls{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:25px;
   display:flex;
-  align-items:center;
   justify-content:center;
-  color:white;
-  text-align:center;
-}
-
-.voice-stage .call-avatar{
-  width:150px;
-  height:150px;
-  font-size:48px;
-}
-
-.call-bottom{
-  height:95px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
+  gap:12px;
+  z-index:5;
 }
 
 .call-control{
-  width:54px;
-  height:54px;
-  border:0;
+  width:52px;
+  height:52px;
   border-radius:50%;
-  background:#233532;
+  background:rgba(255,255,255,.14);
   color:white;
   font-size:20px;
-}
-
-.call-control.active{
-  background:white;
-  color:#172321;
+  backdrop-filter:blur(8px);
 }
 
 .call-control.end{
-  background:#e54848;
+  background:#e34d5a;
 }
 
-/* ================= TOAST ================= */
+.call-control.active{
+  background:var(--turq);
+}
 
-#toast{
+/* =========================
+   INCOMING
+========================= */
+
+.incoming-card{
+  width:min(390px,100%);
+  background:white;
+  border-radius:25px;
+  padding:30px 22px;
+  text-align:center;
+  box-shadow:var(--shadow);
+}
+
+.incoming-card .avatar{
+  width:86px;
+  height:86px;
+  margin:auto;
+}
+
+.incoming-card h2{
+  margin-top:15px;
+  font-size:22px;
+}
+
+.incoming-type{
+  color:var(--muted);
+  margin-top:5px;
+}
+
+.incoming-actions{
+  display:flex;
+  gap:10px;
+  margin-top:24px;
+}
+
+.incoming-actions button{
+  flex:1;
+  height:48px;
+  border-radius:13px;
+  font-weight:900;
+}
+
+.reject-btn{
+  background:#fff0f1;
+  color:#c03542;
+}
+
+.accept-btn{
+  background:var(--turq);
+  color:white;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
   position:fixed;
   left:50%;
-  bottom:24px;
-  transform:translateX(-50%) translateY(20px);
-  background:#172321;
-  color:white;
+  bottom:22px;
+  transform:translate(-50%,20px);
+  background:#162823;
+  color:#fff;
   padding:11px 16px;
   border-radius:12px;
   font-size:13px;
@@ -866,60 +991,82 @@ button{
   pointer-events:none;
   transition:.25s;
   z-index:500;
-  max-width:90%;
+  max-width:min(90vw,500px);
   text-align:center;
 }
 
-#toast.show{
+.toast.show{
   opacity:1;
-  transform:translateX(-50%) translateY(0);
+  transform:translate(-50%,0);
 }
 
-/* ================= MOBILE ================= */
+/* =========================
+   MOBILE
+========================= */
 
 @media(max-width:800px){
-
-  #app{
+  .app-shell{
     grid-template-columns:1fr;
   }
 
   .sidebar{
-    display:flex;
+    position:absolute;
+    inset:0;
+    z-index:10;
+    width:100%;
+  }
+
+  .sidebar.chat-open{
+    display:none;
   }
 
   .chat{
-    position:fixed;
-    inset:0;
-    z-index:50;
-    transform:translateX(100%);
-    transition:.25s;
+    display:none;
   }
 
   .chat.mobile-open{
-    transform:translateX(0);
+    display:flex;
+    position:absolute;
+    inset:0;
+    z-index:20;
   }
 
-  .back-mobile{
-    display:block;
+  .back-btn{
+    display:flex;
+    width:38px;
+    height:38px;
+    align-items:center;
+    justify-content:center;
+    border-radius:11px;
+    background:#f1f6f4;
+  }
+
+  .call-actions{
+    gap:3px;
   }
 
   .messages{
-    padding:15px 12px;
+    padding:15px 11px;
   }
 
-  .bubble{
-    max-width:84%;
+  .message-row{
+    max-width:88%;
   }
 
-  #localVideo{
-    width:125px;
-    height:170px;
+  .local-video{
+    width:120px;
+    bottom:105px;
     right:12px;
-    bottom:12px;
   }
 
   .auth-card{
     padding:25px 20px;
+  }
+}
+
+@media(min-width:801px){
+  .sidebar.chat-open{
+    display:flex;
   }
 }
 </style>
@@ -927,372 +1074,506 @@ button{
 
 <body>
 
-<!-- ================= AUTH ================= -->
+<!-- =========================
+     AUTH PAGE
+========================= -->
 
-<section id="loginPage">
+<section id="authPage" class="auth-page">
 
-  <div class="auth-card">
+  <!-- LOGIN / SIGNUP -->
+  <div id="authCard" class="auth-card">
 
-    <div class="brand">
-      <div class="logo">ZQ</div>
-      <h1>ZIQVONA</h1>
-      <p>Connect • Chat • Call • Share</p>
+    <div class="logo-wrap">
+      <div class="logo">Z</div>
+    </div>
+
+    <div class="auth-title">ZIQVONA</div>
+    <div class="auth-subtitle">
+      Connect • Chat • Call
     </div>
 
     <div class="auth-tabs">
-      <button id="loginTab" class="active">Konekte</button>
-      <button id="registerTab">Kreye kont</button>
+      <button id="loginTab" class="auth-tab active">Login</button>
+      <button id="signupTab" class="auth-tab">Create account</button>
     </div>
 
-    <div id="registerFields" class="hidden">
+    <div id="signupFields" class="hidden">
 
-      <div class="field">
-        <label>Non ou</label>
-        <input id="displayName" type="text" maxlength="60"
-               placeholder="Pa egzanp: Carl">
+      <div class="form-group">
+        <label>Display name</label>
+        <input id="signupDisplayName"
+               class="input"
+               type="text"
+               maxlength="60"
+               placeholder="Non ou vle moun wè">
       </div>
 
-      <div class="field">
+      <div class="form-group">
         <label>Username</label>
-        <input id="username" type="text" maxlength="32"
-               placeholder="Pa egzanp: carl">
+        <input id="signupUsername"
+               class="input"
+               type="text"
+               maxlength="32"
+               autocomplete="username"
+               placeholder="eg. carl">
       </div>
 
     </div>
 
-    <div class="field">
-      <label>Email oswa nimewo telefòn</label>
-      <input id="identity"
-             type="text"
-             autocomplete="username"
-             placeholder="email@example.com oswa +18095551234">
+    <div class="form-group">
+      <label>Email</label>
+      <input id="authEmail"
+             class="input"
+             type="email"
+             autocomplete="email"
+             placeholder="example@email.com">
     </div>
 
-    <div class="field">
-      <label>Modpas</label>
-      <input id="password"
+    <div class="form-group">
+      <label>Password</label>
+      <input id="authPassword"
+             class="input"
              type="password"
              autocomplete="current-password"
-             placeholder="Omwen 6 karaktè">
+             placeholder="••••••••">
     </div>
 
-    <button id="authBtn" class="auth-main-btn">
-      Konekte
+    <button id="authBtn" class="auth-btn">
+      Login
     </button>
 
-    <button id="forgotBtn" class="auth-secondary">
-      Mwen bliye modpas mwen
+    <button id="forgotBtn" class="forgot-btn">
+      Forgot password?
     </button>
 
-    <div class="auth-note">
-      ZIQVONA itilize Supabase Auth pou pwoteje kont ou.
-      <br>
-      Pa pataje modpas ou ak okenn lòt moun.
+    <div id="authMessage" class="auth-message"></div>
+
+    <div class="small-note">
+      ZIQVONA itilize Supabase Auth pou sekirize kont ou.
     </div>
+
+  </div>
+
+  <!-- RESET PASSWORD -->
+  <div id="resetCard" class="auth-card hidden">
+
+    <div class="logo-wrap">
+      <div class="logo">Z</div>
+    </div>
+
+    <div class="auth-title">New password</div>
+
+    <div class="auth-subtitle">
+      Mete nouvo password ou pou kont ZIQVONA a.
+    </div>
+
+    <div class="form-group">
+      <label>New password</label>
+      <input id="newPassword"
+             class="input"
+             type="password"
+             autocomplete="new-password"
+             placeholder="Nouvo password">
+    </div>
+
+    <div class="form-group">
+      <label>Confirm password</label>
+      <input id="confirmPassword"
+             class="input"
+             type="password"
+             autocomplete="new-password"
+             placeholder="Repete password la">
+    </div>
+
+    <button id="resetBtn" class="auth-btn">
+      Change password
+    </button>
+
+    <div id="resetMessage" class="auth-message"></div>
 
   </div>
 
 </section>
 
 
-<!-- ================= MAIN APP ================= -->
+<!-- =========================
+     MAIN APP
+========================= -->
 
 <section id="app" class="hidden">
 
-  <aside class="sidebar">
+  <div class="app-shell">
 
-    <div class="side-top">
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
 
-      <div class="my-row">
+      <div class="sidebar-header">
 
-        <div id="myAvatar" class="avatar">
-          ZQ
+        <div class="brand-row">
+          <div class="brand">
+            <div class="brand-mini">Z</div>
+            <div class="brand-name">ZIQVONA</div>
+          </div>
+
+          <button id="profileTopBtn"
+                  class="icon-btn"
+                  title="Profile">
+            ⚙
+          </button>
         </div>
 
-        <div class="my-info">
-          <strong id="myName">ZIQVONA</strong>
-          <span id="myUsername">@user</span>
+        <div id="myProfileMini" class="profile-mini">
+          <div id="myAvatar"
+               class="avatar avatar-fallback">
+            Z
+          </div>
+
+          <div class="profile-mini-info">
+            <div id="myName"
+                 class="profile-mini-name">
+              User
+            </div>
+
+            <div id="myStatus"
+                 class="profile-mini-status">
+              <span class="online-dot"></span>Online
+            </div>
+          </div>
         </div>
-
-        <button id="profileBtn" class="icon-btn" title="Pwofil">
-          ⚙
-        </button>
-
-        <button id="logoutBtn" class="icon-btn" title="Dekonekte">
-          ↪
-        </button>
 
       </div>
 
-      <div class="search">
-        <span>⌕</span>
+      <div class="search-wrap">
         <input id="searchInput"
+               class="search"
                type="search"
-               placeholder="Chèche moun...">
+               placeholder="Search people...">
       </div>
 
-      <div class="tabs">
-        <button class="active" data-tab="all">Tout</button>
-        <button data-tab="contacts">Kontak</button>
-        <button data-tab="online">Online</button>
+      <div class="filters">
+        <button class="filter active" data-filter="all">Tout</button>
+        <button class="filter" data-filter="contacts">Contacts</button>
+        <button class="filter" data-filter="online">Online</button>
       </div>
 
-    </div>
-
-    <div id="peopleList" class="people"></div>
-
-  </aside>
-
-
-  <main id="chatPanel" class="chat">
-
-    <div id="chatEmpty" class="chat-empty">
-
-      <div class="empty-card">
-
-        <div class="empty-logo">ZQ</div>
-
-        <h2>Byenvini nan ZIQVONA</h2>
-
-        <p>
-          Chwazi yon moun sou bò gòch la pou kòmanse yon
-          konvèsasyon prive.
-        </p>
-
+      <div id="peopleList" class="people-list">
+        <div class="empty">
+          Chèche yon moun pou kòmanse.
+        </div>
       </div>
 
-    </div>
+    </aside>
 
 
-    <div id="chatContent" class="hidden"
-         style="height:100%;display:flex;flex-direction:column;">
+    <!-- CHAT -->
+    <main id="chatPanel" class="chat">
 
-      <header class="chat-header">
+      <div id="chatEmpty" class="chat-empty">
 
-        <button id="backBtn" class="icon-btn back-mobile">
-          ←
-        </button>
+        <div class="chat-empty-box">
 
-        <div id="chatAvatar" class="avatar">
-          ZQ
-        </div>
+          <div class="chat-empty-logo">Z</div>
 
-        <div class="chat-person">
-          <strong id="chatName">ZIQVONA</strong>
-          <span id="chatStatus">offline</span>
-        </div>
+          <h2>Welcome to ZIQVONA</h2>
 
-        <div class="call-actions">
-
-          <button id="voiceCallBtn"
-                  class="icon-btn"
-                  title="Voice call">
-            ☎
-          </button>
-
-          <button id="videoCallBtn"
-                  class="icon-btn"
-                  title="Video call">
-            ▣
-          </button>
-
-        </div>
-
-      </header>
-
-
-      <div id="messages" class="messages"></div>
-
-      <div id="typing" class="typing"></div>
-
-      <div class="composer">
-
-        <div id="emojiPanel"
-             class="emoji-panel hidden">
-
-          <div id="emojiGrid"
-               class="emoji-grid"></div>
-
-        </div>
-
-        <div class="composer-row">
-
-          <button id="emojiBtn"
-                  class="icon-btn"
-                  title="Emoji">
-            😊
-          </button>
-
-          <input id="messageInput"
-                 type="text"
-                 maxlength="4000"
-                 placeholder="Ekri mesaj...">
-
-          <button id="sendBtn"
-                  class="send-btn">
-            ➤
-          </button>
+          <p>
+            Chwazi yon moun nan lis la pou kòmanse yon
+            konvèsasyon prive.
+          </p>
 
         </div>
 
       </div>
 
-    </div>
 
-  </main>
+      <div id="chatContent" class="hidden" style="height:100%;display:flex;flex-direction:column;">
+
+        <header class="chat-header">
+
+          <button id="backBtn"
+                  class="back-btn">
+            ←
+          </button>
+
+          <div id="chatAvatar"
+               class="avatar avatar-fallback">
+            Z
+          </div>
+
+          <div class="chat-user">
+
+            <div id="chatName"
+                 class="chat-user-name">
+              User
+            </div>
+
+            <div id="chatStatus"
+                 class="chat-user-status">
+              Offline
+            </div>
+
+          </div>
+
+          <div class="call-actions">
+
+            <button id="voiceCallBtn"
+                    class="call-btn"
+                    title="Voice call">
+              ☎
+            </button>
+
+            <button id="videoCallBtn"
+                    class="call-btn"
+                    title="Video call">
+              ▣
+            </button>
+
+          </div>
+
+        </header>
+
+
+        <div id="messages"
+             class="messages">
+        </div>
+
+        <div id="typing"
+             class="typing">
+        </div>
+
+        <div style="position:relative">
+
+          <div id="emojiPanel"
+               class="emoji-panel hidden">
+
+            <div id="emojiGrid"
+                 class="emoji-grid">
+            </div>
+
+          </div>
+
+          <div class="composer">
+
+            <button id="emojiBtn"
+                    class="composer-btn"
+                    title="Emoji">
+              😊
+            </button>
+
+            <button id="photoBtn"
+                    class="composer-btn"
+                    title="Photo">
+              📷
+            </button>
+
+            <input id="photoInput"
+                   type="file"
+                   accept="image/*"
+                   class="hidden">
+
+            <textarea id="messageInput"
+                      class="message-input"
+                      rows="1"
+                      maxlength="4000"
+                      placeholder="Write a message..."></textarea>
+
+            <button id="sendBtn"
+                    class="send-btn">
+              ➤
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
 
 </section>
 
 
-<!-- ================= PROFILE MODAL ================= -->
+<!-- =========================
+     PROFILE MODAL
+========================= -->
 
-<div id="profileModal" class="modal hidden">
+<div id="profileModal"
+     class="modal hidden">
 
   <div class="modal-card">
 
-    <h3>Mon pwofil ZIQVONA</h3>
+    <div class="modal-title-row">
+      <div class="modal-title">My Profile</div>
 
-    <div class="profile-preview">
-      <div id="profileAvatarPreview"
-           class="big-avatar">
-        ZQ
-      </div>
+      <button class="close-btn"
+              data-close="profileModal">
+        ×
+      </button>
     </div>
 
-    <div class="field">
-      <label>Foto pwofil</label>
-      <input id="avatarFile"
-             class="file-input"
-             type="file"
-             accept="image/*">
+    <div class="profile-center">
+
+      <label class="profile-avatar-btn">
+
+        <div id="profileAvatar"
+             class="avatar avatar-large avatar-fallback">
+          Z
+        </div>
+
+        <div class="avatar-edit">✎</div>
+
+        <input id="avatarInput"
+               type="file"
+               accept="image/*"
+               class="hidden">
+
+      </label>
+
     </div>
 
-    <div class="field">
-      <label>Username</label>
-      <input id="profileUsername"
-             maxlength="32">
-    </div>
-
-    <div class="field">
-      <label>Non ou</label>
+    <div class="form-group">
+      <label>Display name</label>
       <input id="profileDisplayName"
+             class="input"
              maxlength="60">
     </div>
 
-    <div class="field">
+    <div class="form-group">
+      <label>Username</label>
+      <input id="profileUsername"
+             class="input"
+             maxlength="32"
+             readonly>
+    </div>
+
+    <div class="form-group">
       <label>Status</label>
-      <input id="profileStatus"
-             maxlength="120"
-             placeholder="Disponib sou ZIQVONA">
+      <textarea id="profileStatus"
+                class="input"
+                maxlength="120"
+                style="height:85px;padding-top:11px;resize:none"
+                placeholder="Tell people something about you..."></textarea>
     </div>
 
     <div class="modal-actions">
 
       <button id="profileCancel"
-              class="cancel">
-        Anile
+              class="cancel-btn">
+        Cancel
       </button>
 
       <button id="profileSave"
-              class="save">
-        Sove pwofil
+              class="save-btn">
+        Save profile
       </button>
 
     </div>
 
-  </div>
+    <button id="deleteContactBtn"
+            class="delete-contact-btn hidden">
+      Remove contact
+    </button>
 
-</div>
-
-
-<!-- ================= INCOMING CALL ================= -->
-
-<div id="incomingModal" class="modal hidden">
-
-  <div class="modal-card incoming-card">
-
-    <div id="incomingAvatar"
-         class="call-avatar">
-      ZQ
-    </div>
-
-    <h2 id="incomingName">ZIQVONA</h2>
-
-    <p id="incomingType">Apèl ap antre...</p>
-
-    <div class="call-buttons">
-
-      <button id="rejectCallBtn"
-              class="reject">
-        Refize
-      </button>
-
-      <button id="acceptCallBtn"
-              class="accept">
-        Resevwa
-      </button>
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- ================= CALL SCREEN ================= -->
-
-<div id="callScreen" class="hidden">
-
-  <div class="call-top">
-
-    <div class="call-title">
-      <strong id="callName">ZIQVONA</strong>
-      <span id="callState">Apèl...</span>
-    </div>
-
-    <button id="closeCallBtn"
-            class="icon-btn">
-      ✕
+    <button id="logoutBtn"
+            class="logout-btn">
+      Logout
     </button>
 
   </div>
 
-
-  <div id="videoStage"
-       class="video-stage hidden">
-
-    <video id="remoteVideo"
-           autoplay
-           playsinline></video>
-
-    <video id="localVideo"
-           autoplay
-           muted
-           playsinline></video>
-
-  </div>
+</div>
 
 
-  <div id="voiceStage"
-       class="voice-stage">
+<!-- =========================
+     INCOMING CALL
+========================= -->
 
-    <div>
+<div id="incomingModal"
+     class="modal hidden">
 
-      <div id="voiceAvatar"
-           class="call-avatar">
-        ZQ
-      </div>
+  <div class="incoming-card">
 
-      <h2 id="voiceName">ZIQVONA</h2>
+    <div id="incomingAvatar"
+         class="avatar avatar-fallback">
+      Z
+    </div>
 
-      <p id="voiceState">Apèl ap kòmanse...</p>
+    <h2 id="incomingName">
+      Incoming call
+    </h2>
+
+    <div id="incomingType"
+         class="incoming-type">
+      ZIQVONA call
+    </div>
+
+    <div class="incoming-actions">
+
+      <button id="rejectIncoming"
+              class="reject-btn">
+        Reject
+      </button>
+
+      <button id="acceptIncoming"
+              class="accept-btn">
+        Accept
+      </button>
 
     </div>
 
   </div>
 
+</div>
 
-  <div class="call-bottom">
+
+<!-- =========================
+     CALL SCREEN
+========================= -->
+
+<div id="callOverlay"
+     class="call-overlay hidden">
+
+  <video id="remoteVideo"
+         class="remote-video"
+         autoplay
+         playsinline></video>
+
+  <video id="localVideo"
+         class="local-video"
+         autoplay
+         muted
+         playsinline></video>
+
+  <div class="call-top">
+
+    <div class="call-person">
+
+      <div id="callAvatar"
+           class="avatar avatar-fallback">
+        Z
+      </div>
+
+      <div>
+
+        <div id="callName"
+             class="call-name">
+          User
+        </div>
+
+        <div id="callState"
+             class="call-state">
+          Connecting...
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="call-controls">
 
     <button id="muteBtn"
             class="call-control">
@@ -1314,14 +1595,19 @@ button{
 </div>
 
 
-<div id="toast"></div>
+<div id="toast"
+     class="toast">
+</div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
 "use strict";
 
 /* =========================================================
-   ZIQVONA + SUPABASE
+   ZIQVONA CONFIG
 ========================================================= */
 
 const SUPABASE_URL =
@@ -1330,286 +1616,416 @@ const SUPABASE_URL =
 const SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
 
+const ZIQVONA_SITE_URL =
+  "https://ziqvona.onrender.com";
+
 const supabaseClient =
   window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth:{
+        persistSession:true,
+        autoRefreshToken:true,
+        detectSessionInUrl:true
+      }
+    }
   );
 
 
 /* =========================================================
-   GLOBAL STATE
+   STATE
 ========================================================= */
 
 let socket = null;
-let session = null;
 
 let currentUser = null;
-let myProfile = null;
+let currentSession = null;
 
 let allUsers = [];
 let contacts = [];
 
-let activeTab = "all";
 let selectedUser = null;
 let selectedConversationId = null;
 
-let messagesByConversation = new Map();
+let profileData = {
+  displayName:"",
+  username:"",
+  status:"",
+  avatar_url:"",
+  avatar:""
+};
+
+let activeFilter = "all";
 
 let typingTimer = null;
-let remoteTypingTimer = null;
 
 let iceServers = [
-  { urls:"stun:stun.l.google.com:19302" },
-  { urls:"stun:stun1.l.google.com:19302" }
+  {
+    urls:"stun:stun.l.google.com:19302"
+  }
 ];
 
-let peer = null;
+let peerConnection = null;
 let localStream = null;
 let remoteStream = null;
 
-let activeCall = null;
-let incomingCall = null;
+let currentCall = null;
+let pendingIncomingCall = null;
 
-let pendingOffer = null;
 let pendingIceCandidates = [];
 
-let callAccepted = false;
-let isCaller = false;
 let callMuted = false;
-let cameraOff = false;
+let cameraEnabled = true;
 
 
 /* =========================================================
    DOM
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+const authPage =
+  document.getElementById("authPage");
 
-const loginPage = $("loginPage");
-const app = $("app");
+const authCard =
+  document.getElementById("authCard");
 
-const loginTab = $("loginTab");
-const registerTab = $("registerTab");
-const registerFields = $("registerFields");
+const resetCard =
+  document.getElementById("resetCard");
 
-const identityInput = $("identity");
-const passwordInput = $("password");
-const displayNameInput = $("displayName");
-const usernameInput = $("username");
+const authMessage =
+  document.getElementById("authMessage");
 
-const authBtn = $("authBtn");
-const forgotBtn = $("forgotBtn");
+const resetMessage =
+  document.getElementById("resetMessage");
 
-const peopleList = $("peopleList");
-const searchInput = $("searchInput");
+const loginTab =
+  document.getElementById("loginTab");
 
-const chatPanel = $("chatPanel");
-const chatEmpty = $("chatEmpty");
-const chatContent = $("chatContent");
+const signupTab =
+  document.getElementById("signupTab");
 
-const messagesEl = $("messages");
-const messageInput = $("messageInput");
-const sendBtn = $("sendBtn");
+const signupFields =
+  document.getElementById("signupFields");
 
-const emojiBtn = $("emojiBtn");
-const emojiPanel = $("emojiPanel");
-const emojiGrid = $("emojiGrid");
+const authEmail =
+  document.getElementById("authEmail");
 
-const toastEl = $("toast");
+const authPassword =
+  document.getElementById("authPassword");
 
-const profileModal = $("profileModal");
-const profileBtn = $("profileBtn");
-const profileCancel = $("profileCancel");
-const profileSave = $("profileSave");
+const signupDisplayName =
+  document.getElementById("signupDisplayName");
 
-const logoutBtn = $("logoutBtn");
+const signupUsername =
+  document.getElementById("signupUsername");
 
-const avatarFile = $("avatarFile");
-const profileAvatarPreview = $("profileAvatarPreview");
-const profileUsername = $("profileUsername");
-const profileDisplayName = $("profileDisplayName");
-const profileStatus = $("profileStatus");
+const authBtn =
+  document.getElementById("authBtn");
 
-const voiceCallBtn = $("voiceCallBtn");
-const videoCallBtn = $("videoCallBtn");
+const forgotBtn =
+  document.getElementById("forgotBtn");
 
-const incomingModal = $("incomingModal");
-const incomingAvatar = $("incomingAvatar");
-const incomingName = $("incomingName");
-const incomingType = $("incomingType");
+const newPassword =
+  document.getElementById("newPassword");
 
-const acceptCallBtn = $("acceptCallBtn");
-const rejectCallBtn = $("rejectCallBtn");
+const confirmPassword =
+  document.getElementById("confirmPassword");
 
-const callScreen = $("callScreen");
-const callName = $("callName");
-const callState = $("callState");
+const resetBtn =
+  document.getElementById("resetBtn");
 
-const videoStage = $("videoStage");
-const voiceStage = $("voiceStage");
+const app =
+  document.getElementById("app");
 
-const remoteVideo = $("remoteVideo");
-const localVideo = $("localVideo");
+const sidebar =
+  document.getElementById("sidebar");
 
-const voiceAvatar = $("voiceAvatar");
-const voiceName = $("voiceName");
-const voiceState = $("voiceState");
+const chatPanel =
+  document.getElementById("chatPanel");
 
-const muteBtn = $("muteBtn");
-const cameraBtn = $("cameraBtn");
-const endCallBtn = $("endCallBtn");
-const closeCallBtn = $("closeCallBtn");
+const chatEmpty =
+  document.getElementById("chatEmpty");
 
-const backBtn = $("backBtn");
+const chatContent =
+  document.getElementById("chatContent");
+
+const peopleList =
+  document.getElementById("peopleList");
+
+const searchInput =
+  document.getElementById("searchInput");
+
+const myAvatar =
+  document.getElementById("myAvatar");
+
+const myName =
+  document.getElementById("myName");
+
+const myStatus =
+  document.getElementById("myStatus");
+
+const profileTopBtn =
+  document.getElementById("profileTopBtn");
+
+const myProfileMini =
+  document.getElementById("myProfileMini");
+
+const chatAvatar =
+  document.getElementById("chatAvatar");
+
+const chatName =
+  document.getElementById("chatName");
+
+const chatStatus =
+  document.getElementById("chatStatus");
+
+const messages =
+  document.getElementById("messages");
+
+const messageInput =
+  document.getElementById("messageInput");
+
+const sendBtn =
+  document.getElementById("sendBtn");
+
+const emojiBtn =
+  document.getElementById("emojiBtn");
+
+const emojiPanel =
+  document.getElementById("emojiPanel");
+
+const emojiGrid =
+  document.getElementById("emojiGrid");
+
+const photoBtn =
+  document.getElementById("photoBtn");
+
+const photoInput =
+  document.getElementById("photoInput");
+
+const typing =
+  document.getElementById("typing");
+
+const backBtn =
+  document.getElementById("backBtn");
+
+const profileModal =
+  document.getElementById("profileModal");
+
+const profileAvatar =
+  document.getElementById("profileAvatar");
+
+const profileDisplayName =
+  document.getElementById("profileDisplayName");
+
+const profileUsername =
+  document.getElementById("profileUsername");
+
+const profileStatus =
+  document.getElementById("profileStatus");
+
+const avatarInput =
+  document.getElementById("avatarInput");
+
+const profileSave =
+  document.getElementById("profileSave");
+
+const profileCancel =
+  document.getElementById("profileCancel");
+
+const logoutBtn =
+  document.getElementById("logoutBtn");
+
+const deleteContactBtn =
+  document.getElementById("deleteContactBtn");
+
+const incomingModal =
+  document.getElementById("incomingModal");
+
+const incomingAvatar =
+  document.getElementById("incomingAvatar");
+
+const incomingName =
+  document.getElementById("incomingName");
+
+const incomingType =
+  document.getElementById("incomingType");
+
+const acceptIncoming =
+  document.getElementById("acceptIncoming");
+
+const rejectIncoming =
+  document.getElementById("rejectIncoming");
+
+const callOverlay =
+  document.getElementById("callOverlay");
+
+const remoteVideo =
+  document.getElementById("remoteVideo");
+
+const localVideo =
+  document.getElementById("localVideo");
+
+const callAvatar =
+  document.getElementById("callAvatar");
+
+const callName =
+  document.getElementById("callName");
+
+const callState =
+  document.getElementById("callState");
+
+const muteBtn =
+  document.getElementById("muteBtn");
+
+const cameraBtn =
+  document.getElementById("cameraBtn");
+
+const endCallBtn =
+  document.getElementById("endCallBtn");
+
+const voiceCallBtn =
+  document.getElementById("voiceCallBtn");
+
+const videoCallBtn =
+  document.getElementById("videoCallBtn");
+
+const toast =
+  document.getElementById("toast");
 
 
 /* =========================================================
-   UTILITIES
+   HELPERS
 ========================================================= */
 
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
 function showToast(message){
-  toastEl.textContent = message;
-  toastEl.classList.add("show");
+  toast.textContent = message;
+  toast.classList.add("show");
 
   clearTimeout(showToast.timer);
 
   showToast.timer = setTimeout(()=>{
-    toastEl.classList.remove("show");
-  },3200);
+    toast.classList.remove("show");
+  },3000);
 }
 
-
-function escapeText(value){
-  return String(value || "");
+function showAuthMessage(message,type="error"){
+  authMessage.textContent = message;
+  authMessage.className =
+    "auth-message show " + type;
 }
 
+function clearAuthMessage(){
+  authMessage.textContent = "";
+  authMessage.className = "auth-message";
+}
+
+function showResetMessage(message,type="error"){
+  resetMessage.textContent = message;
+  resetMessage.className =
+    "auth-message show " + type;
+}
+
+function setAuthBusy(busy,text){
+  authBtn.disabled = busy;
+  authBtn.textContent =
+    busy ? text : (isSignup ? "Create account" : "Login");
+}
 
 function normalizeUsername(value){
-  return String(value || "")
+  return value
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_.-]/g,"")
     .slice(0,32);
 }
 
-
-function isEmail(value){
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+function avatarUrl(user){
+  return user?.avatar_url ||
+         user?.avatar ||
+         "";
 }
-
-
-function isPhone(value){
-  return /^\+?[0-9()\-\s]{7,20}$/.test(value);
-}
-
 
 function initials(name){
-  const text = String(name || "ZQ").trim();
+  const text =
+    String(name || "Z").trim();
 
-  if(!text) return "ZQ";
+  if(!text) return "Z";
 
-  const parts = text.split(/\s+/);
+  const parts =
+    text.split(/\s+/).filter(Boolean);
 
-  if(parts.length === 1){
-    return parts[0].slice(0,2).toUpperCase();
+  if(parts.length >= 2){
+    return (
+      parts[0][0] +
+      parts[1][0]
+    ).toUpperCase();
   }
 
-  return (
-    parts[0][0] +
-    parts[1][0]
-  ).toUpperCase();
+  return text.slice(0,2).toUpperCase();
 }
 
+function setAvatar(element,userOrProfile){
+  const url =
+    avatarUrl(userOrProfile);
 
-/* =========================================================
-   DEFAULT ZIQVONA AVATAR
-========================================================= */
+  const name =
+    userOrProfile?.displayName ||
+    userOrProfile?.display_name ||
+    userOrProfile?.username ||
+    userOrProfile?.email ||
+    "Z";
 
-function createDefaultAvatar(){
-  return `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="200"
-         height="200"
-         viewBox="0 0 200 200">
-
-      <defs>
-        <linearGradient id="g"
-                        x1="0"
-                        y1="0"
-                        x2="1"
-                        y2="1">
-          <stop offset="0%"
-                stop-color="#10bfa3"/>
-          <stop offset="100%"
-                stop-color="#078d7b"/>
-        </linearGradient>
-      </defs>
-
-      <rect width="200"
-            height="200"
-            rx="52"
-            fill="url(#g)"/>
-
-      <text x="100"
-            y="118"
-            text-anchor="middle"
-            font-family="Arial,sans-serif"
-            font-size="58"
-            font-weight="900"
-            fill="white">
-        ZQ
-      </text>
-    </svg>
-  `;
-}
-
-
-const defaultAvatarUrl =
-  "data:image/svg+xml;charset=UTF-8," +
-  encodeURIComponent(createDefaultAvatar());
-
-
-function renderAvatar(element,user){
-  if(!element) return;
-
-  element.innerHTML = "";
-
-  const avatar =
-    user?.avatar ||
-    user?.avatar_url ||
-    user?.avatarUrl ||
-    "";
-
-  if(avatar){
-
-    const img = document.createElement("img");
-
-    img.src = avatar;
-
-    img.alt = "Profile";
-
-    img.onerror = ()=>{
-      element.innerHTML =
-        `<span>${initials(
-          user?.displayName ||
-          user?.display_name ||
-          user?.username
-        )}</span>`;
-    };
-
-    element.appendChild(img);
-
+  if(url){
+    element.classList.remove("avatar-fallback");
+    element.innerHTML =
+      `<img src="${escapeHtml(url)}"
+            style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+            alt="">`;
   }else{
-
-    const img = document.createElement("img");
-
-    img.src = defaultAvatarUrl;
-
-    img.alt = "ZIQVONA";
-
-    element.appendChild(img);
+    element.classList.add("avatar-fallback");
+    element.innerHTML =
+      escapeHtml(initials(name));
   }
+}
+
+function formatTime(value){
+  if(!value) return "";
+
+  const date =
+    new Date(value);
+
+  if(Number.isNaN(date.getTime()))
+    return "";
+
+  return date.toLocaleTimeString([],{
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+}
+
+function isOnline(user){
+  return !!(
+    user?.online === true ||
+    user?.isOnline === true ||
+    user?.status === "online"
+  );
+}
+
+function userId(user){
+  return user?.id ||
+         user?.user_id ||
+         user?.userId ||
+         "";
 }
 
 
@@ -1617,417 +2033,595 @@ function renderAvatar(element,user){
    AUTH MODE
 ========================================================= */
 
-let authMode = "login";
+let isSignup = false;
 
-function setAuthMode(mode){
+function setAuthMode(signup){
+  isSignup = signup;
 
-  authMode = mode;
+  loginTab.classList.toggle(
+    "active",
+    !signup
+  );
 
-  if(mode === "login"){
+  signupTab.classList.toggle(
+    "active",
+    signup
+  );
 
-    loginTab.classList.add("active");
-    registerTab.classList.remove("active");
+  signupFields.classList.toggle(
+    "hidden",
+    !signup
+  );
 
-    registerFields.classList.add("hidden");
+  authBtn.textContent =
+    signup ? "Create account" : "Login";
 
-    authBtn.textContent = "Konekte";
+  forgotBtn.classList.toggle(
+    "hidden",
+    signup
+  );
 
-  }else{
-
-    registerTab.classList.add("active");
-    loginTab.classList.remove("active");
-
-    registerFields.classList.remove("hidden");
-
-    authBtn.textContent = "Kreye kont";
-  }
+  clearAuthMessage();
 }
 
+loginTab.addEventListener(
+  "click",
+  ()=>setAuthMode(false)
+);
 
-loginTab.addEventListener("click",()=>{
-  setAuthMode("login");
-});
-
-
-registerTab.addEventListener("click",()=>{
-  setAuthMode("register");
-});
+signupTab.addEventListener(
+  "click",
+  ()=>setAuthMode(true)
+);
 
 
 /* =========================================================
-   AUTH
+   SUPABASE AUTH
 ========================================================= */
 
 async function handleAuth(){
 
-  const identity =
-    identityInput.value.trim();
+  clearAuthMessage();
+
+  const email =
+    authEmail.value.trim();
 
   const password =
-    passwordInput.value;
+    authPassword.value;
 
-  if(!identity){
-    showToast("Antre email oswa nimewo telefòn ou.");
+  if(!email){
+    showAuthMessage(
+      "Ekri email ou."
+    );
     return;
   }
 
-  if(!password || password.length < 6){
-    showToast("Modpas la dwe gen omwen 6 karaktè.");
+  if(!password){
+    showAuthMessage(
+      "Ekri password ou."
+    );
     return;
   }
 
-  authBtn.disabled = true;
+  if(isSignup){
+
+    const displayName =
+      signupDisplayName.value.trim();
+
+    const username =
+      normalizeUsername(
+        signupUsername.value
+      );
+
+    if(!displayName){
+      showAuthMessage(
+        "Ekri Display name ou."
+      );
+      return;
+    }
+
+    if(!username){
+      showAuthMessage(
+        "Ekri yon username valab."
+      );
+      return;
+    }
+
+    if(password.length < 6){
+      showAuthMessage(
+        "Password la dwe gen omwen 6 karaktè."
+      );
+      return;
+    }
+
+    setAuthBusy(true,"Creating...");
+
+    try{
+
+      const {data,error} =
+        await supabaseClient.auth.signUp({
+          email,
+          password,
+          options:{
+            emailRedirectTo:
+              ZIQVONA_SITE_URL,
+            data:{
+              display_name:displayName,
+              username
+            }
+          }
+        });
+
+      if(error){
+        throw error;
+      }
+
+      if(data.session){
+
+        showAuthMessage(
+          "Kont lan kreye. Koneksyon an ap kòmanse...",
+          "success"
+        );
+
+        await startAuthenticatedApp(
+          data.session
+        );
+
+      }else{
+
+        showAuthMessage(
+          "Kont lan kreye. Si Supabase mande verification email, verifye email la epi retounen sou ZIQVONA.",
+          "success"
+        );
+      }
+
+    }catch(error){
+
+      console.error(error);
+
+      showAuthMessage(
+        friendlyAuthError(error)
+      );
+
+    }finally{
+
+      setAuthBusy(false,"");
+    }
+
+    return;
+  }
+
+
+  setAuthBusy(true,"Logging in...");
 
   try{
 
-    if(authMode === "register"){
+    const {data,error} =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
 
-      const displayName =
-        displayNameInput.value.trim();
-
-      let username =
-        normalizeUsername(usernameInput.value);
-
-      if(!displayName){
-        showToast("Antre non ou.");
-        return;
-      }
-
-      if(!username){
-        username =
-          "user_" +
-          Math.random()
-            .toString(36)
-            .slice(2,10);
-      }
-
-      let result;
-
-      if(isEmail(identity)){
-
-        result =
-          await supabaseClient.auth.signUp({
-            email:identity,
-            password,
-            options:{
-              data:{
-                username,
-                display_name:displayName
-              }
-            }
-          });
-
-      }else if(isPhone(identity)){
-
-        result =
-          await supabaseClient.auth.signUp({
-            phone:identity,
-            password,
-            options:{
-              data:{
-                username,
-                display_name:displayName
-              }
-            }
-          });
-
-      }else{
-
-        showToast(
-          "Mete yon email oswa yon nimewo telefòn valab."
-        );
-
-        return;
-      }
-
-      if(result.error){
-        throw result.error;
-      }
-
-      if(result.data.session){
-
-        session = result.data.session;
-
-        showToast("Kont la kreye avèk siksè.");
-
-        await connectAfterAuth();
-
-      }else{
-
-        showToast(
-          "Kont la kreye. Verifye email ou si Supabase mande sa, epi konekte."
-        );
-
-        setAuthMode("login");
-      }
-
-    }else{
-
-      let result;
-
-      if(isEmail(identity)){
-
-        result =
-          await supabaseClient.auth.signInWithPassword({
-            email:identity,
-            password
-          });
-
-      }else if(isPhone(identity)){
-
-        result =
-          await supabaseClient.auth.signInWithPassword({
-            phone:identity,
-            password
-          });
-
-      }else{
-
-        showToast(
-          "Mete yon email oswa yon nimewo telefòn valab."
-        );
-
-        return;
-      }
-
-      if(result.error){
-        throw result.error;
-      }
-
-      session = result.data.session;
-
-      if(!session){
-        throw new Error(
-          "Supabase pa bay yon session."
-        );
-      }
-
-      await connectAfterAuth();
+    if(error){
+      throw error;
     }
+
+    await startAuthenticatedApp(
+      data.session
+    );
 
   }catch(error){
 
     console.error(error);
 
-    showToast(
-      error?.message ||
-      "Koneksyon echwe."
+    showAuthMessage(
+      friendlyAuthError(error)
     );
 
   }finally{
 
-    authBtn.disabled = false;
+    setAuthBusy(false,"");
   }
 }
 
+authBtn.addEventListener(
+  "click",
+  handleAuth
+);
 
-authBtn.addEventListener("click",handleAuth);
-
-
-passwordInput.addEventListener("keydown",event=>{
-  if(event.key === "Enter"){
-    handleAuth();
-  }
-});
-
-
-identityInput.addEventListener("keydown",event=>{
-  if(event.key === "Enter"){
-    handleAuth();
-  }
-});
-
-
-/* =========================================================
-   FORGOT PASSWORD
-========================================================= */
-
-forgotBtn.addEventListener("click",async()=>{
-
-  const identity =
-    identityInput.value.trim();
-
-  if(!isEmail(identity)){
-
-    showToast(
-      "Pou reset modpas, mete email kont ou."
-    );
-
-    return;
-  }
-
-  try{
-
-    const {error} =
-      await supabaseClient.auth
-        .resetPasswordForEmail(
-          identity,
-          {
-            redirectTo:
-              window.location.origin
-          }
-        );
-
-    if(error) throw error;
-
-    showToast(
-      "Nou voye yon lyen reset modpas sou email ou."
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    showToast(
-      error?.message ||
-      "Reset modpas echwe."
-    );
-  }
-});
-
-
-/* =========================================================
-   SUPABASE SESSION
-========================================================= */
-
-async function initializeAuth(){
-
-  const {data,error} =
-    await supabaseClient.auth.getSession();
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  if(data.session){
-
-    session = data.session;
-
-    await connectAfterAuth();
-  }
-}
-
-
-supabaseClient.auth.onAuthStateChange(
-  async(event,newSession)=>{
-
-    session = newSession;
-
-    if(event === "SIGNED_OUT"){
-
-      disconnectSocket();
-
-      resetApp();
+authPassword.addEventListener(
+  "keydown",
+  event=>{
+    if(event.key === "Enter"){
+      handleAuth();
     }
   }
 );
 
 
 /* =========================================================
-   SOCKET CONNECTION
+   AUTH ERROR
 ========================================================= */
 
-async function connectAfterAuth(){
+function friendlyAuthError(error){
 
-  if(!session?.access_token){
-    throw new Error("Session ZIQVONA pa disponib.");
+  const message =
+    String(error?.message || error || "");
+
+  const lower =
+    message.toLowerCase();
+
+  if(
+    lower.includes("invalid login credentials") ||
+    lower.includes("invalid credentials")
+  ){
+    return "Email oswa password la pa kòrèk. Si ou pa sonje password la, itilize Forgot password.";
   }
 
-  disconnectSocket();
+  if(lower.includes("email not confirmed")){
+    return "Email sa a poko verifye. Verifye email la epi retounen sou ZIQVONA.";
+  }
 
-  const metadata =
-    session.user?.user_metadata || {};
+  if(lower.includes("user already registered")){
+    return "Email sa a deja gen yon kont. Eseye Login pito.";
+  }
 
-  const username =
-    normalizeUsername(
-      metadata.username ||
-      (
-        isEmail(session.user?.email || "")
-          ? String(session.user.email)
-              .split("@")[0]
-          : ""
-      )
-    ) ||
-    (
-      "user_" +
-      String(session.user?.id || "")
-        .slice(0,8)
-    );
+  if(lower.includes("password should be at least")){
+    return "Password la dwe gen omwen 6 karaktè.";
+  }
 
-  const displayName =
-    metadata.display_name ||
-    metadata.full_name ||
-    username;
+  if(lower.includes("rate limit")){
+    return "Gen twòp demann. Tann kèk minit epi eseye ankò.";
+  }
 
-  socket = io({
+  if(lower.includes("signup is disabled")){
+    return "Signup Email la dezaktive nan Supabase.";
+  }
 
-    auth:{
-      accessToken:session.access_token,
-
-      profile:{
-        username,
-        displayName
-      }
-    },
-
-    transports:[
-      "websocket",
-      "polling"
-    ],
-
-    reconnection:true,
-
-    reconnectionAttempts:Infinity
-  });
-
-
-  socket.on("connect",()=>{
-    console.log(
-      "ZIQVONA socket connected:",
-      socket.id
-    );
-  });
-
-
-  socket.on("connect_error",error=>{
-
-    console.error(
-      "Socket connection error:",
-      error
-    );
-
-    showToast(
-      "ZIQVONA pa rive konekte ak server la."
-    );
-  });
-
-
-  socket.on("disconnect",reason=>{
-
-    console.log(
-      "Socket disconnected:",
-      reason
-    );
-  });
-
-
-  registerSocketEvents();
+  return message ||
+    "ZIQVONA pa t kapab konekte kont lan.";
 }
 
 
-function disconnectSocket(){
+/* =========================================================
+   FORGOT PASSWORD
+========================================================= */
+
+forgotBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    clearAuthMessage();
+
+    const email =
+      authEmail.value.trim();
+
+    if(!email){
+      showAuthMessage(
+        "Ekri email ou an premye pou nou ka voye reset password la."
+      );
+      authEmail.focus();
+      return;
+    }
+
+    forgotBtn.disabled = true;
+    forgotBtn.textContent =
+      "Sending...";
+
+    try{
+
+      const {error} =
+        await supabaseClient.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo:
+              ZIQVONA_SITE_URL
+          }
+        );
+
+      if(error){
+        throw error;
+      }
+
+      showAuthMessage(
+        "Nou voye yon email pou reset password la. Louvri email la epi klike sou link la.",
+        "success"
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+      showAuthMessage(
+        friendlyAuthError(error)
+      );
+
+    }finally{
+
+      forgotBtn.disabled = false;
+      forgotBtn.textContent =
+        "Forgot password?";
+    }
+  }
+);
+
+
+/* =========================================================
+   RESET PASSWORD
+========================================================= */
+
+async function openResetPassword(){
+
+  authPage.classList.remove("hidden");
+
+  authCard.classList.add("hidden");
+  resetCard.classList.remove("hidden");
+
+  app.classList.add("hidden");
+
+  showResetMessage(
+    "Ou ka mete nouvo password ou kounye a.",
+    "success"
+  );
+}
+
+resetBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    showResetMessage("");
+
+    const password =
+      newPassword.value;
+
+    const confirm =
+      confirmPassword.value;
+
+    if(!password){
+      showResetMessage(
+        "Ekri nouvo password la."
+      );
+      return;
+    }
+
+    if(password.length < 6){
+      showResetMessage(
+        "Password la dwe gen omwen 6 karaktè."
+      );
+      return;
+    }
+
+    if(password !== confirm){
+      showResetMessage(
+        "2 password yo pa menm."
+      );
+      return;
+    }
+
+    resetBtn.disabled = true;
+    resetBtn.textContent =
+      "Changing...";
+
+    try{
+
+      const {data,error} =
+        await supabaseClient.auth.updateUser({
+          password
+        });
+
+      if(error){
+        throw error;
+      }
+
+      showResetMessage(
+        "Password la chanje avèk siksè. Ou ka antre nan ZIQVONA.",
+        "success"
+      );
+
+      newPassword.value = "";
+      confirmPassword.value = "";
+
+      setTimeout(async ()=>{
+
+        await supabaseClient.auth.signOut();
+
+        resetCard.classList.add("hidden");
+        authCard.classList.remove("hidden");
+
+        setAuthMode(false);
+
+        showAuthMessage(
+          "Password la chanje. Kounye a konekte ak nouvo password la.",
+          "success"
+        );
+
+      },1300);
+
+    }catch(error){
+
+      console.error(error);
+
+      showResetMessage(
+        friendlyAuthError(error)
+      );
+
+    }finally{
+
+      resetBtn.disabled = false;
+      resetBtn.textContent =
+        "Change password";
+    }
+  }
+);
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+supabaseClient.auth.onAuthStateChange(
+  async (event,session)=>{
+
+    console.log(
+      "Supabase Auth:",
+      event
+    );
+
+    if(event === "PASSWORD_RECOVERY"){
+
+      setTimeout(()=>{
+        openResetPassword();
+      },0);
+
+      return;
+    }
+
+    if(
+      event === "SIGNED_IN" &&
+      session
+    ){
+
+      currentSession = session;
+
+      /*
+       * Do not reconnect repeatedly when
+       * the same session is refreshed.
+       */
+      if(!currentUser){
+        setTimeout(()=>{
+          startAuthenticatedApp(session);
+        },0);
+      }
+
+      return;
+    }
+
+    if(event === "SIGNED_OUT"){
+
+      currentUser = null;
+      currentSession = null;
+
+      if(socket){
+        try{
+          socket.disconnect();
+        }catch(e){}
+      }
+
+      socket = null;
+
+      closeCall(false);
+
+      app.classList.add("hidden");
+      authPage.classList.remove("hidden");
+
+      authCard.classList.remove("hidden");
+      resetCard.classList.add("hidden");
+
+      setAuthMode(false);
+    }
+  }
+);
+
+
+/* =========================================================
+   START APP AFTER AUTH
+========================================================= */
+
+async function startAuthenticatedApp(session){
+
+  if(!session){
+    return;
+  }
+
+  currentSession = session;
+
+  authPage.classList.add("hidden");
+  app.classList.remove("hidden");
+
+  try{
+    await connectSocket(session);
+  }catch(error){
+    console.error(error);
+    showToast(
+      "Koneksyon ZIQVONA pa disponib. Eseye refresh."
+    );
+  }
+}
+
+
+/* =========================================================
+   SOCKET
+========================================================= */
+
+async function connectSocket(session){
 
   if(socket){
 
     try{
       socket.disconnect();
-    }catch(e){
-      console.warn(e);
-    }
+    }catch(e){}
 
     socket = null;
   }
+
+  socket = io({
+    transports:[
+      "websocket",
+      "polling"
+    ],
+    reconnection:true,
+    auth:{
+      accessToken:
+        session.access_token
+    }
+  });
+
+  registerSocketEvents();
+
+  await new Promise((resolve,reject)=>{
+
+    const timeout =
+      setTimeout(()=>{
+        reject(
+          new Error(
+            "Socket connection timeout"
+          )
+        );
+      },12000);
+
+    socket.once(
+      "connect",
+      ()=>{
+        clearTimeout(timeout);
+
+        socket.emit(
+          "auth",
+          {
+            accessToken:
+              session.access_token,
+            profile:{
+              displayName:
+                session.user?.user_metadata?.display_name ||
+                "",
+              username:
+                session.user?.user_metadata?.username ||
+                ""
+            }
+          }
+        );
+
+        resolve();
+      }
+    );
+
+    socket.once(
+      "connect_error",
+      error=>{
+        clearTimeout(timeout);
+        reject(error);
+      }
+    );
+  });
 }
 
 
@@ -2037,479 +2631,527 @@ function disconnectSocket(){
 
 function registerSocketEvents(){
 
-  socket.on("login:success",data=>{
-
-    currentUser =
-      data.user || null;
-
-    myProfile =
-      data.profile || null;
-
-    allUsers =
-      Array.isArray(data.users)
-        ? data.users
-        : [];
-
-    contacts =
-      Array.isArray(data.contacts)
-        ? data.contacts
-        : [];
-
-    loginPage.classList.add("hidden");
-
-    app.classList.remove("hidden");
-
-    updateMyProfileUI();
-
-    renderPeople();
-
-    loadIceServers();
-
-    if(
-      myProfile &&
-      (
-        !myProfile.username ||
-        myProfile.username.startsWith("user_")
-      )
-    ){
-
-      setTimeout(()=>{
-        openProfileModal();
-      },500);
-    }
-  });
-
-
-  socket.on("people:list",users=>{
-
-    allUsers =
-      Array.isArray(users)
-        ? users
-        : [];
-
-    renderPeople();
-  });
-
-
-  socket.on("contacts:list",data=>{
-
-    contacts =
-      Array.isArray(data)
-        ? data
-        : [];
-
-    renderPeople();
-  });
-
-
-  socket.on("presence:update",data=>{
-
-    if(!data?.userId) return;
-
-    const user =
-      allUsers.find(
-        item =>
-          item.id === data.userId
+  socket.on(
+    "connect",
+    ()=>{
+      console.log(
+        "ZIQVONA socket connected",
+        socket.id
       );
 
-    if(user){
-
-      user.online =
-        !!data.online;
-
-      renderPeople();
-
-      if(
-        selectedUser &&
-        selectedUser.id === data.userId
-      ){
-
-        updateChatHeader(
-          selectedUser
+      if(currentSession){
+        socket.emit(
+          "auth",
+          {
+            accessToken:
+              currentSession.access_token
+          }
         );
       }
     }
-  });
+  );
 
 
-  socket.on("profile:changed",profile=>{
+  socket.on(
+    "disconnect",
+    reason=>{
+      console.log(
+        "Socket disconnected:",
+        reason
+      );
+    }
+  );
 
-    if(!profile?.id) return;
 
-    const user =
-      allUsers.find(
-        item => item.id === profile.id
+  socket.on(
+    "connect_error",
+    error=>{
+      console.error(
+        "Socket error:",
+        error
       );
 
-    if(user){
+      showToast(
+        "Koneksyon ak ZIQVONA server la gen yon pwoblèm."
+      );
+    }
+  );
 
-      user.username =
-        profile.username ||
-        user.username;
 
-      user.displayName =
-        profile.displayName ||
-        profile.display_name ||
-        user.displayName;
+  /* LOGIN / AUTH SUCCESS */
 
-      user.avatar =
-        profile.avatar ||
-        profile.avatar_url ||
-        user.avatar;
+  socket.on(
+    "login:success",
+    data=>{
 
-      user.status =
-        profile.status ||
-        "";
+      currentUser =
+        data.user || data.currentUser;
 
-      renderPeople();
+      allUsers =
+        Array.isArray(data.users)
+          ? data.users
+          : [];
 
-      if(
-        selectedUser &&
-        selectedUser.id === profile.id
-      ){
+      contacts =
+        Array.isArray(data.contacts)
+          ? data.contacts
+          : [];
 
-        selectedUser = {
-          ...selectedUser,
-          ...user
+      profileData =
+        data.profile || {
+          displayName:
+            currentUser?.displayName ||
+            currentUser?.display_name ||
+            "",
+          username:
+            currentUser?.username ||
+            "",
+          status:"",
+          avatar_url:""
         };
 
-        updateChatHeader(
-          selectedUser
-        );
-      }
+      updateMyProfileUI();
+
+      renderPeople();
+
+      loadIceServers();
+
+      console.log(
+        "ZIQVONA authenticated:",
+        currentUser
+      );
     }
+  );
 
-    if(
-      currentUser &&
-      currentUser.id === profile.id
-    ){
 
-      myProfile = {
-        ...myProfile,
-        ...profile
-      };
+  socket.on(
+    "auth:success",
+    data=>{
+
+      currentUser =
+        data.user || currentUser;
+
+      allUsers =
+        Array.isArray(data.users)
+          ? data.users
+          : allUsers;
+
+      contacts =
+        Array.isArray(data.contacts)
+          ? data.contacts
+          : contacts;
+
+      profileData =
+        data.profile || profileData;
 
       updateMyProfileUI();
+
+      renderPeople();
+
+      loadIceServers();
     }
-  });
+  );
 
 
-  socket.on("profile:updated",profile=>{
-
-    myProfile = {
-      ...myProfile,
-      ...profile
-    };
-
-    updateMyProfileUI();
-  });
-
-
-  socket.on("chat:history",data=>{
-
-    if(!data?.conversationId) return;
-
-    selectedConversationId =
-      data.conversationId;
-
-    messagesByConversation.set(
-      data.conversationId,
-      Array.isArray(data.messages)
-        ? data.messages
-        : []
-    );
-
-    renderMessages();
-  });
-
-
-  socket.on("chat:message",message=>{
-
-    if(!message?.conversationId) return;
-
-    let list =
-      messagesByConversation.get(
-        message.conversationId
-      ) || [];
-
-    if(
-      list.some(
-        item => item.id === message.id
-      )
-    ){
-      return;
-    }
-
-    list.push(message);
-
-    messagesByConversation.set(
-      message.conversationId,
-      list
-    );
-
-    if(
-      message.conversationId ===
-      selectedConversationId
-    ){
-
-      renderMessages();
-    }
-  });
-
-
-  socket.on("typing",data=>{
-
-    if(
-      !selectedUser ||
-      data?.fromUserId !== selectedUser.id
-    ){
-      return;
-    }
-
-    if(data.typing){
-
-      $("typing").textContent =
-        `${selectedUser.displayName || selectedUser.username} ap ekri...`;
-
-      clearTimeout(remoteTypingTimer);
-
-      remoteTypingTimer =
-        setTimeout(()=>{
-          $("typing").textContent = "";
-        },1800);
-
-    }else{
-
-      $("typing").textContent = "";
-    }
-  });
-
-
-  /* ================= CALLS ================= */
-
-  socket.on("call:started",data=>{
-
-    if(!isCaller) return;
-
-    if(!activeCall) return;
-
-    activeCall.callId =
-      data.callId;
-
-    startCallerOffer();
-  });
-
-
-  socket.on("call:incoming",data=>{
-
-    if(!data?.callId) return;
-
-    incomingCall = data;
-
-    const user =
-      allUsers.find(
-        item => item.id === data.callerId
+  socket.on(
+    "auth:error",
+    error=>{
+      console.error(
+        "Auth server error:",
+        error
       );
 
-    incomingAvatar.innerHTML = "";
+      showToast(
+        error?.message ||
+        error ||
+        "Authentication server error."
+      );
+    }
+  );
 
-    renderAvatar(
-      incomingAvatar,
-      user || {
-        displayName:
-          data.callerName,
-        avatar:
-          data.callerAvatar
+
+  /* PEOPLE */
+
+  socket.on(
+    "people",
+    users=>{
+      if(Array.isArray(users)){
+        allUsers = users;
+        renderPeople();
       }
-    );
-
-    incomingName.textContent =
-      data.callerName ||
-      user?.displayName ||
-      user?.username ||
-      "ZIQVONA";
-
-    incomingType.textContent =
-      data.callType === "video"
-        ? "📹 Apèl video ap antre..."
-        : "☎ Apèl vwa ap antre...";
-
-    incomingModal.classList.remove(
-      "hidden"
-    );
-  });
-
-
-  socket.on("call:accepted",async data=>{
-
-    if(
-      !activeCall ||
-      data?.callId !== activeCall.callId
-    ){
-      return;
     }
+  );
 
-    callAccepted = true;
-
-    setCallState("Konekte");
-
-    if(pendingOffer){
-      await processPendingOffer();
+  socket.on(
+    "users",
+    users=>{
+      if(Array.isArray(users)){
+        allUsers = users;
+        renderPeople();
+      }
     }
-  });
+  );
 
 
-  socket.on("call:rejected",data=>{
-
-    if(
-      activeCall &&
-      data?.callId === activeCall.callId
-    ){
-
-      showToast("Apèl la te refize.");
-
-      cleanupCall(false);
+  socket.on(
+    "presence:update",
+    data=>{
+      updateUserPresence(data);
     }
-  });
+  );
 
-
-  socket.on("call:ended",data=>{
-
-    if(
-      activeCall &&
-      data?.callId === activeCall.callId
-    ){
-
-      showToast("Apèl la fini.");
-
-      cleanupCall(false);
+  socket.on(
+    "presence",
+    data=>{
+      updateUserPresence(data);
     }
-  });
+  );
 
 
-  socket.on("call:error",data=>{
+  /* CONTACTS */
 
-    showToast(
-      data?.message ||
-      "Gen yon pwoblèm ak apèl la."
-    );
-
-    cleanupCall(false);
-  });
-
-
-  socket.on("webrtc:offer",async data=>{
-
-    if(!data?.offer) return;
-
-    if(
-      !activeCall ||
-      data.callId !== activeCall.callId
-    ){
-
-      pendingOffer = data;
-
-      return;
+  socket.on(
+    "contacts",
+    list=>{
+      if(Array.isArray(list)){
+        contacts = list;
+        renderPeople();
+      }
     }
+  );
 
-    if(!peer){
-
-      pendingOffer = data;
-
-      return;
+  socket.on(
+    "contact:added",
+    contact=>{
+      addContactLocal(contact);
     }
+  );
 
-    await handleOffer(data);
-  });
-
-
-  socket.on("webrtc:answer",async data=>{
-
-    if(
-      !peer ||
-      !data?.answer
-    ){
-      return;
+  socket.on(
+    "contact:removed",
+    contact=>{
+      removeContactLocal(contact);
     }
+  );
 
-    try{
 
-      await peer.setRemoteDescription(
-        new RTCSessionDescription(
-          data.answer
-        )
+  /* PROFILE */
+
+  socket.on(
+    "profile:update",
+    data=>{
+
+      if(!data) return;
+
+      const id =
+        userId(data);
+
+      if(
+        selectedUser &&
+        id &&
+        id === userId(selectedUser)
+      ){
+        selectedUser = {
+          ...selectedUser,
+          ...data
+        };
+
+        updateChatHeader();
+      }
+
+      const myId =
+        userId(currentUser);
+
+      if(id && id === myId){
+
+        profileData = {
+          ...profileData,
+          ...data
+        };
+
+        currentUser = {
+          ...currentUser,
+          ...data
+        };
+
+        updateMyProfileUI();
+      }
+
+      allUsers =
+        allUsers.map(user=>
+          userId(user) === id
+            ? {...user,...data}
+            : user
+        );
+
+      renderPeople();
+    }
+  );
+
+
+  socket.on(
+    "profile:updated",
+    data=>{
+
+      if(data){
+
+        profileData = {
+          ...profileData,
+          ...data
+        };
+
+        currentUser = {
+          ...currentUser,
+          ...data
+        };
+
+        updateMyProfileUI();
+        renderPeople();
+      }
+    }
+  );
+
+
+  /* CHAT */
+
+  socket.on(
+    "chat:history",
+    data=>{
+      renderHistory(
+        data?.messages ||
+        data ||
+        []
+      );
+    }
+  );
+
+  socket.on(
+    "history",
+    data=>{
+      renderHistory(
+        data?.messages ||
+        data ||
+        []
+      );
+    }
+  );
+
+
+  socket.on(
+    "chat:message",
+    message=>{
+      receiveMessage(message);
+    }
+  );
+
+  socket.on(
+    "message",
+    message=>{
+      receiveMessage(message);
+    }
+  );
+
+
+  socket.on(
+    "chat:typing",
+    data=>{
+      handleTypingEvent(data);
+    }
+  );
+
+  socket.on(
+    "typing",
+    data=>{
+      handleTypingEvent(data);
+    }
+  );
+
+
+  socket.on(
+    "chat:error",
+    error=>{
+      showToast(
+        error?.message ||
+        error ||
+        "Chat error."
+      );
+    }
+  );
+
+
+  /* CALLS */
+
+  socket.on(
+    "call:started",
+    data=>{
+      console.log(
+        "Call started:",
+        data
+      );
+    }
+  );
+
+
+  socket.on(
+    "call:incoming",
+    data=>{
+      handleIncomingCall(data);
+    }
+  );
+
+
+  socket.on(
+    "call:accepted",
+    async data=>{
+
+      console.log(
+        "Call accepted:",
+        data
       );
 
-      await flushIceCandidates();
+      if(
+        currentCall &&
+        currentCall.role === "caller"
+      ){
 
-      setCallState("Konekte");
+        callState.textContent =
+          "Connecting...";
 
-    }catch(error){
+        await createAndSendOffer();
+      }
+    }
+  );
+
+
+  socket.on(
+    "call:rejected",
+    data=>{
+
+      showToast(
+        "Apèl la te refize."
+      );
+
+      closeCall(false);
+    }
+  );
+
+
+  socket.on(
+    "call:ended",
+    data=>{
+
+      showToast(
+        "Apèl la fini."
+      );
+
+      closeCall(false);
+    }
+  );
+
+
+  socket.on(
+    "call:error",
+    error=>{
 
       console.error(
-        "Answer error:",
+        "Call error:",
         error
       );
-    }
-  });
 
-
-  socket.on("webrtc:ice-candidate",async data=>{
-
-    if(!data?.candidate) return;
-
-    if(!peer){
-
-      pendingIceCandidates.push(
-        data.candidate
+      showToast(
+        error?.message ||
+        error ||
+        "Call error."
       );
 
-      return;
+      closeCall(false);
     }
+  );
 
-    try{
 
-      if(peer.remoteDescription){
+  /* WEBRTC */
 
-        await peer.addIceCandidate(
-          new RTCIceCandidate(
-            data.candidate
-          )
-        );
-
-      }else{
-
-        pendingIceCandidates.push(
-          data.candidate
-        );
-      }
-
-    }catch(error){
-
-      console.warn(
-        "ICE candidate error:",
-        error
-      );
+  socket.on(
+    "webrtc:offer",
+    async data=>{
+      await handleOffer(data);
     }
-  });
-}
+  );
 
+  socket.on(
+    "webrtc:answer",
+    async data=>{
+      await handleAnswer(data);
+    }
+  );
 
-/* =========================================================
-   PEOPLE / CONTACTS
-========================================================= */
-
-function isContact(userId){
-
-  return contacts.some(
-    contact =>
-      contact.contactId === userId ||
-      contact.contact_id === userId
+  socket.on(
+    "webrtc:ice-candidate",
+    async data=>{
+      await handleRemoteIce(data);
+    }
   );
 }
 
 
-function getFilteredPeople(){
+/* =========================================================
+   PROFILE UI
+========================================================= */
+
+function updateMyProfileUI(){
+
+  const profile =
+    profileData || currentUser || {};
+
+  setAvatar(
+    myAvatar,
+    profile
+  );
+
+  myName.textContent =
+    profile.displayName ||
+    profile.display_name ||
+    profile.username ||
+    currentUser?.email ||
+    "User";
+
+  myStatus.innerHTML =
+    `<span class="online-dot"></span>Online`;
+}
+
+
+/* =========================================================
+   PEOPLE
+========================================================= */
+
+function getContactId(contact){
+
+  if(typeof contact === "string"){
+    return contact;
+  }
+
+  return (
+    contact?.contact_id ||
+    contact?.contactId ||
+    contact?.id ||
+    contact?.user_id ||
+    contact?.userId ||
+    ""
+  );
+}
+
+function isContact(user){
+
+  const id =
+    userId(user);
+
+  return contacts.some(
+    contact =>
+      getContactId(contact) === id
+  );
+}
+
+function filteredPeople(){
 
   const query =
     searchInput.value
@@ -2517,17 +3159,18 @@ function getFilteredPeople(){
       .toLowerCase();
 
   return allUsers
-    .filter(user =>
-      user.id !== currentUser?.id
+    .filter(user=>
+      userId(user) !==
+      userId(currentUser)
     )
     .filter(user=>{
 
-      if(activeTab === "contacts"){
-        return isContact(user.id);
+      if(activeFilter === "contacts"){
+        return isContact(user);
       }
 
-      if(activeTab === "online"){
-        return !!user.online;
+      if(activeFilter === "online"){
+        return isOnline(user);
       }
 
       return true;
@@ -2536,35 +3179,42 @@ function getFilteredPeople(){
 
       if(!query) return true;
 
-      return (
-        String(user.displayName || "")
-          .toLowerCase()
-          .includes(query) ||
+      const name =
+        String(
+          user.displayName ||
+          user.display_name ||
+          ""
+        ).toLowerCase();
 
-        String(user.username || "")
-          .toLowerCase()
-          .includes(query)
+      const username =
+        String(
+          user.username ||
+          ""
+        ).toLowerCase();
+
+      const email =
+        String(
+          user.email ||
+          ""
+        ).toLowerCase();
+
+      return (
+        name.includes(query) ||
+        username.includes(query) ||
+        email.includes(query)
       );
     });
 }
 
-
 function renderPeople(){
 
-  const users =
-    getFilteredPeople();
+  const people =
+    filteredPeople();
 
-  peopleList.innerHTML = "";
-
-  if(!users.length){
+  if(!people.length){
 
     peopleList.innerHTML = `
-      <div style="
-        padding:35px 15px;
-        text-align:center;
-        color:#778481;
-        font-size:13px;
-      ">
+      <div class="empty">
         Pa gen itilizatè ki koresponn ak rechèch la.
       </div>
     `;
@@ -2572,166 +3222,163 @@ function renderPeople(){
     return;
   }
 
-  users.forEach(user=>{
+  peopleList.innerHTML =
+    people.map(user=>{
 
-    const row =
-      document.createElement("div");
+      const id =
+        userId(user);
 
-    row.className = "person";
+      const active =
+        selectedUser &&
+        userId(selectedUser) === id;
 
-    if(
-      selectedUser &&
-      selectedUser.id === user.id
-    ){
-      row.classList.add("active");
-    }
-
-    const avatar =
-      document.createElement("div");
-
-    avatar.className = "avatar";
-
-    renderAvatar(avatar,user);
-
-    const info =
-      document.createElement("div");
-
-    info.className = "person-info";
-
-    const name =
-      document.createElement("strong");
-
-    name.textContent =
-      user.displayName ||
-      user.username ||
-      "ZIQVONA";
-
-    const sub =
-      document.createElement("small");
-
-    sub.textContent =
-      "@" +
-      (
+      const name =
+        user.displayName ||
+        user.display_name ||
         user.username ||
-        "user"
-      );
+        "User";
 
-    info.appendChild(name);
-    info.appendChild(sub);
+      const username =
+        user.username
+          ? "@" + user.username
+          : "";
 
-    const dot =
-      document.createElement("span");
+      const online =
+        isOnline(user);
 
-    dot.className =
-      "online-dot" +
-      (
-        user.online
-          ? " on"
-          : ""
-      );
+      const avatar =
+        avatarUrl(user);
 
-    const actions =
-      document.createElement("div");
+      return `
+        <div class="person ${active ? "active":""}"
+             data-user-id="${escapeHtml(id)}">
 
-    actions.className =
-      "person-actions";
+          <div class="avatar ${avatar ? "":"avatar-fallback"}">
 
-    const contact =
-      isContact(user.id);
-
-    const contactBtn =
-      document.createElement("button");
-
-    contactBtn.className =
-      "small-btn" +
-      (
-        contact
-          ? " danger"
-          : ""
-      );
-
-    contactBtn.textContent =
-      contact
-        ? "Retire"
-        : "Ajoute";
-
-    contactBtn.addEventListener(
-      "click",
-      event=>{
-
-        event.stopPropagation();
-
-        if(!socket) return;
-
-        if(contact){
-
-          socket.emit(
-            "contact:remove",
-            {
-              contactId:user.id
+            ${
+              avatar
+              ? `<img src="${escapeHtml(avatar)}"
+                       style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+                       alt="">`
+              : escapeHtml(initials(name))
             }
-          );
 
-        }else{
+          </div>
 
-          socket.emit(
-            "contact:add",
-            {
-              contactId:user.id
-            }
-          );
+          <div class="person-info">
+
+            <div class="person-name">
+
+              ${
+                online
+                ? `<span class="online-dot"></span>`
+                : ""
+              }
+
+              ${escapeHtml(name)}
+
+            </div>
+
+            <div class="person-username">
+              ${escapeHtml(username)}
+            </div>
+
+            <div class="person-status">
+              ${
+                online
+                ? "Online"
+                : "Offline"
+              }
+            </div>
+
+          </div>
+
+        </div>
+      `;
+    }).join("");
+
+  peopleList
+    .querySelectorAll(".person")
+    .forEach(element=>{
+
+      element.addEventListener(
+        "click",
+        ()=>{
+
+          const id =
+            element.dataset.userId;
+
+          const user =
+            allUsers.find(
+              item =>
+                userId(item) === id
+            );
+
+          if(user){
+            openChat(user);
+          }
         }
-      }
-    );
-
-    actions.appendChild(contactBtn);
-
-    row.appendChild(avatar);
-    row.appendChild(info);
-    row.appendChild(dot);
-    row.appendChild(actions);
-
-    row.addEventListener(
-      "click",
-      ()=>{
-        openChat(user);
-      }
-    );
-
-    peopleList.appendChild(row);
-  });
+      );
+    });
 }
 
 
-document.querySelectorAll(
-  ".tabs button"
-).forEach(button=>{
+/* =========================================================
+   PRESENCE
+========================================================= */
 
-  button.addEventListener(
-    "click",
-    ()=>{
+function updateUserPresence(data){
 
-      document.querySelectorAll(
-        ".tabs button"
-      ).forEach(btn=>{
-        btn.classList.remove("active");
-      });
+  if(!data) return;
 
-      button.classList.add("active");
+  let id =
+    data.userId ||
+    data.user_id ||
+    data.id;
 
-      activeTab =
-        button.dataset.tab;
+  if(!id && data.user){
+    id = userId(data.user);
+  }
 
-      renderPeople();
-    }
-  );
-});
+  if(!id) return;
 
+  allUsers =
+    allUsers.map(user=>{
 
-searchInput.addEventListener(
-  "input",
-  renderPeople
-);
+      if(userId(user) !== id){
+        return user;
+      }
+
+      return {
+        ...user,
+        online:
+          data.online !== undefined
+            ? data.online
+            : data.status === "online",
+        status:
+          data.status ||
+          user.status
+      };
+    });
+
+  if(
+    selectedUser &&
+    userId(selectedUser) === id
+  ){
+
+    selectedUser = {
+      ...selectedUser,
+      online:
+        data.online !== undefined
+          ? data.online
+          : data.status === "online"
+    };
+
+    updateChatHeader();
+  }
+
+  renderPeople();
+}
 
 
 /* =========================================================
@@ -2740,263 +3387,334 @@ searchInput.addEventListener(
 
 function openChat(user){
 
-  if(!socket){
-    showToast("Koneksyon ZIQVONA poko pare.");
-    return;
-  }
-
   selectedUser = user;
 
-  chatEmpty.classList.add("hidden");
+  selectedConversationId =
+    null;
+
+  chatEmpty.classList.add(
+    "hidden"
+  );
 
   chatContent.classList.remove(
     "hidden"
+  );
+
+  sidebar.classList.add(
+    "chat-open"
   );
 
   chatPanel.classList.add(
     "mobile-open"
   );
 
-  updateChatHeader(user);
+  messages.innerHTML = "";
+  typing.textContent = "";
 
-  messagesEl.innerHTML = `
-    <div style="
-      margin:auto;
-      color:#78827f;
-      font-size:13px;
-    ">
-      Chaje konvèsasyon...
-    </div>
-  `;
+  updateChatHeader();
 
-  selectedConversationId = null;
+  requestChatHistory();
+}
 
-  socket.emit(
-    "chat:open",
-    {
-      userId:user.id
-    }
+function updateChatHeader(){
+
+  if(!selectedUser){
+    return;
+  }
+
+  const name =
+    selectedUser.displayName ||
+    selectedUser.display_name ||
+    selectedUser.username ||
+    "User";
+
+  setAvatar(
+    chatAvatar,
+    selectedUser
   );
+
+  chatName.textContent =
+    name;
+
+  chatStatus.textContent =
+    isOnline(selectedUser)
+      ? "Online"
+      : "Offline";
 
   renderPeople();
 }
 
+function requestChatHistory(){
 
-function updateChatHeader(user){
+  if(!socket || !selectedUser){
+    return;
+  }
 
-  renderAvatar(
-    $("chatAvatar"),
-    user
+  const targetId =
+    userId(selectedUser);
+
+  /*
+   * Supports the event style used by
+   * the ZIQVONA server.
+   */
+
+  socket.emit(
+    "chat:join",
+    {
+      targetUserId:targetId,
+      userId:targetId
+    }
   );
 
-  $("chatName").textContent =
-    user.displayName ||
-    user.username ||
-    "ZIQVONA";
-
-  $("chatStatus").textContent =
-    user.online
-      ? "online"
-      : "offline";
-}
-
-
-backBtn.addEventListener(
-  "click",
-  ()=>{
-    chatPanel.classList.remove(
-      "mobile-open"
-    );
-  }
-);
-
-
-/* =========================================================
-   MESSAGES
-========================================================= */
-
-function formatTime(dateValue){
-
-  const date =
-    new Date(dateValue);
-
-  if(Number.isNaN(date.getTime())){
-    return "";
-  }
-
-  return date.toLocaleTimeString(
-    [],
+  socket.emit(
+    "chat:history",
     {
-      hour:"2-digit",
-      minute:"2-digit"
+      targetUserId:targetId,
+      userId:targetId
     }
   );
 }
 
+function renderHistory(list){
 
-function renderMessages(){
-
-  const list =
-    messagesByConversation.get(
-      selectedConversationId
-    ) || [];
-
-  messagesEl.innerHTML = "";
-
-  if(!list.length){
-
-    const empty =
-      document.createElement("div");
-
-    empty.style.margin = "auto";
-    empty.style.textAlign = "center";
-    empty.style.color = "#778481";
-    empty.style.fontSize = "13px";
-
-    empty.textContent =
-      "Pa gen mesaj ankò. Di bonjou 👋";
-
-    messagesEl.appendChild(empty);
-
+  if(!Array.isArray(list)){
     return;
   }
 
-  list.forEach(message=>{
+  messages.innerHTML = "";
 
-    const mine =
-      message.sender_id ===
-      currentUser?.id;
+  list.forEach(
+    message=>{
+      renderMessage(message);
+    }
+  );
 
-    const row =
-      document.createElement("div");
+  scrollMessages();
+}
 
-    row.className =
-      "message-row " +
-      (
-        mine
-          ? "mine"
-          : "other"
+function receiveMessage(message){
+
+  if(!message){
+    return;
+  }
+
+  /*
+   * If server includes conversation id,
+   * ignore messages from another chat.
+   */
+
+  if(
+    selectedConversationId &&
+    message.conversation_id &&
+    String(message.conversation_id) !==
+    String(selectedConversationId)
+  ){
+    return;
+  }
+
+  renderMessage(message);
+
+  scrollMessages();
+}
+
+function renderMessage(message){
+
+  const senderId =
+    message.sender_id ||
+    message.senderId ||
+    message.from ||
+    "";
+
+  const mine =
+    String(senderId) ===
+    String(userId(currentUser));
+
+  const body =
+    message.body ??
+    message.text ??
+    "";
+
+  const created =
+    message.created_at ||
+    message.createdAt ||
+    message.timestamp ||
+    new Date().toISOString();
+
+  const type =
+    message.type ||
+    message.message_type ||
+    "text";
+
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "message-row " +
+    (mine ? "mine":"theirs");
+
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "bubble";
+
+  if(
+    type === "image" &&
+    message.media_url
+  ){
+
+    const img =
+      document.createElement("img");
+
+    img.className =
+      "message-image";
+
+    img.src =
+      message.media_url;
+
+    img.alt =
+      "Photo";
+
+    bubble.appendChild(img);
+
+    if(body){
+      const caption =
+        document.createElement("div");
+
+      caption.className =
+        "message-body";
+
+      caption.textContent =
+        body;
+
+      bubble.appendChild(
+        caption
       );
+    }
 
-    const bubble =
-      document.createElement("div");
-
-    bubble.className =
-      "bubble";
+  }else{
 
     const text =
       document.createElement("div");
 
-    text.className = "msg-text";
+    text.className =
+      "message-body";
 
     text.textContent =
-      message.body || "";
-
-    const time =
-      document.createElement("span");
-
-    time.className = "msg-time";
-
-    time.textContent =
-      formatTime(
-        message.created_at
-      );
+      body;
 
     bubble.appendChild(text);
-    bubble.appendChild(time);
+  }
 
-    row.appendChild(bubble);
+  const time =
+    document.createElement("div");
 
-    messagesEl.appendChild(row);
-  });
+  time.className =
+    "message-time";
 
-  requestAnimationFrame(()=>{
-    messagesEl.scrollTop =
-      messagesEl.scrollHeight;
-  });
+  time.textContent =
+    formatTime(created);
+
+  bubble.appendChild(time);
+
+  row.appendChild(bubble);
+
+  messages.appendChild(row);
+}
+
+function scrollMessages(){
+
+  messages.scrollTop =
+    messages.scrollHeight;
 }
 
 
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
 function sendMessage(){
 
-  const body =
-    messageInput.value.trim();
-
-  if(!body) return;
-
-  if(!socket){
-
-    showToast(
-      "Ou pa konekte ak ZIQVONA."
-    );
-
-    return;
-  }
-
-  if(!selectedUser){
-
+  if(!socket || !selectedUser){
     showToast(
       "Chwazi yon moun anvan ou voye mesaj."
     );
-
     return;
   }
+
+  const text =
+    messageInput.value.trim();
+
+  if(!text){
+    return;
+  }
+
+  const targetId =
+    userId(selectedUser);
 
   socket.emit(
     "chat:message",
     {
-      userId:selectedUser.id,
-      body
+      targetUserId:targetId,
+      userId:targetId,
+      body:text,
+      text:text,
+      type:"text"
     }
   );
 
   messageInput.value = "";
 
+  resizeTextarea();
+
   socket.emit(
-    "typing",
+    "chat:typing",
     {
-      userId:selectedUser.id,
+      targetUserId:targetId,
       typing:false
     }
   );
 }
-
 
 sendBtn.addEventListener(
   "click",
   sendMessage
 );
 
-
 messageInput.addEventListener(
   "keydown",
   event=>{
 
-    if(event.key === "Enter"){
+    if(
+      event.key === "Enter" &&
+      !event.shiftKey
+    ){
 
       event.preventDefault();
 
       sendMessage();
+
     }
   }
 );
-
 
 messageInput.addEventListener(
   "input",
   ()=>{
 
-    if(
-      !socket ||
-      !selectedUser
-    ){
+    resizeTextarea();
+
+    if(!selectedUser || !socket){
       return;
     }
 
+    const targetId =
+      userId(selectedUser);
+
     socket.emit(
-      "typing",
+      "chat:typing",
       {
-        userId:selectedUser.id,
+        targetUserId:targetId,
         typing:true
       }
     );
@@ -3007,16 +3725,60 @@ messageInput.addEventListener(
       setTimeout(()=>{
 
         socket.emit(
-          "typing",
+          "chat:typing",
           {
-            userId:selectedUser.id,
+            targetUserId:targetId,
             typing:false
           }
         );
 
-      },1200);
+      },900);
   }
 );
+
+function resizeTextarea(){
+
+  messageInput.style.height =
+    "42px";
+
+  messageInput.style.height =
+    Math.min(
+      messageInput.scrollHeight,
+      110
+    ) + "px";
+}
+
+
+/* =========================================================
+   TYPING
+========================================================= */
+
+function handleTypingEvent(data){
+
+  if(!data) return;
+
+  const id =
+    data.userId ||
+    data.user_id ||
+    data.from ||
+    "";
+
+  if(
+    selectedUser &&
+    id &&
+    id !== userId(selectedUser)
+  ){
+    return;
+  }
+
+  const isTyping =
+    data.typing === true;
+
+  typing.textContent =
+    isTyping
+      ? "Ap ekri..."
+      : "";
+}
 
 
 /* =========================================================
@@ -3027,37 +3789,40 @@ const emojis = [
   "😀","😃","😄","😁","😆","😅","😂","🤣",
   "😊","😇","🙂","🙃","😉","😌","😍","🥰",
   "😘","😗","😙","😚","😋","😛","😝","😜",
-  "🤪","🤨","🧐","🤓","😎","🥳","🤩","😏",
-  "😢","😭","😤","😡","🤬","😱","😳","🥺",
-  "❤️","🧡","💛","💚","💙","💜","🖤","🤍",
-  "👍","👎","👏","🙌","🙏","🤝","🔥","✨",
-  "🎉","💯","😂","🤣","😎","😍","🥰","😘"
+  "🤪","🤨","🧐","🤓","😎","🥳","😏","😢",
+  "😭","😤","😡","🤬","🤔","🤗","🤩","😴",
+  "🤯","😱","😇","❤️","🧡","💛","💚","💙",
+  "💜","🖤","🤍","🤎","💔","💕","💯","🔥",
+  "👏","🙌","👍","👎","🙏","💪","🎉","🎊",
+  "🥂","✨","⭐","🌟","😂","🤣","😅","❤️"
 ];
 
+emojiGrid.innerHTML =
+  emojis.map(
+    emoji =>
+      `<button class="emoji">${emoji}</button>`
+  ).join("");
 
-emojis.forEach(emoji=>{
+emojiGrid
+  .querySelectorAll(".emoji")
+  .forEach(button=>{
 
-  const button =
-    document.createElement("button");
+    button.addEventListener(
+      "click",
+      ()=>{
+        messageInput.value +=
+          button.textContent;
 
-  button.textContent = emoji;
+        messageInput.focus();
 
-  button.addEventListener(
-    "click",
-    ()=>{
-      messageInput.value += emoji;
-      messageInput.focus();
-    }
-  );
-
-  emojiGrid.appendChild(button);
-});
-
+        resizeTextarea();
+      }
+    );
+  });
 
 emojiBtn.addEventListener(
   "click",
   event=>{
-
     event.stopPropagation();
 
     emojiPanel.classList.toggle(
@@ -3065,7 +3830,6 @@ emojiBtn.addEventListener(
     );
   }
 );
-
 
 document.addEventListener(
   "click",
@@ -3075,7 +3839,6 @@ document.addEventListener(
       !emojiPanel.contains(event.target) &&
       event.target !== emojiBtn
     ){
-
       emojiPanel.classList.add(
         "hidden"
       );
@@ -3085,86 +3848,282 @@ document.addEventListener(
 
 
 /* =========================================================
-   PROFILE
+   PHOTO
 ========================================================= */
 
-function updateMyProfileUI(){
+photoBtn.addEventListener(
+  "click",
+  ()=>{
+    photoInput.click();
+  }
+);
 
-  if(!currentUser) return;
+photoInput.addEventListener(
+  "change",
+  async ()=>{
 
-  const profile =
-    myProfile || {};
+    const file =
+      photoInput.files?.[0];
 
-  $("myName").textContent =
-    profile.displayName ||
-    profile.display_name ||
-    currentUser.displayName ||
-    "ZIQVONA";
+    if(!file){
+      return;
+    }
 
-  $("myUsername").textContent =
-    "@" +
-    (
-      profile.username ||
-      currentUser.username ||
-      "user"
-    );
+    if(!selectedUser){
+      showToast(
+        "Chwazi yon chat anvan ou voye foto."
+      );
+      photoInput.value = "";
+      return;
+    }
 
-  renderAvatar(
-    $("myAvatar"),
-    {
-      displayName:
-        profile.displayName ||
-        profile.display_name,
+    if(file.size > 15 * 1024 * 1024){
 
-      username:
-        profile.username,
+      showToast(
+        "Foto a twò gwo. Maksimòm 15MB."
+      );
 
-      avatar:
-        profile.avatar ||
-        profile.avatar_url
+      photoInput.value = "";
+      return;
+    }
+
+    try{
+
+      const compressed =
+        await compressImage(file);
+
+      const dataUrl =
+        await blobToDataUrl(compressed);
+
+      socket.emit(
+        "chat:message",
+        {
+          targetUserId:
+            userId(selectedUser),
+          userId:
+            userId(selectedUser),
+          type:"image",
+          media_url:dataUrl,
+          body:""
+        }
+      );
+
+      showToast(
+        "Foto voye."
+      );
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        "Foto a pa t ka prepare."
+      );
+
+    }finally{
+
+      photoInput.value = "";
+    }
+  }
+);
+
+function compressImage(file){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const image =
+        new Image();
+
+      const url =
+        URL.createObjectURL(file);
+
+      image.onload = ()=>{
+
+        URL.revokeObjectURL(url);
+
+        const max =
+          1400;
+
+        let width =
+          image.width;
+
+        let height =
+          image.height;
+
+        if(width > max){
+
+          height =
+            Math.round(
+              height * max / width
+            );
+
+          width = max;
+        }
+
+        const canvas =
+          document.createElement(
+            "canvas"
+          );
+
+        canvas.width =
+          width;
+
+        canvas.height =
+          height;
+
+        const ctx =
+          canvas.getContext("2d");
+
+        ctx.drawImage(
+          image,
+          0,
+          0,
+          width,
+          height
+        );
+
+        canvas.toBlob(
+          blob=>{
+            if(blob) resolve(blob);
+            else reject(
+              new Error(
+                "Compression failed"
+              )
+            );
+          },
+          "image/jpeg",
+          .82
+        );
+      };
+
+      image.onerror =
+        reject;
+
+      image.src =
+        url;
+    }
+  );
+}
+
+function blobToDataUrl(blob){
+
+  return new Promise(
+    (resolve,reject)=>{
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        ()=>resolve(
+          reader.result
+        );
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(
+        blob
+      );
     }
   );
 }
 
 
-function openProfileModal(){
+/* =========================================================
+   FILTERS / SEARCH
+========================================================= */
 
-  const profile =
-    myProfile || {};
+document
+  .querySelectorAll(".filter")
+  .forEach(button=>{
 
-  profileUsername.value =
-    profile.username ||
-    currentUser?.username ||
-    "";
+    button.addEventListener(
+      "click",
+      ()=>{
+
+        document
+          .querySelectorAll(".filter")
+          .forEach(
+            b=>b.classList.remove("active")
+          );
+
+        button.classList.add(
+          "active"
+        );
+
+        activeFilter =
+          button.dataset.filter;
+
+        renderPeople();
+      }
+    );
+  });
+
+searchInput.addEventListener(
+  "input",
+  renderPeople
+);
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+function openProfile(){
+
+  const p =
+    profileData || currentUser || {};
+
+  setAvatar(
+    profileAvatar,
+    p
+  );
 
   profileDisplayName.value =
-    profile.displayName ||
-    profile.display_name ||
-    currentUser?.displayName ||
+    p.displayName ||
+    p.display_name ||
+    "";
+
+  profileUsername.value =
+    p.username ||
     "";
 
   profileStatus.value =
-    profile.status ||
+    p.status ||
     "";
-
-  renderAvatar(
-    profileAvatarPreview,
-    profile
-  );
-
-  avatarFile.value = "";
 
   profileModal.classList.remove(
     "hidden"
   );
 }
 
-
-profileBtn.addEventListener(
+profileTopBtn.addEventListener(
   "click",
-  openProfileModal
+  openProfile
 );
 
+myProfileMini.addEventListener(
+  "click",
+  openProfile
+);
+
+document
+  .querySelectorAll(
+    "[data-close='profileModal']"
+  )
+  .forEach(
+    button=>{
+      button.addEventListener(
+        "click",
+        ()=>{
+          profileModal.classList.add(
+            "hidden"
+          );
+        }
+      );
+    }
+  );
 
 profileCancel.addEventListener(
   "click",
@@ -3176,65 +4135,77 @@ profileCancel.addEventListener(
 );
 
 
-avatarFile.addEventListener(
+/* =========================================================
+   AVATAR
+========================================================= */
+
+avatarInput.addEventListener(
   "change",
-  async()=>{
+  async ()=>{
 
     const file =
-      avatarFile.files?.[0];
+      avatarInput.files?.[0];
 
-    if(!file) return;
+    if(!file){
+      return;
+    }
+
+    if(file.size > 6 * 1024 * 1024){
+
+      showToast(
+        "Foto profil la twò gwo."
+      );
+
+      avatarInput.value = "";
+      return;
+    }
 
     try{
 
+      const compressed =
+        await compressImage(file);
+
       const dataUrl =
-        await compressImage(
-          file,
-          500,
-          0.72
-        );
+        await blobToDataUrl(compressed);
 
-      renderAvatar(
-        profileAvatarPreview,
-        {
-          avatar:dataUrl,
-          displayName:
-            profileDisplayName.value
-        }
-      );
-
-      profileAvatarPreview.dataset.avatar =
+      profileAvatar.dataset.pendingAvatar =
         dataUrl;
+
+      profileAvatar.innerHTML =
+        `<img src="${escapeHtml(dataUrl)}"
+              style="width:100%;height:100%;object-fit:cover;border-radius:50%"
+              alt="">`;
+
+      profileAvatar.classList.remove(
+        "avatar-fallback"
+      );
 
     }catch(error){
 
       console.error(error);
 
       showToast(
-        "Foto a pa ka prepare."
+        "Foto profil la pa t ka prepare."
       );
     }
   }
 );
 
 
+/* =========================================================
+   SAVE PROFILE
+========================================================= */
+
 profileSave.addEventListener(
   "click",
-  async()=>{
+  ()=>{
 
     if(!socket){
-
       showToast(
-        "Koneksyon an poko pare."
+        "Server la poko konekte."
       );
-
       return;
     }
-
-    let username =
-      normalizeUsername(
-        profileUsername.value
-      );
 
     const displayName =
       profileDisplayName.value.trim();
@@ -3242,53 +4213,64 @@ profileSave.addEventListener(
     const status =
       profileStatus.value.trim();
 
-    if(!username){
-
-      showToast(
-        "Username la pa valab."
-      );
-
-      return;
-    }
-
-    if(!displayName){
-
-      showToast(
-        "Antre non ou."
-      );
-
-      return;
-    }
-
-    let avatarUrl =
-      profileAvatarPreview.dataset.avatar ||
-      myProfile?.avatar ||
-      myProfile?.avatar_url ||
+    const pendingAvatar =
+      profileAvatar.dataset.pendingAvatar ||
       "";
 
-    try{
-
-      profileSave.disabled = true;
-
-      socket.emit(
-        "profile:update",
-        {
-          username,
-          displayName,
-          status,
-          avatarUrl
-        }
+    if(!displayName){
+      showToast(
+        "Display name pa ka vid."
       );
+      return;
+    }
 
-      myProfile = {
-        ...myProfile,
-        username,
-        displayName,
-        status,
-        avatar:avatarUrl
-      };
+    profileSave.disabled = true;
+    profileSave.textContent =
+      "Saving...";
 
-      updateMyProfileUI();
+    const payload = {
+      displayName,
+      display_name:displayName,
+      status
+    };
+
+    if(pendingAvatar){
+      payload.avatar =
+        pendingAvatar;
+
+      payload.avatar_url =
+        pendingAvatar;
+    }
+
+    socket.emit(
+      "profile:update",
+      payload
+    );
+
+    socket.emit(
+      "profile:save",
+      payload
+    );
+
+    profileData = {
+      ...profileData,
+      ...payload
+    };
+
+    currentUser = {
+      ...currentUser,
+      ...payload
+    };
+
+    updateMyProfileUI();
+
+    setTimeout(()=>{
+
+      profileSave.disabled =
+        false;
+
+      profileSave.textContent =
+        "Save profile";
 
       profileModal.classList.add(
         "hidden"
@@ -3298,121 +4280,166 @@ profileSave.addEventListener(
         "Pwofil la sove."
       );
 
-    }catch(error){
-
-      console.error(error);
-
-      showToast(
-        "Pwofil la pa ka sove."
-      );
-
-    }finally{
-
-      profileSave.disabled = false;
-    }
+    },500);
   }
 );
 
 
 /* =========================================================
-   IMAGE COMPRESSION
+   CONTACTS
 ========================================================= */
 
-function compressImage(
-  file,
-  maxSize,
-  quality
-){
+function addContactLocal(contact){
 
-  return new Promise(
-    (resolve,reject)=>{
+  if(!contact) return;
 
-      const reader =
-        new FileReader();
+  const id =
+    getContactId(contact);
 
-      reader.onload = ()=>{
+  if(!id) return;
 
-        const img =
-          new Image();
+  if(
+    !contacts.some(
+      c=>getContactId(c) === id
+    )
+  ){
+    contacts.push(contact);
+  }
 
-        img.onload = ()=>{
+  renderPeople();
+}
 
-          let width =
-            img.width;
+function removeContactLocal(contact){
 
-          let height =
-            img.height;
+  const id =
+    getContactId(contact);
 
-          const scale =
-            Math.min(
-              1,
-              maxSize /
-              Math.max(
-                width,
-                height
-              )
-            );
+  contacts =
+    contacts.filter(
+      c=>getContactId(c) !== id
+    );
 
-          width =
-            Math.round(
-              width * scale
-            );
+  renderPeople();
+}
 
-          height =
-            Math.round(
-              height * scale
-            );
+function updateContactButton(){
 
-          const canvas =
-            document.createElement(
-              "canvas"
-            );
+  if(!selectedUser){
 
-          canvas.width =
-            width;
+    deleteContactBtn.classList.add(
+      "hidden"
+    );
 
-          canvas.height =
-            height;
+    return;
+  }
 
-          const ctx =
-            canvas.getContext(
-              "2d"
-            );
+  if(isContact(selectedUser)){
 
-          ctx.drawImage(
-            img,
-            0,
-            0,
-            width,
-            height
-          );
+    deleteContactBtn.classList.remove(
+      "hidden"
+    );
 
-          resolve(
-            canvas.toDataURL(
-              "image/jpeg",
-              quality
-            )
-          );
-        };
+  }else{
 
-        img.onerror =
-          reject;
-
-        img.src =
-          reader.result;
-      };
-
-      reader.onerror =
-        reject;
-
-      reader.readAsDataURL(file);
-    }
-  );
+    deleteContactBtn.classList.add(
+      "hidden"
+    );
+  }
 }
 
 
 /* =========================================================
-   TURN / ICE SERVERS
+   DELETE CONTACT
+========================================================= */
+
+deleteContactBtn.addEventListener(
+  "click",
+  ()=>{
+
+    if(!selectedUser || !socket){
+      return;
+    }
+
+    const targetId =
+      userId(selectedUser);
+
+    socket.emit(
+      "contact:remove",
+      {
+        contactId:targetId,
+        userId:targetId
+      }
+    );
+
+    removeContactLocal({
+      contact_id:targetId
+    });
+
+    showToast(
+      "Contact retire."
+    );
+  }
+);
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+logoutBtn.addEventListener(
+  "click",
+  async ()=>{
+
+    closeCall(false);
+
+    try{
+
+      await supabaseClient.auth.signOut();
+
+    }catch(error){
+
+      console.error(error);
+
+    }
+
+    location.reload();
+  }
+);
+
+
+/* =========================================================
+   MOBILE BACK
+========================================================= */
+
+backBtn.addEventListener(
+  "click",
+  ()=>{
+
+    chatPanel.classList.remove(
+      "mobile-open"
+    );
+
+    sidebar.classList.remove(
+      "chat-open"
+    );
+
+    selectedUser = null;
+
+    chatContent.classList.add(
+      "hidden"
+    );
+
+    chatEmpty.classList.remove(
+      "hidden"
+    );
+
+    renderPeople();
+  }
+);
+
+
+/* =========================================================
+   CALL — ICE SERVERS
 ========================================================= */
 
 async function loadIceServers(){
@@ -3453,7 +4480,7 @@ async function loadIceServers(){
   }catch(error){
 
     console.warn(
-      "TURN loading failed:",
+      "TURN/STUN load failed:",
       error
     );
   }
@@ -3461,331 +4488,8 @@ async function loadIceServers(){
 
 
 /* =========================================================
-   CALL HELPERS
+   CALL START
 ========================================================= */
-
-function setCallState(text){
-
-  callState.textContent =
-    text;
-
-  voiceState.textContent =
-    text;
-}
-
-
-function showCallScreen(type,user){
-
-  callName.textContent =
-    user?.displayName ||
-    user?.username ||
-    "ZIQVONA";
-
-  voiceName.textContent =
-    user?.displayName ||
-    user?.username ||
-    "ZIQVONA";
-
-  renderAvatar(
-    voiceAvatar,
-    user
-  );
-
-  if(type === "video"){
-
-    videoStage.classList.remove(
-      "hidden"
-    );
-
-    voiceStage.classList.add(
-      "hidden"
-    );
-
-  }else{
-
-    videoStage.classList.add(
-      "hidden"
-    );
-
-    voiceStage.classList.remove(
-      "hidden"
-    );
-  }
-
-  callScreen.classList.remove(
-    "hidden"
-  );
-
-  setCallState("Apèl ap kòmanse...");
-}
-
-
-async function createPeer(){
-
-  peer =
-    new RTCPeerConnection({
-      iceServers
-    });
-
-  remoteStream =
-    new MediaStream();
-
-  remoteVideo.srcObject =
-    remoteStream;
-
-  peer.ontrack =
-    event=>{
-
-      event.streams[0]
-        ?.getTracks()
-        .forEach(track=>{
-
-          if(
-            !remoteStream
-              .getTracks()
-              .some(
-                existing =>
-                  existing.id === track.id
-              )
-          ){
-
-            remoteStream.addTrack(
-              track
-            );
-          }
-        });
-
-      try{
-        remoteVideo.play();
-      }catch(e){}
-    };
-
-
-  peer.onicecandidate =
-    event=>{
-
-      if(
-        event.candidate &&
-        activeCall &&
-        socket
-      ){
-
-        socket.emit(
-          "webrtc:ice-candidate",
-          {
-            callId:
-              activeCall.callId,
-
-            targetUserId:
-              activeCall.targetUserId,
-
-            candidate:
-              event.candidate
-          }
-        );
-      }
-    };
-
-
-  peer.onconnectionstatechange =
-    ()=>{
-
-      console.log(
-        "Peer state:",
-        peer.connectionState
-      );
-
-      if(
-        peer.connectionState ===
-        "connected"
-      ){
-
-        setCallState(
-          "Konekte"
-        );
-      }
-
-      if(
-        [
-          "failed",
-          "disconnected",
-          "closed"
-        ].includes(
-          peer.connectionState
-        )
-      ){
-
-        if(
-          peer.connectionState ===
-          "failed"
-        ){
-
-          showToast(
-            "Koneksyon WebRTC la echwe."
-          );
-        }
-      }
-    };
-
-
-  if(localStream){
-
-    localStream
-      .getTracks()
-      .forEach(track=>{
-
-        peer.addTrack(
-          track,
-          localStream
-        );
-      });
-  }
-
-  return peer;
-}
-
-
-async function getMedia(type){
-
-  if(localStream){
-
-    localStream
-      .getTracks()
-      .forEach(track=>{
-        track.stop();
-      });
-
-    localStream = null;
-  }
-
-  localStream =
-    await navigator.mediaDevices
-      .getUserMedia({
-        audio:true,
-        video:
-          type === "video"
-      });
-
-  localVideo.srcObject =
-    localStream;
-
-  if(type === "video"){
-
-    localVideo.classList.remove(
-      "hidden"
-    );
-
-  }else{
-
-    localVideo.classList.add(
-      "hidden"
-    );
-  }
-}
-
-
-/* =========================================================
-   START CALL
-========================================================= */
-
-async function startCall(type){
-
-  if(!selectedUser){
-
-    showToast(
-      "Chwazi moun ou vle rele a."
-    );
-
-    return;
-  }
-
-  if(
-    selectedUser.id ===
-    currentUser?.id
-  ){
-
-    showToast(
-      "Ou pa ka rele tèt ou."
-    );
-
-    return;
-  }
-
-  if(activeCall){
-
-    showToast(
-      "Ou deja nan yon apèl."
-    );
-
-    return;
-  }
-
-  if(
-    !navigator.mediaDevices ||
-    !navigator.mediaDevices.getUserMedia
-  ){
-
-    showToast(
-      "Navigatè a pa bay aksè kamera/mikwo."
-    );
-
-    return;
-  }
-
-  try{
-
-    isCaller = true;
-
-    callAccepted = false;
-
-    pendingOffer = null;
-
-    pendingIceCandidates = [];
-
-    activeCall = {
-      callId:null,
-      targetUserId:selectedUser.id,
-      type,
-      user:selectedUser
-    };
-
-    showCallScreen(
-      type,
-      selectedUser
-    );
-
-    setCallState(
-      "Apèl ap rele..."
-    );
-
-    await getMedia(type);
-
-    await createPeer();
-
-    socket.emit(
-      "call:start",
-      {
-        userId:selectedUser.id,
-        callType:type
-      }
-    );
-
-  }catch(error){
-
-    console.error(
-      "Start call error:",
-      error
-    );
-
-    showToast(
-      error?.message ||
-      "Kamera oswa mikwo pa disponib."
-    );
-
-    cleanupCall(false);
-  }
-}
-
 
 voiceCallBtn.addEventListener(
   "click",
@@ -3794,7 +4498,6 @@ voiceCallBtn.addEventListener(
   }
 );
 
-
 videoCallBtn.addEventListener(
   "click",
   ()=>{
@@ -3802,47 +4505,308 @@ videoCallBtn.addEventListener(
   }
 );
 
+async function startCall(type){
 
-/* =========================================================
-   CALLER OFFER
-========================================================= */
+  if(!socket || !selectedUser){
+    showToast(
+      "Chwazi yon moun anvan ou rele."
+    );
+    return;
+  }
 
-async function startCallerOffer(){
-
-  if(
-    !activeCall ||
-    !peer ||
-    !socket
-  ){
+  if(currentCall){
+    showToast(
+      "Gen yon apèl deja aktif."
+    );
     return;
   }
 
   try{
 
-    setCallState(
-      "Koneksyon ap fèt..."
+    await prepareLocalMedia(type);
+
+    currentCall = {
+      type,
+      role:"caller",
+      peerId:userId(selectedUser),
+      peer: selectedUser
+    };
+
+    showCallScreen(
+      selectedUser,
+      type
     );
 
-    const offer =
-      await peer.createOffer({
-        offerToReceiveAudio:true,
-        offerToReceiveVideo:
-          activeCall.type === "video"
-      });
+    socket.emit(
+      "call:start",
+      {
+        targetUserId:
+          userId(selectedUser),
+        userId:
+          userId(selectedUser),
+        callType:type,
+        type
+      }
+    );
 
-    await peer.setLocalDescription(
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      mediaErrorMessage(error)
+    );
+
+    closeCall(false);
+  }
+}
+
+
+/* =========================================================
+   MEDIA
+========================================================= */
+
+async function prepareLocalMedia(type){
+
+  const constraints =
+    type === "video"
+      ? {
+          audio:true,
+          video:{
+            facingMode:"user",
+            width:{ideal:1280},
+            height:{ideal:720}
+          }
+        }
+      : {
+          audio:true,
+          video:false
+        };
+
+  localStream =
+    await navigator.mediaDevices.getUserMedia(
+      constraints
+    );
+
+  localVideo.srcObject =
+    localStream;
+
+  localVideo.classList.toggle(
+    "hidden",
+    type !== "video"
+  );
+
+  if(type === "voice"){
+    cameraEnabled = false;
+  }else{
+    cameraEnabled = true;
+  }
+}
+
+function mediaErrorMessage(error){
+
+  if(
+    error?.name ===
+    "NotAllowedError"
+  ){
+    return "Bay ZIQVONA pèmisyon pou sèvi ak microphone/camera nan browser la.";
+  }
+
+  if(
+    error?.name ===
+    "NotFoundError"
+  ){
+    return "Microphone oswa camera pa jwenn sou aparèy la.";
+  }
+
+  return "ZIQVONA pa t kapab jwenn microphone/camera.";
+}
+
+
+/* =========================================================
+   SHOW CALL SCREEN
+========================================================= */
+
+function showCallScreen(user,type){
+
+  callOverlay.classList.remove(
+    "hidden"
+  );
+
+  setAvatar(
+    callAvatar,
+    user
+  );
+
+  callName.textContent =
+    user.displayName ||
+    user.display_name ||
+    user.username ||
+    "User";
+
+  callState.textContent =
+    type === "video"
+      ? "Video call..."
+      : "Voice call...";
+
+  muteBtn.classList.remove(
+    "active"
+  );
+
+  cameraBtn.classList.toggle(
+    "hidden",
+    type !== "video"
+  );
+}
+
+
+/* =========================================================
+   CREATE PEER
+========================================================= */
+
+function createPeerConnection(){
+
+  if(peerConnection){
+    return peerConnection;
+  }
+
+  peerConnection =
+    new RTCPeerConnection({
+      iceServers
+    });
+
+  pendingIceCandidates = [];
+
+  peerConnection.onicecandidate =
+    event=>{
+
+      if(
+        !event.candidate ||
+        !socket ||
+        !currentCall
+      ){
+        return;
+      }
+
+      socket.emit(
+        "webrtc:ice-candidate",
+        {
+          targetUserId:
+            currentCall.peerId,
+          userId:
+            currentCall.peerId,
+          candidate:
+            event.candidate
+        }
+      );
+    };
+
+  peerConnection.ontrack =
+    event=>{
+
+      if(!remoteStream){
+        remoteStream =
+          new MediaStream();
+      }
+
+      event.streams?.[0]
+        ?.getTracks()
+        .forEach(track=>{
+
+          const exists =
+            remoteStream
+              .getTracks()
+              .some(
+                t=>t.id === track.id
+              );
+
+          if(!exists){
+            remoteStream.addTrack(track);
+          }
+        });
+
+      remoteVideo.srcObject =
+        remoteStream;
+
+      callState.textContent =
+        "Connected";
+    };
+
+  peerConnection.onconnectionstatechange =
+    ()=>{
+
+      const state =
+        peerConnection.connectionState;
+
+      console.log(
+        "WebRTC connection:",
+        state
+      );
+
+      if(state === "connected"){
+
+        callState.textContent =
+          "Connected";
+      }
+
+      if(
+        state === "failed" ||
+        state === "disconnected" ||
+        state === "closed"
+      ){
+
+        callState.textContent =
+          "Connection ended";
+      }
+    };
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(
+        track=>{
+          peerConnection.addTrack(
+            track,
+            localStream
+          );
+        }
+      );
+  }
+
+  return peerConnection;
+}
+
+
+/* =========================================================
+   OFFER
+========================================================= */
+
+async function createAndSendOffer(){
+
+  if(!currentCall){
+    return;
+  }
+
+  try{
+
+    const pc =
+      createPeerConnection();
+
+    const offer =
+      await pc.createOffer();
+
+    await pc.setLocalDescription(
       offer
     );
 
     socket.emit(
       "webrtc:offer",
       {
-        callId:
-          activeCall.callId,
-
         targetUserId:
-          activeCall.targetUserId,
-
+          currentCall.peerId,
+        userId:
+          currentCall.peerId,
         offer
       }
     );
@@ -3850,193 +4814,95 @@ async function startCallerOffer(){
   }catch(error){
 
     console.error(
-      "Create offer error:",
+      "Offer error:",
       error
     );
 
     showToast(
-      "Offer WebRTC la echwe."
+      "WebRTC offer pa t ka kreye."
     );
   }
 }
-
-
-/* =========================================================
-   INCOMING CALL
-========================================================= */
-
-acceptCallBtn.addEventListener(
-  "click",
-  async()=>{
-
-    if(!incomingCall) return;
-
-    const call =
-      incomingCall;
-
-    incomingModal.classList.add(
-      "hidden"
-    );
-
-    incomingCall = null;
-
-    try{
-
-      isCaller = false;
-
-      callAccepted = true;
-
-      pendingIceCandidates = [];
-
-      activeCall = {
-        callId:call.callId,
-        targetUserId:call.callerId,
-        type:call.callType,
-        user:{
-          id:call.callerId,
-          displayName:
-            call.callerName,
-          username:
-            call.callerUsername,
-          avatar:
-            call.callerAvatar
-        }
-      };
-
-      showCallScreen(
-        call.callType,
-        activeCall.user
-      );
-
-      await getMedia(
-        call.callType
-      );
-
-      await createPeer();
-
-      socket.emit(
-        "call:accept",
-        {
-          callId:call.callId
-        }
-      );
-
-      setCallState(
-        "Apèl aksepte. Koneksyon..."
-      );
-
-      if(pendingOffer){
-
-        await processPendingOffer();
-      }
-
-    }catch(error){
-
-      console.error(
-        "Accept call error:",
-        error
-      );
-
-      showToast(
-        error?.message ||
-        "Pa kapab resevwa apèl la."
-      );
-
-      cleanupCall(false);
-    }
-  }
-);
-
-
-rejectCallBtn.addEventListener(
-  "click",
-  ()=>{
-
-    if(
-      incomingCall &&
-      socket
-    ){
-
-      socket.emit(
-        "call:reject",
-        {
-          callId:
-            incomingCall.callId
-        }
-      );
-    }
-
-    incomingCall = null;
-
-    incomingModal.classList.add(
-      "hidden"
-    );
-  }
-);
 
 
 /* =========================================================
    HANDLE OFFER
 ========================================================= */
 
-async function processPendingOffer(){
-
-  if(!pendingOffer) return;
-
-  const offer =
-    pendingOffer;
-
-  pendingOffer = null;
-
-  await handleOffer(
-    offer
-  );
-}
-
-
 async function handleOffer(data){
-
-  if(!peer){
-
-    pendingOffer = data;
-
-    return;
-  }
 
   try{
 
-    await peer.setRemoteDescription(
+    if(!data?.offer){
+      return;
+    }
+
+    const peerId =
+      data.from ||
+      data.callerId ||
+      data.userId ||
+      data.caller_id;
+
+    if(
+      !currentCall &&
+      peerId
+    ){
+
+      const found =
+        allUsers.find(
+          user =>
+            userId(user) ===
+            peerId
+        );
+
+      if(found){
+
+        currentCall = {
+          type:
+            data.callType ||
+            "video",
+          role:"callee",
+          peerId,
+          peer:found
+        };
+      }
+    }
+
+    if(!currentCall){
+      return;
+    }
+
+    const pc =
+      createPeerConnection();
+
+    await pc.setRemoteDescription(
       new RTCSessionDescription(
         data.offer
       )
     );
 
-    await flushIceCandidates();
+    await flushPendingIce();
 
     const answer =
-      await peer.createAnswer();
+      await pc.createAnswer();
 
-    await peer.setLocalDescription(
+    await pc.setLocalDescription(
       answer
     );
 
     socket.emit(
       "webrtc:answer",
       {
-        callId:
-          data.callId,
-
         targetUserId:
-          data.fromUserId ||
-          activeCall?.targetUserId,
-
+          currentCall.peerId,
+        userId:
+          currentCall.peerId,
         answer
       }
     );
 
-    setCallState(
-      "Konekte"
-    );
+    callState.textContent =
+      "Connecting...";
 
   }catch(error){
 
@@ -4044,39 +4910,106 @@ async function handleOffer(data){
       "Offer handling error:",
       error
     );
+  }
+}
 
-    showToast(
-      "Koneksyon apèl la echwe."
+
+/* =========================================================
+   HANDLE ANSWER
+========================================================= */
+
+async function handleAnswer(data){
+
+  try{
+
+    if(
+      !peerConnection ||
+      !data?.answer
+    ){
+      return;
+    }
+
+    await peerConnection.setRemoteDescription(
+      new RTCSessionDescription(
+        data.answer
+      )
+    );
+
+    await flushPendingIce();
+
+  }catch(error){
+
+    console.error(
+      "Answer error:",
+      error
     );
   }
 }
 
 
 /* =========================================================
-   ICE QUEUE
+   ICE
 ========================================================= */
 
-async function flushIceCandidates(){
+async function handleRemoteIce(data){
+
+  const candidate =
+    data?.candidate;
+
+  if(!candidate){
+    return;
+  }
 
   if(
-    !peer ||
-    !peer.remoteDescription
+    !peerConnection ||
+    !peerConnection.remoteDescription
+  ){
+
+    pendingIceCandidates.push(
+      candidate
+    );
+
+    return;
+  }
+
+  try{
+
+    await peerConnection.addIceCandidate(
+      new RTCIceCandidate(
+        candidate
+      )
+    );
+
+  }catch(error){
+
+    console.warn(
+      "ICE candidate error:",
+      error
+    );
+  }
+}
+
+async function flushPendingIce(){
+
+  if(
+    !peerConnection ||
+    !peerConnection.remoteDescription
   ){
     return;
   }
 
-  const queue =
-    pendingIceCandidates;
-
-  pendingIceCandidates = [];
+  const list =
+    pendingIceCandidates.splice(
+      0
+    );
 
   for(
-    const candidate of queue
+    const candidate of list
   ){
 
     try{
 
-      await peer.addIceCandidate(
+      await peerConnection.addIceCandidate(
         new RTCIceCandidate(
           candidate
         )
@@ -4094,123 +5027,195 @@ async function flushIceCandidates(){
 
 
 /* =========================================================
-   END CALL
+   INCOMING CALL
 ========================================================= */
 
-function endCall(){
+function handleIncomingCall(data){
 
-  if(
-    activeCall &&
-    socket
-  ){
+  if(currentCall){
 
     socket.emit(
-      "call:end",
+      "call:reject",
       {
-        callId:
-          activeCall.callId
+        callId:data?.callId,
+        callerId:
+          data?.callerId ||
+          data?.userId ||
+          data?.from,
+        reason:"busy"
       }
     );
+
+    return;
   }
 
-  cleanupCall(
-    false
-  );
-}
+  const callerId =
+    data?.callerId ||
+    data?.caller_id ||
+    data?.userId ||
+    data?.from;
 
+  const caller =
+    allUsers.find(
+      user =>
+        userId(user) ===
+        callerId
+    ) || {
+      id:callerId,
+      displayName:
+        data?.callerName ||
+        "ZIQVONA User",
+      username:
+        data?.callerUsername ||
+        ""
+    };
 
-endCallBtn.addEventListener(
-  "click",
-  endCall
-);
+  pendingIncomingCall = {
+    ...data,
+    callerId,
+    caller
+  };
 
-
-closeCallBtn.addEventListener(
-  "click",
-  endCall
-);
-
-
-function cleanupCall(sendEnd){
-
-  if(
-    sendEnd &&
-    activeCall &&
-    socket
-  ){
-
-    socket.emit(
-      "call:end",
-      {
-        callId:
-          activeCall.callId
-      }
-    );
-  }
-
-  if(peer){
-
-    try{
-      peer.close();
-    }catch(e){}
-
-    peer = null;
-  }
-
-  if(localStream){
-
-    localStream
-      .getTracks()
-      .forEach(track=>{
-        track.stop();
-      });
-
-    localStream = null;
-  }
-
-  if(remoteStream){
-
-    remoteStream
-      .getTracks()
-      .forEach(track=>{
-        track.stop();
-      });
-
-    remoteStream = null;
-  }
-
-  localVideo.srcObject =
-    null;
-
-  remoteVideo.srcObject =
-    null;
-
-  activeCall = null;
-
-  pendingOffer = null;
-
-  pendingIceCandidates = [];
-
-  callAccepted = false;
-
-  isCaller = false;
-
-  callMuted = false;
-
-  cameraOff = false;
-
-  muteBtn.classList.remove(
-    "active"
+  setAvatar(
+    incomingAvatar,
+    caller
   );
 
-  cameraBtn.classList.remove(
-    "active"
-  );
+  incomingName.textContent =
+    caller.displayName ||
+    caller.display_name ||
+    caller.username ||
+    "ZIQVONA User";
 
-  callScreen.classList.add(
+  const type =
+    data?.callType ||
+    data?.type ||
+    "voice";
+
+  incomingType.textContent =
+    type === "video"
+      ? "Incoming video call"
+      : "Incoming voice call";
+
+  incomingModal.classList.remove(
     "hidden"
   );
 }
+
+
+/* =========================================================
+   ACCEPT INCOMING
+========================================================= */
+
+acceptIncoming.addEventListener(
+  "click",
+  async ()=>{
+
+    if(!pendingIncomingCall){
+      return;
+    }
+
+    const data =
+      pendingIncomingCall;
+
+    incomingModal.classList.add(
+      "hidden"
+    );
+
+    const caller =
+      data.caller;
+
+    const type =
+      data.callType ||
+      data.type ||
+      "voice";
+
+    try{
+
+      await prepareLocalMedia(
+        type
+      );
+
+      currentCall = {
+        type,
+        role:"callee",
+        peerId:
+          data.callerId,
+        peer:caller,
+        callId:
+          data.callId
+      };
+
+      showCallScreen(
+        caller,
+        type
+      );
+
+      socket.emit(
+        "call:accept",
+        {
+          callId:
+            data.callId,
+          callerId:
+            data.callerId,
+          userId:
+            data.callerId,
+          callType:type,
+          type
+        }
+      );
+
+      /*
+       * Some server versions may identify
+       * the call using callId only.
+       */
+
+    }catch(error){
+
+      console.error(error);
+
+      showToast(
+        mediaErrorMessage(error)
+      );
+
+      pendingIncomingCall = null;
+    }
+  }
+);
+
+
+/* =========================================================
+   REJECT INCOMING
+========================================================= */
+
+rejectIncoming.addEventListener(
+  "click",
+  ()=>{
+
+    if(pendingIncomingCall){
+
+      socket.emit(
+        "call:reject",
+        {
+          callId:
+            pendingIncomingCall.callId,
+          callerId:
+            pendingIncomingCall.callerId,
+          userId:
+            pendingIncomingCall.callerId,
+          reason:"rejected"
+        }
+      );
+    }
+
+    incomingModal.classList.add(
+      "hidden"
+    );
+
+    pendingIncomingCall =
+      null;
+  }
+);
 
 
 /* =========================================================
@@ -4221,20 +5226,26 @@ muteBtn.addEventListener(
   "click",
   ()=>{
 
-    if(!localStream) return;
+    if(!localStream){
+      return;
+    }
 
-    const tracks =
+    const audioTracks =
       localStream.getAudioTracks();
 
-    if(!tracks.length) return;
+    if(!audioTracks.length){
+      return;
+    }
 
     callMuted =
       !callMuted;
 
-    tracks.forEach(track=>{
-      track.enabled =
-        !callMuted;
-    });
+    audioTracks.forEach(
+      track=>{
+        track.enabled =
+          !callMuted;
+      }
+    );
 
     muteBtn.classList.toggle(
       "active",
@@ -4243,131 +5254,337 @@ muteBtn.addEventListener(
   }
 );
 
-
 cameraBtn.addEventListener(
   "click",
   ()=>{
 
-    if(!localStream) return;
+    if(!localStream){
+      return;
+    }
 
-    const tracks =
+    const videoTracks =
       localStream.getVideoTracks();
 
-    if(!tracks.length) return;
+    if(!videoTracks.length){
+      return;
+    }
 
-    cameraOff =
-      !cameraOff;
+    cameraEnabled =
+      !cameraEnabled;
 
-    tracks.forEach(track=>{
-      track.enabled =
-        !cameraOff;
-    });
+    videoTracks.forEach(
+      track=>{
+        track.enabled =
+          cameraEnabled;
+      }
+    );
 
     cameraBtn.classList.toggle(
       "active",
-      cameraOff
+      !cameraEnabled
     );
   }
 );
 
 
 /* =========================================================
-   LOGOUT
+   END CALL
 ========================================================= */
 
-logoutBtn.addEventListener(
+endCallBtn.addEventListener(
   "click",
-  async()=>{
-
-    if(activeCall){
-
-      cleanupCall(true);
-    }
-
-    disconnectSocket();
-
-    try{
-
-      await supabaseClient.auth.signOut();
-
-    }catch(error){
-
-      console.error(error);
-    }
-
-    resetApp();
-
-    showToast(
-      "Ou dekonekte."
-    );
+  ()=>{
+    endCall(true);
   }
 );
 
+function endCall(notify){
 
-function resetApp(){
+  if(
+    notify &&
+    socket &&
+    currentCall
+  ){
 
-  currentUser = null;
+    socket.emit(
+      "call:end",
+      {
+        callId:
+          currentCall.callId,
+        targetUserId:
+          currentCall.peerId,
+        userId:
+          currentCall.peerId
+      }
+    );
+  }
 
-  myProfile = null;
+  closeCall(
+    notify
+  );
+}
 
-  allUsers = [];
+function closeCall(notify=true){
 
-  contacts = [];
+  if(
+    notify &&
+    socket &&
+    currentCall
+  ){
 
-  selectedUser = null;
+    socket.emit(
+      "call:end",
+      {
+        callId:
+          currentCall.callId,
+        targetUserId:
+          currentCall.peerId,
+        userId:
+          currentCall.peerId
+      }
+    );
+  }
 
-  selectedConversationId = null;
+  if(peerConnection){
 
-  messagesByConversation =
-    new Map();
+    try{
+      peerConnection.close();
+    }catch(e){}
 
-  loginPage.classList.remove(
+    peerConnection = null;
+  }
+
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(
+        track=>{
+          try{
+            track.stop();
+          }catch(e){}
+        }
+      );
+
+    localStream = null;
+  }
+
+  remoteStream = null;
+
+  localVideo.srcObject = null;
+  remoteVideo.srcObject = null;
+
+  currentCall = null;
+  pendingIncomingCall = null;
+  pendingIceCandidates = [];
+
+  callMuted = false;
+  cameraEnabled = true;
+
+  callOverlay.classList.add(
     "hidden"
   );
 
-  app.classList.add(
+  incomingModal.classList.add(
     "hidden"
-  );
-
-  identityInput.value = "";
-
-  passwordInput.value = "";
-
-  displayNameInput.value = "";
-
-  usernameInput.value = "";
-
-  setAuthMode("login");
-
-  chatPanel.classList.remove(
-    "mobile-open"
   );
 }
 
 
 /* =========================================================
-   PAGE START
+   PROFILE / CONTACT MODAL SUPPORT
 ========================================================= */
 
-initializeAuth();
+function refreshProfileModal(){
+
+  if(!profileModal.classList.contains("hidden")){
+    updateContactButton();
+  }
+}
 
 
 /* =========================================================
-   SAFETY
+   URL / RECOVERY DETECTION
 ========================================================= */
 
-window.addEventListener(
-  "beforeunload",
-  ()=>{
+function hasRecoverySignal(){
 
-    if(activeCall){
+  const hash =
+    window.location.hash || "";
 
-      try{
-        cleanupCall(true);
-      }catch(e){}
+  const search =
+    window.location.search || "";
+
+  return (
+    hash.includes("type=recovery") ||
+    search.includes("type=recovery") ||
+    hash.includes("access_token=") &&
+    (
+      hash.includes("type=recovery") ||
+      hash.includes("refresh_token=")
+    )
+  );
+}
+
+
+/* =========================================================
+   INITIAL SESSION
+========================================================= */
+
+async function initialize(){
+
+  try{
+
+    /*
+     * Supabase v2 detects the recovery URL and
+     * fires PASSWORD_RECOVERY.
+     */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.getSession();
+
+    if(error){
+      console.error(error);
+      return;
+    }
+
+    if(
+      hasRecoverySignal()
+    ){
+
+      /*
+       * Wait for Supabase to finish
+       * processing the recovery URL.
+       */
+
+      setTimeout(
+        ()=>{
+          openResetPassword();
+        },
+        500
+      );
+
+      return;
+    }
+
+    if(data?.session){
+
+      await startAuthenticatedApp(
+        data.session
+      );
+
+    }else{
+
+      authPage.classList.remove(
+        "hidden"
+      );
+
+      app.classList.add(
+        "hidden"
+      );
+
+      authCard.classList.remove(
+        "hidden"
+      );
+
+      resetCard.classList.add(
+        "hidden"
+      );
+    }
+
+  }catch(error){
+
+    console.error(
+      "Initialization error:",
+      error
+    );
+  }
+}
+
+
+/* =========================================================
+   KEYBOARD ESC
+========================================================= */
+
+document.addEventListener(
+  "keydown",
+  event=>{
+
+    if(event.key !== "Escape"){
+      return;
+    }
+
+    if(
+      !profileModal.classList.contains(
+        "hidden"
+      )
+    ){
+      profileModal.classList.add(
+        "hidden"
+      );
+    }
+
+    if(
+      !emojiPanel.classList.contains(
+        "hidden"
+      )
+    ){
+      emojiPanel.classList.add(
+        "hidden"
+      );
     }
   }
 );
+
+
+/* =========================================================
+   PROFILE MODAL CLICK OUTSIDE
+========================================================= */
+
+profileModal.addEventListener(
+  "click",
+  event=>{
+
+    if(
+      event.target ===
+      profileModal
+    ){
+      profileModal.classList.add(
+        "hidden"
+      );
+    }
+  }
+);
+
+
+/* =========================================================
+   INCOMING MODAL CLICK OUTSIDE
+========================================================= */
+
+incomingModal.addEventListener(
+  "click",
+  event=>{
+
+    if(
+      event.target ===
+      incomingModal
+    ){
+      return;
+    }
+  }
+);
+
+
+/* =========================================================
+   START
+========================================================= */
+
+setAuthMode(false);
+
+initialize();
 
 </script>
 
