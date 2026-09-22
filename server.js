@@ -1,1692 +1,857 @@
-const express = require("express");
-const http = require("http");
-const path = require("path");
-const { Server } = require("socket.io");
-const { createClient } = require("@supabase/supabase-js");
+const express = require('express');
+const http = require('http');
+const path = require('path');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
 
+const io = new Server(server, {
+  cors: { origin: '*', methods: ['GET', 'POST'] },
+  maxHttpBufferSize: 20 * 1024 * 1024
+});
+
 const PORT = process.env.PORT || 10000;
 
-const SUPABASE_URL =
-  process.env.SUPABASE_URL ||
-  "https://hkirnyqousvmphpwqfga.supabase.co";
+const MAX_USERS = 1200;
+const MAX_TEXT = 4000;
+const MAX_MEDIA = 12 * 1024 * 1024;
+const MAX_HISTORY = 5000;
+const MAX_STATUS = 120;
+const MAX_AVATAR = 2 * 1024 * 1024;
 
-const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const users = new Map();
+const byName = new Map();
+const profiles = new Map();
+const messages = [];
 
-const TURN_HOST =
-  process.env.TURN_HOST || "global.relay.metered.ca";
+// Mesaj ki fèt pandan moun nan offline.
+// Yo rete nan RAM server la jiskaske moun nan rekonekte.
+const pendingDeliveries = new Map();
 
-const TURN_USERNAME =
-  process.env.TURN_USERNAME || "";
+app.use(express.json({ limit: '20mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-const TURN_PASSWORD =
-  process.env.TURN_PASSWORD || "";
-
-const admin = SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
-  : null;
-
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  },
-  transports: ["websocket", "polling"]
-});
-
-app.use(express.json({ limit: "8mb" }));
-
-app.use(
-  express.static(path.join(__dirname, "public"))
-);
-
-/* =========================
-   HEALTH
-========================= */
-
-app.get("/health", (_req, res) => {
+app.get('/health', (req, res) => {
   res.json({
     ok: true,
-    app: "ZIQVONA",
-    supabase: !!SUPABASE_SERVICE_ROLE_KEY,
-    turn: !!(
-      TURN_HOST &&
-      TURN_USERNAME &&
-      TURN_PASSWORD
-    ),
-    time: new Date().toISOString()
+    app: 'ZIQVONA',
+    onlineUsers: users.size
   });
 });
 
-/* =========================
-   TURN
-========================= */
-
-app.get("/api/turn", (_req, res) => {
-  const iceServers = [
-    {
-      urls: "stun:stun.l.google.com:19302"
-    },
-    {
-      urls: "stun:stun1.l.google.com:19302"
-    }
-  ];
-
-  if (
-    TURN_HOST &&
-    TURN_USERNAME &&
-    TURN_PASSWORD
-  ) {
-    iceServers.push(
-      {
-        urls: `turn:${TURN_HOST}:80`,
-        username: TURN_USERNAME,
-        credential: TURN_PASSWORD
-      },
-      {
-        urls: `turn:${TURN_HOST}:80?transport=tcp`,
-        username: TURN_USERNAME,
-        credential: TURN_PASSWORD
-      },
-      {
-        urls: `turn:${TURN_HOST}:443`,
-        username: TURN_USERNAME,
-        credential: TURN_PASSWORD
-      },
-      {
-        urls: `turn:${TURN_HOST}:443?transport=tcp`,
-        username: TURN_USERNAME,
-        credential: TURN_PASSWORD
-      }
-    );
-  }
-
+app.get('/config', (req, res) => {
   res.json({
-    iceServers,
-    turnConfigured: !!(
-      TURN_HOST &&
-      TURN_USERNAME &&
-      TURN_PASSWORD
-    )
+    iceServers: [
+      {
+        urls: [
+          'stun:stun.l.google.com:19302',
+          'stun:stun1.l.google.com:19302'
+        ]
+      },
+
+      ...(process.env.TURN_URL
+        ? [{
+            urls: process.env.TURN_URL
+              .split(',')
+              .map(x => x.trim())
+              .filter(Boolean),
+
+            username: process.env.TURN_USERNAME || '',
+            credential: process.env.TURN_CREDENTIAL || ''
+          }]
+        : [])
+    ]
   });
 });
 
-/* =========================
-   SPA
-========================= */
-
-app.get("*", (req, res, next) => {
-  if (req.path.startsWith("/api/")) {
-    return next();
-  }
-
-  res.sendFile(
-    path.join(
-      __dirname,
-      "public",
-      "index.html"
-    )
-  );
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-/* =========================
-   ONLINE USERS
-========================= */
-
-const online = new Map();
-
-/* =========================
-   SOCKET AUTH
-========================= */
-
-io.use(async (socket, next) => {
-  try {
-    if (!admin) {
-      return next(
-        new Error(
-          "SUPABASE_SERVICE_ROLE_KEY missing on server."
-        )
-      );
-    }
-
-    const token =
-      socket.handshake.auth?.accessToken;
-
-    if (!token) {
-      return next(
-        new Error(
-          "Authentication required."
-        )
-      );
-    }
-
-    const {
-      data,
-      error
-    } = await admin.auth.getUser(token);
-
-    if (
-      error ||
-      !data ||
-      !data.user
-    ) {
-      return next(
-        new Error(
-          "Invalid or expired Supabase session."
-        )
-      );
-    }
-
-    socket.user = data.user;
-
-    next();
-
-  } catch (error) {
-
-    console.error(
-      "Socket authentication error:",
-      error
-    );
-
-    next(
-      new Error(
-        "Authentication failed."
-      )
-    );
-  }
-});
-
-/* =========================
-   HELPERS
-========================= */
-
-function cleanText(
-  value,
-  max = 4000
-) {
-  return String(
-    value ?? ""
-  )
-    .trim()
-    .slice(0, max);
+function clean(v, max = 1000) {
+  return String(v ?? '').trim().slice(0, max);
 }
 
-function profileObject(row) {
-  if (!row) return null;
+function id() {
+  return `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
+}
+
+function publicProfile(username) {
+  const p = profiles.get(username) || {};
 
   return {
-    id: row.id,
-    username: row.username || "",
-    displayName:
-      row.display_name ||
-      row.username ||
-      "ZIQVONA User",
-    status: row.status || "",
-    avatar:
-      row.avatar_url || ""
+    username,
+    displayName: p.displayName || username,
+    status: p.status || 'Disponib',
+    avatar: p.avatar || '',
+    online: byName.has(username)
   };
 }
 
-function sendToUser(
-  userId,
-  event,
-  data
-) {
-  const sockets =
-    online.get(userId);
+function allProfiles() {
+  const out = {};
 
-  if (!sockets) return;
+  profiles.forEach((_, username) => {
+    out[username] = publicProfile(username);
+  });
 
-  for (
-    const socketId of sockets
-  ) {
-    io
-      .to(socketId)
-      .emit(event, data);
-  }
+  return out;
 }
 
-/* =========================
-   PROFILE
-========================= */
-
-async function getProfile(
-  userId
-) {
-  const {
-    data,
-    error
-  } = await admin
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  return data || null;
+function presence() {
+  io.emit('presence', {
+    online: [...byName.keys()],
+    profiles: allProfiles()
+  });
 }
 
-async function ensureProfile(
-  user,
-  requested = {}
-) {
-  const existing =
-    await getProfile(user.id);
+function sendToUser(username, event, data) {
+  const sid = byName.get(username);
 
-  if (existing) {
-    return existing;
+  if (sid) {
+    io.to(sid).emit(event, data);
   }
 
-  let username =
-    cleanText(
-      requested.username ||
-        user.user_metadata
-          ?.username ||
-        "",
-      32
-    )
-      .toLowerCase()
-      .replace(
-        /[^a-z0-9_.-]/g,
-        ""
-      );
-
-  if (!username) {
-    username =
-      "user_" +
-      user.id.slice(0, 8);
-  }
-
-  const {
-    data: taken
-  } = await admin
-    .from("profiles")
-    .select("id")
-    .eq(
-      "username",
-      username
-    )
-    .neq(
-      "id",
-      user.id
-    )
-    .limit(1);
-
-  if (
-    taken &&
-    taken.length
-  ) {
-    username =
-      username +
-      "_" +
-      user.id.slice(0, 5);
-  }
-
-  const displayName =
-    cleanText(
-      requested.displayName ||
-        user.user_metadata
-          ?.display_name ||
-        user.user_metadata
-          ?.full_name ||
-        username,
-      80
-    ) || username;
-
-  const {
-    data,
-    error
-  } = await admin
-    .from("profiles")
-    .insert({
-      id: user.id,
-      username,
-      display_name:
-        displayName,
-      status: "",
-      avatar_url: ""
-    })
-    .select("*")
-    .single();
-
-  if (!error) {
-    return data;
-  }
-
-  const retry =
-    await getProfile(user.id);
-
-  if (retry) {
-    return retry;
-  }
-
-  throw error;
+  return !!sid;
 }
 
-/* =========================
-   PEOPLE
-========================= */
-
-async function listPeople(
-  currentId
-) {
-  const {
-    data,
-    error
-  } = await admin
-    .from("profiles")
-    .select(
-      "id,username,display_name,status,avatar_url,updated_at"
+function privateHistory(a, b) {
+  return messages
+    .filter(m =>
+      (m.from === a && m.to === b) ||
+      (m.from === b && m.to === a)
     )
-    .neq(
-      "id",
-      currentId
-    )
-    .order(
-      "display_name",
-      {
-        ascending: true
-      }
-    )
-    .limit(1200);
-
-  if (error) {
-    throw error;
-  }
-
-  return (
-    data || []
-  ).map((p) => ({
-    ...profileObject(p),
-    online:
-      online.has(p.id) &&
-      online
-        .get(p.id)
-        .size > 0
-  }));
+    .slice(-200);
 }
 
-/* =========================
-   CONTACTS
-========================= */
+io.on('connection', socket => {
 
-async function listContacts(
-  userId
-) {
-  const {
-    data,
-    error
-  } = await admin
-    .from("contacts")
-    .select("contact_id")
-    .eq(
-      "owner_id",
-      userId
+  // ==============================
+  // REGISTER USER
+  // ==============================
+
+  socket.on('register', raw => {
+    const username = clean(
+      raw?.username || raw?.name,
+      40
     );
 
-  if (error) {
-    throw error;
-  }
-
-  const ids =
-    (data || [])
-      .map(
-        x => x.contact_id
-      );
-
-  if (!ids.length) {
-    return [];
-  }
-
-  const {
-    data: profiles,
-    error: profileError
-  } = await admin
-    .from("profiles")
-    .select(
-      "id,username,display_name,status,avatar_url"
-    )
-    .in(
-      "id",
-      ids
-    );
-
-  if (profileError) {
-    throw profileError;
-  }
-
-  return (
-    profiles || []
-  ).map((p) => ({
-    ...profileObject(p),
-    online:
-      online.has(p.id) &&
-      online
-        .get(p.id)
-        .size > 0
-  }));
-}
-
-/* =========================
-   DIRECT CONVERSATION
-========================= */
-
-async function getDirectConversation(
-  userA,
-  userB
-) {
-  const {
-    data: mine,
-    error: mineError
-  } = await admin
-    .from(
-      "conversation_members"
-    )
-    .select(
-      "conversation_id"
-    )
-    .eq(
-      "user_id",
-      userA
-    );
-
-  if (mineError) {
-    throw mineError;
-  }
-
-  const ids =
-    (mine || [])
-      .map(
-        x => x.conversation_id
-      );
-
-  if (!ids.length) {
-    return null;
-  }
-
-  const {
-    data: shared,
-    error: sharedError
-  } = await admin
-    .from(
-      "conversation_members"
-    )
-    .select(
-      "conversation_id"
-    )
-    .eq(
-      "user_id",
-      userB
-    )
-    .in(
-      "conversation_id",
-      ids
-    );
-
-  if (sharedError) {
-    throw sharedError;
-  }
-
-  if (
-    !shared ||
-    !shared.length
-  ) {
-    return null;
-  }
-
-  const sharedIds =
-    shared.map(
-      x => x.conversation_id
-    );
-
-  const {
-    data: conversations,
-    error
-  } = await admin
-    .from("conversations")
-    .select(
-      "id,type"
-    )
-    .in(
-      "id",
-      sharedIds
-    )
-    .eq(
-      "type",
-      "direct"
-    );
-
-  if (error) {
-    throw error;
-  }
-
-  return (
-    conversations &&
-    conversations[0]
-  ) || null;
-}
-
-async function ensureDirectConversation(
-  userA,
-  userB
-) {
-  const existing =
-    await getDirectConversation(
-      userA,
-      userB
-    );
-
-  if (existing) {
-    return existing;
-  }
-
-  const {
-    data: conversation,
-    error
-  } = await admin
-    .from("conversations")
-    .insert({
-      type: "direct"
-    })
-    .select(
-      "id,type"
-    )
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  const {
-    error: memberError
-  } = await admin
-    .from(
-      "conversation_members"
-    )
-    .insert([
-      {
-        conversation_id:
-          conversation.id,
-        user_id: userA
-      },
-      {
-        conversation_id:
-          conversation.id,
-        user_id: userB
-      }
-    ]);
-
-  if (memberError) {
-
-    const fallback =
-      await getDirectConversation(
-        userA,
-        userB
-      );
-
-    if (fallback) {
-      return fallback;
+    if (!username || username.length < 2) {
+      return socket.emit('error-message', {
+        message: 'Non an dwe gen omwen 2 karaktè.'
+      });
     }
 
-    throw memberError;
+    const oldSocketId = byName.get(username);
+
+    if (oldSocketId && oldSocketId !== socket.id) {
+      io.to(oldSocketId).emit('force-disconnect', {
+        message: 'Kont sa a konekte sou yon lòt aparèy.'
+      });
+
+      io.sockets.sockets
+        .get(oldSocketId)
+        ?.disconnect(true);
+
+      users.delete(oldSocketId);
+    }
+
+    const old = profiles.get(username) || {};
+
+    const user = {
+      id: socket.id,
+      username,
+
+      displayName: clean(
+        raw?.displayName ||
+        raw?.name ||
+        old.displayName ||
+        username,
+        50
+      ),
+
+      status: clean(
+        raw?.status ||
+        old.status ||
+        'Disponib',
+        MAX_STATUS
+      ),
+
+      avatar: clean(
+        raw?.avatar ||
+        old.avatar ||
+        '',
+        MAX_AVATAR
+      )
+    };
+
+    profiles.set(username, {
+      displayName: user.displayName,
+      status: user.status,
+      avatar: user.avatar
+    });
+
+    users.set(socket.id, user);
+    byName.set(username, socket.id);
+
+    socket.data.username = username;
+
+    socket.emit('registered', {
+      me: publicProfile(username),
+      profiles: allProfiles(),
+      online: [...byName.keys()]
+    });
+
+    // ==========================================
+    // LIVRE MESAJ KI T AP TANN POU USER LA
+    // ==========================================
+
+    const waiting = pendingDeliveries.get(username) || [];
+
+    if (waiting.length) {
+      for (const msg of waiting) {
+        socket.emit('private-message', msg);
+      }
+
+      pendingDeliveries.delete(username);
+    }
+
+    presence();
+  });
+
+
+  // ==============================
+  // UPDATE PROFILE
+  // ==============================
+
+  socket.on('update-profile', raw => {
+    const username = socket.data.username;
+
+    if (!username) return;
+
+    const old = profiles.get(username) || {};
+
+    const p = {
+      displayName: clean(
+        raw?.displayName ??
+        old.displayName ??
+        username,
+        50
+      ),
+
+      status: clean(
+        raw?.status ??
+        old.status ??
+        'Disponib',
+        MAX_STATUS
+      ),
+
+      avatar: String(
+        raw?.avatar ??
+        old.avatar ??
+        ''
+      ).slice(0, MAX_AVATAR)
+    };
+
+    profiles.set(username, p);
+
+    const u = users.get(socket.id);
+
+    if (u) {
+      Object.assign(u, p);
+    }
+
+    socket.emit(
+      'profile-updated',
+      publicProfile(username)
+    );
+
+    presence();
+  });
+
+
+  // ==============================
+  // SEARCH USERS
+  // ==============================
+
+  socket.on('search-users', raw => {
+    const me = socket.data.username || '';
+
+    const q = clean(
+      raw?.query,
+      50
+    ).toLowerCase();
+
+    const results = [...profiles.keys()]
+      .filter(u => u !== me)
+      .map(publicProfile)
+      .filter(p =>
+        !q ||
+        p.username.toLowerCase().includes(q) ||
+        p.displayName.toLowerCase().includes(q)
+      )
+      .slice(0, 100);
+
+    socket.emit(
+      'search-results',
+      results
+    );
+  });
+
+
+  // ==============================
+  // GET CHAT HISTORY
+  // ==============================
+
+  socket.on('get-history', raw => {
+    const me = socket.data.username;
+    const other = clean(raw?.with, 50);
+
+    if (!me || !other) return;
+
+    socket.emit('history', {
+      with: other,
+      messages: privateHistory(me, other)
+    });
+  });
+
+
+  // ==============================
+  // PRIVATE TEXT MESSAGE
+  // ==============================
+
+  socket.on('private-message', raw => {
+
+    const from = socket.data.username;
+
+    const to = clean(
+      raw?.to,
+      50
+    );
+
+    const text = clean(
+      raw?.text,
+      MAX_TEXT
+    );
+
+    if (
+      !from ||
+      !to ||
+      !text ||
+      from === to
+    ) {
+      return;
+    }
+
+    // clientId pèmèt ZIQVONA rekonèt
+    // menm mesaj la lè li soti nan offline queue.
+    const msg = {
+      id: id(),
+
+      clientId: clean(
+        raw?.clientId,
+        100
+      ),
+
+      kind: 'text',
+
+      from,
+      to,
+      text,
+
+      time: new Date().toISOString()
+    };
+
+    // Kenbe mesaj la nan history server la.
+    messages.push(msg);
+
+    while (
+      messages.length >
+      MAX_HISTORY
+    ) {
+      messages.shift();
+    }
+
+    // Konfime mesaj la bay moun ki voye l.
+    socket.emit(
+      'private-message',
+      msg
+    );
+
+    // Si moun k ap resevwa a online,
+    // voye mesaj la imedyatman.
+    if (!sendToUser(
+      to,
+      'private-message',
+      msg
+    )) {
+
+      // Si li offline,
+      // mete mesaj la nan queue.
+      const queue =
+        pendingDeliveries.get(to) || [];
+
+      queue.push(msg);
+
+      // Pa kite queue a vin twò gwo.
+      while (
+        queue.length > 200
+      ) {
+        queue.shift();
+      }
+
+      pendingDeliveries.set(
+        to,
+        queue
+      );
+    }
+  });
+
+
+  // ==============================
+  // MEDIA MESSAGE
+  // ==============================
+
+  socket.on('media-message', raw => {
+
+    const from =
+      socket.data.username;
+
+    const to = clean(
+      raw?.to,
+      50
+    );
+
+    const kind =
+      raw?.kind === 'video'
+        ? 'video'
+        : 'voice';
+
+    const data =
+      String(raw?.data || '');
+
+    if (
+      !from ||
+      !to ||
+      !data ||
+      !byName.has(to)
+    ) {
+      return socket.emit(
+        'message-error',
+        {
+          message:
+            'Kontak la pa online.'
+        }
+      );
+    }
+
+    if (
+      Buffer.byteLength(
+        data,
+        'utf8'
+      ) > MAX_MEDIA
+    ) {
+      return socket.emit(
+        'message-error',
+        {
+          message:
+            'Fichye a twò gwo.'
+        }
+      );
+    }
+
+    const msg = {
+      id: id(),
+      kind,
+      from,
+      to,
+      data,
+      duration:
+        Number(
+          raw?.duration || 0
+        ),
+      time:
+        new Date().toISOString()
+    };
+
+    messages.push(msg);
+
+    while (
+      messages.length >
+      MAX_HISTORY
+    ) {
+      messages.shift();
+    }
+
+    socket.emit(
+      'private-message',
+      msg
+    );
+
+    sendToUser(
+      to,
+      'private-message',
+      msg
+    );
+  });
+
+
+  // ==============================
+  // TYPING
+  // ==============================
+
+  socket.on('typing', raw => {
+
+    const from =
+      socket.data.username;
+
+    const to = clean(
+      raw?.to,
+      50
+    );
+
+    if (from && to) {
+      sendToUser(
+        to,
+        'typing',
+        { from }
+      );
+    }
+  });
+
+
+  socket.on('stop-typing', raw => {
+
+    const from =
+      socket.data.username;
+
+    const to = clean(
+      raw?.to,
+      50
+    );
+
+    if (from && to) {
+      sendToUser(
+        to,
+        'stop-typing',
+        { from }
+      );
+    }
+  });
+
+
+  // ==============================
+  // WEBRTC CALL SIGNALING
+  // ==============================
+
+  for (
+    const event of [
+      'call-offer',
+      'call-answer',
+      'ice-candidate',
+      'call-reject',
+      'call-end'
+    ]
+  ) {
+
+    socket.on(event, raw => {
+
+      const from =
+        socket.data.username;
+
+      const to = clean(
+        raw?.to,
+        50
+      );
+
+      if (
+        !from ||
+        !to ||
+        !byName.has(to)
+      ) {
+
+        if (
+          event === 'call-offer'
+        ) {
+          socket.emit(
+            'call-error',
+            {
+              message:
+                'Kontak la pa online kounye a.'
+            }
+          );
+        }
+
+        return;
+      }
+
+      const packet = {
+        ...raw,
+        from,
+        to
+      };
+
+      delete packet.sender;
+
+      sendToUser(
+        to,
+        event,
+        packet
+      );
+    });
   }
 
-  return conversation;
-}
 
-/* =========================
-   CONNECTION
-========================= */
+  // ==============================
+  // GROUP CALL
+  // ==============================
 
-io.on(
-  "connection",
-  async socket => {
+  socket.on(
+    'group-call-create',
+    raw => {
 
-    const userId =
-      socket.user.id;
+      const from =
+        socket.data.username;
 
-    try {
+      const members =
+        Array.isArray(
+          raw?.members
+        )
+          ? raw.members
+              .map(x =>
+                clean(x, 50)
+              )
+              .filter(Boolean)
+          : [];
 
-      const requested =
-        socket.handshake
-          .auth?.profile ||
-        {};
+      if (!from) return;
 
-      const profile =
-        await ensureProfile(
-          socket.user,
-          requested
+      const roomId = id();
+
+      const unique = [
+        ...new Set([
+          from,
+          ...members
+        ])
+      ];
+
+      socket.join(
+        `group:${roomId}`
+      );
+
+      for (
+        const username of unique
+      ) {
+
+        if (
+          username !== from &&
+          byName.has(username)
+        ) {
+
+          sendToUser(
+            username,
+            'group-call-invite',
+            {
+              roomId,
+              from,
+              members: unique
+            }
+          );
+        }
+      }
+
+      socket.emit(
+        'group-call-created',
+        {
+          roomId,
+          members: unique
+        }
+      );
+    }
+  );
+
+
+  socket.on(
+    'group-call-join',
+    raw => {
+
+      const from =
+        socket.data.username;
+
+      const roomId =
+        clean(
+          raw?.roomId,
+          100
         );
 
       if (
-        !online.has(userId)
+        !from ||
+        !roomId
+      ) return;
+
+      socket.join(
+        `group:${roomId}`
+      );
+
+      socket
+        .to(`group:${roomId}`)
+        .emit(
+          'group-peer-joined',
+          {
+            roomId,
+            username: from
+          }
+        );
+
+      const room =
+        io.sockets.adapter.rooms.get(
+          `group:${roomId}`
+        ) || new Set();
+
+      const peers = [];
+
+      for (
+        const sid of room
       ) {
-        online.set(
-          userId,
-          new Set()
+
+        const u =
+          users.get(sid)
+            ?.username;
+
+        if (
+          u &&
+          u !== from
+        ) {
+          peers.push(u);
+        }
+      }
+
+      socket.emit(
+        'group-peers',
+        {
+          roomId,
+          peers
+        }
+      );
+    }
+  );
+
+
+  socket.on(
+    'group-signal',
+    raw => {
+
+      const from =
+        socket.data.username;
+
+      const to =
+        clean(raw?.to, 50);
+
+      const roomId =
+        clean(
+          raw?.roomId,
+          100
+        );
+
+      if (
+        !from ||
+        !to ||
+        !roomId ||
+        !byName.has(to)
+      ) {
+        return;
+      }
+
+      sendToUser(
+        to,
+        'group-signal',
+        {
+          ...raw,
+          from,
+          to,
+          roomId
+        }
+      );
+    }
+  );
+
+
+  socket.on(
+    'group-call-leave',
+    raw => {
+
+      const from =
+        socket.data.username;
+
+      const roomId =
+        clean(
+          raw?.roomId,
+          100
+        );
+
+      if (roomId) {
+        socket.leave(
+          `group:${roomId}`
         );
       }
 
-      online
-        .get(userId)
-        .add(socket.id);
-
-      socket.join(
-        "user:" + userId
-      );
-
-      const people =
-        await listPeople(
-          userId
-        );
-
-      const contacts =
-        await listContacts(
-          userId
-        );
-
-      socket.emit(
-        "login:success",
-        {
-          user: {
-            id: userId,
-            email:
-              socket.user
-                .email || "",
-            phone:
-              socket.user
-                .phone || "",
-            username:
-              profile.username,
-            displayName:
-              profile.display_name ||
-              profile.username
-          },
-
-          profile:
-            profileObject(
-              profile
-            ),
-
-          users:
-            people,
-
-          contacts:
-            contacts
-        }
-      );
-
-      io.emit(
-        "presence:update",
-        {
-          userId,
-          online: true
-        }
-      );
-
-      /* =====================
-         PEOPLE
-      ===================== */
-
-      socket.on(
-        "people:list",
-        async () => {
-          try {
-
-            socket.emit(
-              "people:list",
-              await listPeople(
-                userId
-              )
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         PROFILE UPDATE
-      ===================== */
-
-      socket.on(
-        "profile:update",
-        async payload => {
-
-          try {
-
-            const username =
-              cleanText(
-                payload.username,
-                32
-              )
-                .toLowerCase()
-                .replace(
-                  /[^a-z0-9_.-]/g,
-                  ""
-                );
-
-            const displayName =
-              cleanText(
-                payload.displayName,
-                80
-              );
-
-            const status =
-              cleanText(
-                payload.status,
-                120
-              );
-
-            const avatarUrl =
-              cleanText(
-                payload.avatarUrl,
-                1000000
-              );
-
-            const update = {
-              username,
-              display_name:
-                displayName ||
-                username,
-              status,
-              avatar_url:
-                avatarUrl
-            };
-
-            const {
-              data,
-              error
-            } = await admin
-              .from("profiles")
-              .update(update)
-              .eq(
-                "id",
-                userId
-              )
-              .select("*")
-              .single();
-
-            if (error) {
-              throw error;
+      if (
+        from &&
+        roomId
+      ) {
+        socket
+          .to(`group:${roomId}`)
+          .emit(
+            'group-peer-left',
+            {
+              roomId,
+              username: from
             }
-
-            socket.emit(
-              "profile:updated",
-              profileObject(
-                data
-              )
-            );
-
-            io.emit(
-              "profile:changed",
-              profileObject(
-                data
-              )
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message ||
-                  "Profile update failed."
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         CONTACTS
-      ===================== */
-
-      socket.on(
-        "contacts:list",
-        async () => {
-
-          try {
-
-            socket.emit(
-              "contacts:list",
-              await listContacts(
-                userId
-              )
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      socket.on(
-        "contact:add",
-        async payload => {
-
-          try {
-
-            const contactId =
-              payload.userId;
-
-            if (
-              !contactId ||
-              contactId === userId
-            ) {
-              return;
-            }
-
-            const {
-              error
-            } = await admin
-              .from("contacts")
-              .upsert(
-                {
-                  owner_id:
-                    userId,
-                  contact_id:
-                    contactId
-                },
-                {
-                  onConflict:
-                    "owner_id,contact_id"
-                }
-              );
-
-            if (error) {
-              throw error;
-            }
-
-            socket.emit(
-              "contacts:list",
-              await listContacts(
-                userId
-              )
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      socket.on(
-        "contact:remove",
-        async payload => {
-
-          try {
-
-            const contactId =
-              payload.userId;
-
-            const {
-              error
-            } = await admin
-              .from("contacts")
-              .delete()
-              .eq(
-                "owner_id",
-                userId
-              )
-              .eq(
-                "contact_id",
-                contactId
-              );
-
-            if (error) {
-              throw error;
-            }
-
-            socket.emit(
-              "contacts:list",
-              await listContacts(
-                userId
-              )
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         OPEN CHAT
-      ===================== */
-
-      socket.on(
-        "chat:open",
-        async payload => {
-
-          try {
-
-            const otherUserId =
-              payload.userId;
-
-            if (
-              !otherUserId ||
-              otherUserId === userId
-            ) {
-              return;
-            }
-
-            const conversation =
-              await ensureDirectConversation(
-                userId,
-                otherUserId
-              );
-
-            const {
-              data: messages,
-              error
-            } = await admin
-              .from("messages")
-              .select(
-                "id,conversation_id,sender_id,body,created_at"
-              )
-              .eq(
-                "conversation_id",
-                String(
-                  conversation.id
-                )
-              )
-              .order(
-                "created_at",
-                {
-                  ascending:
-                    true
-                }
-              )
-              .limit(500);
-
-            if (error) {
-              throw error;
-            }
-
-            socket.emit(
-              "chat:opened",
-              {
-                conversation,
-                otherUserId,
-                messages:
-                  messages || []
-              }
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message ||
-                  "Could not open chat."
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         SEND MESSAGE
-      ===================== */
-
-      socket.on(
-        "chat:message",
-        async payload => {
-
-          try {
-
-            const conversationId =
-              payload.conversationId;
-
-            const body =
-              cleanText(
-                payload.body,
-                4000
-              );
-
-            if (
-              !conversationId ||
-              !body
-            ) {
-              return;
-            }
-
-            const {
-              data: member
-            } = await admin
-              .from(
-                "conversation_members"
-              )
-              .select(
-                "user_id"
-              )
-              .eq(
-                "conversation_id",
-                conversationId
-              )
-              .eq(
-                "user_id",
-                userId
-              )
-              .maybeSingle();
-
-            if (!member) {
-              return socket.emit(
-                "app:error",
-                {
-                  message:
-                    "Conversation access denied."
-                }
-              );
-            }
-
-            const {
-              data: message,
-              error
-            } = await admin
-              .from("messages")
-              .insert({
-                conversation_id:
-                  String(
-                    conversationId
-                  ),
-                sender_id:
-                  userId,
-                body
-              })
-              .select(
-                "id,conversation_id,sender_id,body,created_at"
-              )
-              .single();
-
-            if (error) {
-              throw error;
-            }
-
-            const {
-              data: members
-            } = await admin
-              .from(
-                "conversation_members"
-              )
-              .select(
-                "user_id"
-              )
-              .eq(
-                "conversation_id",
-                conversationId
-              );
-
-            for (
-              const member of
-              members || []
-            ) {
-
-              sendToUser(
-                member.user_id,
-                "chat:message",
-                message
-              );
-            }
-
-          } catch (error) {
-
-            socket.emit(
-              "app:error",
-              {
-                message:
-                  error.message ||
-                  "Message failed."
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         TYPING
-      ===================== */
-
-      socket.on(
-        "typing",
-        payload => {
-
-          if (
-            payload.otherUserId
-          ) {
-
-            sendToUser(
-              payload.otherUserId,
-              "typing",
-              {
-                conversationId:
-                  payload.conversationId,
-                userId,
-                isTyping:
-                  !!payload.isTyping
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         CALL START
-      ===================== */
-
-      socket.on(
-        "call:start",
-        async payload => {
-
-          try {
-
-            const targetUserId =
-              payload.targetUserId;
-
-            const callType =
-              payload.callType ===
-              "video"
-                ? "video"
-                : "voice";
-
-            if (
-              !targetUserId ||
-              targetUserId === userId
-            ) {
-              return;
-            }
-
-            const conversation =
-              await ensureDirectConversation(
-                userId,
-                targetUserId
-              );
-
-            const {
-              data: call,
-              error
-            } = await admin
-              .from("calls")
-              .insert({
-                conversation_id:
-                  conversation.id,
-                caller_id:
-                  userId,
-                call_type:
-                  callType,
-                status:
-                  "ringing"
-              })
-              .select("*")
-              .single();
-
-            if (error) {
-              throw error;
-            }
-
-            const caller =
-              await getProfile(
-                userId
-              );
-
-            sendToUser(
-              targetUserId,
-              "call:incoming",
-              {
-                callId:
-                  call.id,
-
-                conversationId:
-                  conversation.id,
-
-                callType,
-
-                caller:
-                  profileObject(
-                    caller
-                  )
-              }
-            );
-
-            socket.emit(
-              "call:started",
-              {
-                callId:
-                  call.id,
-
-                conversationId:
-                  conversation.id,
-
-                targetUserId,
-
-                callType
-              }
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "call:error",
-              {
-                message:
-                  error.message ||
-                  "Could not start call."
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         CALL ACCEPT
-      ===================== */
-
-      socket.on(
-        "call:accept",
-        async payload => {
-
-          try {
-
-            const {
-              data: call,
-              error
-            } = await admin
-              .from("calls")
-              .update({
-                status:
-                  "accepted"
-              })
-              .eq(
-                "id",
-                payload.callId
-              )
-              .select("*")
-              .single();
-
-            if (error) {
-              throw error;
-            }
-
-            sendToUser(
-              call.caller_id,
-              "call:accepted",
-              {
-                callId:
-                  call.id,
-                callType:
-                  call.call_type
-              }
-            );
-
-          } catch (error) {
-
-            socket.emit(
-              "call:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         CALL REJECT
-      ===================== */
-
-      socket.on(
-        "call:reject",
-        async payload => {
-
-          try {
-
-            const {
-              data: call
-            } = await admin
-              .from("calls")
-              .update({
-                status:
-                  "rejected",
-                ended_at:
-                  new Date().toISOString()
-              })
-              .eq(
-                "id",
-                payload.callId
-              )
-              .select("*")
-              .single();
-
-            if (call) {
-
-              sendToUser(
-                call.caller_id,
-                "call:rejected",
-                {
-                  callId:
-                    call.id
-                }
-              );
-            }
-
-          } catch (error) {
-
-            socket.emit(
-              "call:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         CALL END
-      ===================== */
-
-      socket.on(
-        "call:end",
-        async payload => {
-
-          try {
-
-            const {
-              data: call
-            } = await admin
-              .from("calls")
-              .update({
-                status:
-                  "ended",
-                ended_at:
-                  new Date().toISOString()
-              })
-              .eq(
-                "id",
-                payload.callId
-              )
-              .select("*")
-              .single();
-
-            if (!call) {
-              return;
-            }
-
-            const {
-              data: members
-            } = await admin
-              .from(
-                "conversation_members"
-              )
-              .select(
-                "user_id"
-              )
-              .eq(
-                "conversation_id",
-                call.conversation_id
-              );
-
-            for (
-              const member of
-              members || []
-            ) {
-
-              if (
-                member.user_id !==
-                userId
-              ) {
-
-                sendToUser(
-                  member.user_id,
-                  "call:ended",
-                  {
-                    callId:
-                      call.id
-                  }
-                );
-              }
-            }
-
-          } catch (error) {
-
-            socket.emit(
-              "call:error",
-              {
-                message:
-                  error.message
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         WEBRTC OFFER
-      ===================== */
-
-      socket.on(
-        "webrtc:offer",
-        payload => {
-
-          if (
-            payload.targetUserId &&
-            payload.callId &&
-            payload.offer
-          ) {
-
-            sendToUser(
-              payload.targetUserId,
-              "webrtc:offer",
-              {
-                callId:
-                  payload.callId,
-                fromUserId:
-                  userId,
-                offer:
-                  payload.offer
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         WEBRTC ANSWER
-      ===================== */
-
-      socket.on(
-        "webrtc:answer",
-        payload => {
-
-          if (
-            payload.targetUserId &&
-            payload.callId &&
-            payload.answer
-          ) {
-
-            sendToUser(
-              payload.targetUserId,
-              "webrtc:answer",
-              {
-                callId:
-                  payload.callId,
-                fromUserId:
-                  userId,
-                answer:
-                  payload.answer
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         ICE
-      ===================== */
-
-      socket.on(
-        "webrtc:ice-candidate",
-        payload => {
-
-          if (
-            payload.targetUserId &&
-            payload.callId &&
-            payload.candidate
-          ) {
-
-            sendToUser(
-              payload.targetUserId,
-              "webrtc:ice-candidate",
-              {
-                callId:
-                  payload.callId,
-                fromUserId:
-                  userId,
-                candidate:
-                  payload.candidate
-              }
-            );
-          }
-        }
-      );
-
-      /* =====================
-         DISCONNECT
-      ===================== */
-
-      socket.on(
-        "disconnect",
-        () => {
-
-          const set =
-            online.get(
-              userId
-            );
-
-          if (!set) {
-            return;
-          }
-
-          set.delete(
-            socket.id
           );
-
-          if (!set.size) {
-
-            online.delete(
-              userId
-            );
-
-            io.emit(
-              "presence:update",
-              {
-                userId,
-                online: false
-              }
-            );
-          }
-        }
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Connection setup error:",
-        error
-      );
-
-      socket.emit(
-        "app:error",
-        {
-          message:
-            error.message ||
-            "Account initialization failed."
-        }
-      );
-
-      socket.disconnect(
-        true
-      );
+      }
     }
-  }
-);
+  );
 
-/* =========================
-   START
-========================= */
+
+  // ==============================
+  // DISCONNECT
+  // ==============================
+
+  socket.on(
+    'disconnect',
+    () => {
+
+      const username =
+        socket.data.username;
+
+      if (
+        username &&
+        byName.get(username) ===
+          socket.id
+      ) {
+        byName.delete(username);
+      }
+
+      users.delete(
+        socket.id
+      );
+
+      presence();
+    }
+  );
+});
 
 server.listen(
   PORT,
+  '0.0.0.0',
   () => {
-
     console.log(
       `ZIQVONA running on port ${PORT}`
-    );
-
-    console.log(
-      `Supabase configured: ${
-        !!SUPABASE_SERVICE_ROLE_KEY
-      }`
-    );
-
-    console.log(
-      `TURN configured: ${
-        !!(
-          TURN_HOST &&
-          TURN_USERNAME &&
-          TURN_PASSWORD
-        )
-      }`
     );
   }
 );
