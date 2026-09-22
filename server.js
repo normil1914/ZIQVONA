@@ -25,11 +25,12 @@ const byName = new Map();
 const profiles = new Map();
 const messages = [];
 
-// Mesaj ki fèt pandan moun nan offline.
-// Yo rete nan RAM server la jiskaske moun nan rekonekte.
+// Mesaj ki tann lè moun nan offline.
+// REMAK: sa rete nan RAM sèlman; Supabase nesesè pou depo pèmanan.
 const pendingDeliveries = new Map();
 
 app.use(express.json({ limit: '20mb' }));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => {
@@ -66,14 +67,18 @@ app.get('/config', (req, res) => {
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(
+    path.join(__dirname, 'public', 'index.html')
+  );
 });
 
-function clean(v, max = 1000) {
-  return String(v ?? '').trim().slice(0, max);
+function clean(value, max = 1000) {
+  return String(value ?? '')
+    .trim()
+    .slice(0, max);
 }
 
-function id() {
+function createId() {
   return `${Date.now()}-${Math.random()
     .toString(36)
     .slice(2)}-${Math.random()
@@ -82,28 +87,36 @@ function id() {
 }
 
 function publicProfile(username) {
-  const p = profiles.get(username) || {};
+  const profile = profiles.get(username) || {};
 
   return {
     username,
-    displayName: p.displayName || username,
-    status: p.status || 'Disponib',
-    avatar: p.avatar || '',
-    online: byName.has(username)
+
+    displayName:
+      profile.displayName || username,
+
+    status:
+      profile.status || 'Disponib',
+
+    avatar:
+      profile.avatar || '',
+
+    online:
+      byName.has(username)
   };
 }
 
 function allProfiles() {
-  const out = {};
+  const result = {};
 
   profiles.forEach((_, username) => {
-    out[username] = publicProfile(username);
+    result[username] = publicProfile(username);
   });
 
-  return out;
+  return result;
 }
 
-function presence() {
+function sendPresence() {
   io.emit('presence', {
     online: [...byName.keys()],
     profiles: allProfiles()
@@ -111,31 +124,33 @@ function presence() {
 }
 
 function sendToUser(username, event, data) {
-  const sid = byName.get(username);
+  const socketId = byName.get(username);
 
-  if (sid) {
-    io.to(sid).emit(event, data);
+  if (socketId) {
+    io.to(socketId).emit(event, data);
+    return true;
   }
 
-  return !!sid;
+  return false;
 }
 
 function privateHistory(a, b) {
   return messages
-    .filter(m =>
-      (m.from === a && m.to === b) ||
-      (m.from === b && m.to === a)
+    .filter(message =>
+      (message.from === a && message.to === b) ||
+      (message.from === b && message.to === a)
     )
     .slice(-200);
 }
 
 io.on('connection', socket => {
 
-  // ==============================
-  // REGISTER USER
-  // ==============================
+  // =========================
+  // REGISTER
+  // =========================
 
   socket.on('register', raw => {
+
     const username = clean(
       raw?.username || raw?.name,
       40
@@ -143,16 +158,26 @@ io.on('connection', socket => {
 
     if (!username || username.length < 2) {
       return socket.emit('error-message', {
-        message: 'Non an dwe gen omwen 2 karaktè.'
+        message:
+          'Non an dwe gen omwen 2 karaktè.'
       });
     }
 
+    // Si menm kont lan konekte sou yon lòt aparèy
     const oldSocketId = byName.get(username);
 
-    if (oldSocketId && oldSocketId !== socket.id) {
-      io.to(oldSocketId).emit('force-disconnect', {
-        message: 'Kont sa a konekte sou yon lòt aparèy.'
-      });
+    if (
+      oldSocketId &&
+      oldSocketId !== socket.id
+    ) {
+
+      io.to(oldSocketId).emit(
+        'force-disconnect',
+        {
+          message:
+            'Kont sa a konekte sou yon lòt aparèy.'
+        }
+      );
 
       io.sockets.sockets
         .get(oldSocketId)
@@ -161,30 +186,33 @@ io.on('connection', socket => {
       users.delete(oldSocketId);
     }
 
-    const old = profiles.get(username) || {};
+    const oldProfile =
+      profiles.get(username) || {};
 
     const user = {
+
       id: socket.id,
+
       username,
 
       displayName: clean(
         raw?.displayName ||
         raw?.name ||
-        old.displayName ||
+        oldProfile.displayName ||
         username,
         50
       ),
 
       status: clean(
         raw?.status ||
-        old.status ||
+        oldProfile.status ||
         'Disponib',
         MAX_STATUS
       ),
 
       avatar: clean(
         raw?.avatar ||
-        old.avatar ||
+        oldProfile.avatar ||
         '',
         MAX_AVATAR
       )
@@ -197,46 +225,62 @@ io.on('connection', socket => {
     });
 
     users.set(socket.id, user);
-    byName.set(username, socket.id);
+
+    byName.set(
+      username,
+      socket.id
+    );
 
     socket.data.username = username;
 
     socket.emit('registered', {
       me: publicProfile(username),
-      profiles: allProfiles(),
-      online: [...byName.keys()]
+
+      profiles:
+        allProfiles(),
+
+      online:
+        [...byName.keys()]
     });
 
-    // ==========================================
-    // LIVRE MESAJ KI T AP TANN POU USER LA
-    // ==========================================
+    // =========================
+    // DELIVER OFFLINE MESSAGES
+    // =========================
 
-    const waiting = pendingDeliveries.get(username) || [];
+    const waiting =
+      pendingDeliveries.get(username) || [];
 
     if (waiting.length) {
-      for (const msg of waiting) {
-        socket.emit('private-message', msg);
+
+      for (const message of waiting) {
+        socket.emit(
+          'private-message',
+          message
+        );
       }
 
       pendingDeliveries.delete(username);
     }
 
-    presence();
+    sendPresence();
   });
 
-
-  // ==============================
-  // UPDATE PROFILE
-  // ==============================
+  // =========================
+  // PROFILE
+  // =========================
 
   socket.on('update-profile', raw => {
-    const username = socket.data.username;
+
+    const username =
+      socket.data.username;
 
     if (!username) return;
 
-    const old = profiles.get(username) || {};
+    const old =
+      profiles.get(username) || {};
 
-    const p = {
+    const profile = {
+
       displayName: clean(
         raw?.displayName ??
         old.displayName ??
@@ -251,19 +295,24 @@ io.on('connection', socket => {
         MAX_STATUS
       ),
 
-      avatar: String(
-        raw?.avatar ??
-        old.avatar ??
-        ''
-      ).slice(0, MAX_AVATAR)
+      avatar:
+        String(
+          raw?.avatar ??
+          old.avatar ??
+          ''
+        ).slice(0, MAX_AVATAR)
     };
 
-    profiles.set(username, p);
+    profiles.set(
+      username,
+      profile
+    );
 
-    const u = users.get(socket.id);
+    const user =
+      users.get(socket.id);
 
-    if (u) {
-      Object.assign(u, p);
+    if (user) {
+      Object.assign(user, profile);
     }
 
     socket.emit(
@@ -271,31 +320,44 @@ io.on('connection', socket => {
       publicProfile(username)
     );
 
-    presence();
+    sendPresence();
   });
 
-
-  // ==============================
+  // =========================
   // SEARCH USERS
-  // ==============================
+  // =========================
 
   socket.on('search-users', raw => {
-    const me = socket.data.username || '';
 
-    const q = clean(
-      raw?.query,
-      50
-    ).toLowerCase();
+    const me =
+      socket.data.username || '';
 
-    const results = [...profiles.keys()]
-      .filter(u => u !== me)
-      .map(publicProfile)
-      .filter(p =>
-        !q ||
-        p.username.toLowerCase().includes(q) ||
-        p.displayName.toLowerCase().includes(q)
-      )
-      .slice(0, 100);
+    const query =
+      clean(raw?.query, 50)
+        .toLowerCase();
+
+    const results =
+      [...profiles.keys()]
+
+        .filter(username =>
+          username !== me
+        )
+
+        .map(publicProfile)
+
+        .filter(profile =>
+          !query ||
+
+          profile.username
+            .toLowerCase()
+            .includes(query) ||
+
+          profile.displayName
+            .toLowerCase()
+            .includes(query)
+        )
+
+        .slice(0, 100);
 
     socket.emit(
       'search-results',
@@ -303,41 +365,42 @@ io.on('connection', socket => {
     );
   });
 
-
-  // ==============================
-  // GET CHAT HISTORY
-  // ==============================
+  // =========================
+  // HISTORY
+  // =========================
 
   socket.on('get-history', raw => {
-    const me = socket.data.username;
-    const other = clean(raw?.with, 50);
+
+    const me =
+      socket.data.username;
+
+    const other =
+      clean(raw?.with, 50);
 
     if (!me || !other) return;
 
     socket.emit('history', {
       with: other,
-      messages: privateHistory(me, other)
+
+      messages:
+        privateHistory(me, other)
     });
   });
 
-
-  // ==============================
+  // =========================
   // PRIVATE TEXT MESSAGE
-  // ==============================
+  // =========================
 
   socket.on('private-message', raw => {
 
-    const from = socket.data.username;
+    const from =
+      socket.data.username;
 
-    const to = clean(
-      raw?.to,
-      50
-    );
+    const to =
+      clean(raw?.to, 50);
 
-    const text = clean(
-      raw?.text,
-      MAX_TEXT
-    );
+    const text =
+      clean(raw?.text, MAX_TEXT);
 
     if (
       !from ||
@@ -348,27 +411,29 @@ io.on('connection', socket => {
       return;
     }
 
-    // clientId pèmèt ZIQVONA rekonèt
-    // menm mesaj la lè li soti nan offline queue.
-    const msg = {
-      id: id(),
+    const message = {
 
-      clientId: clean(
-        raw?.clientId,
-        100
-      ),
+      id: createId(),
+
+      // Sa ede client la konnen
+      // ki mesaj offline queue a
+      // li dwe retire apre echo.
+      clientId:
+        clean(raw?.clientId, 100),
 
       kind: 'text',
 
       from,
+
       to,
+
       text,
 
-      time: new Date().toISOString()
+      time:
+        new Date().toISOString()
     };
 
-    // Kenbe mesaj la nan history server la.
-    messages.push(msg);
+    messages.push(message);
 
     while (
       messages.length >
@@ -377,31 +442,28 @@ io.on('connection', socket => {
       messages.shift();
     }
 
-    // Konfime mesaj la bay moun ki voye l.
+    // Echo bay moun ki voye a
     socket.emit(
       'private-message',
-      msg
+      message
     );
 
-    // Si moun k ap resevwa a online,
-    // voye mesaj la imedyatman.
-    if (!sendToUser(
-      to,
-      'private-message',
-      msg
-    )) {
+    // Voye bay destinatè a si li online.
+    // Sinon mete l nan queue.
+    if (
+      !sendToUser(
+        to,
+        'private-message',
+        message
+      )
+    ) {
 
-      // Si li offline,
-      // mete mesaj la nan queue.
       const queue =
         pendingDeliveries.get(to) || [];
 
-      queue.push(msg);
+      queue.push(message);
 
-      // Pa kite queue a vin twò gwo.
-      while (
-        queue.length > 200
-      ) {
+      while (queue.length > 200) {
         queue.shift();
       }
 
@@ -412,20 +474,17 @@ io.on('connection', socket => {
     }
   });
 
-
-  // ==============================
+  // =========================
   // MEDIA MESSAGE
-  // ==============================
+  // =========================
 
   socket.on('media-message', raw => {
 
     const from =
       socket.data.username;
 
-    const to = clean(
-      raw?.to,
-      50
-    );
+    const to =
+      clean(raw?.to, 50);
 
     const kind =
       raw?.kind === 'video'
@@ -441,6 +500,7 @@ io.on('connection', socket => {
       !data ||
       !byName.has(to)
     ) {
+
       return socket.emit(
         'message-error',
         {
@@ -456,6 +516,7 @@ io.on('connection', socket => {
         'utf8'
       ) > MAX_MEDIA
     ) {
+
       return socket.emit(
         'message-error',
         {
@@ -465,21 +526,28 @@ io.on('connection', socket => {
       );
     }
 
-    const msg = {
-      id: id(),
+    const message = {
+
+      id: createId(),
+
       kind,
+
       from,
+
       to,
+
       data,
+
       duration:
         Number(
           raw?.duration || 0
         ),
+
       time:
         new Date().toISOString()
     };
 
-    messages.push(msg);
+    messages.push(message);
 
     while (
       messages.length >
@@ -490,32 +558,30 @@ io.on('connection', socket => {
 
     socket.emit(
       'private-message',
-      msg
+      message
     );
 
     sendToUser(
       to,
       'private-message',
-      msg
+      message
     );
   });
 
-
-  // ==============================
+  // =========================
   // TYPING
-  // ==============================
+  // =========================
 
   socket.on('typing', raw => {
 
     const from =
       socket.data.username;
 
-    const to = clean(
-      raw?.to,
-      50
-    );
+    const to =
+      clean(raw?.to, 50);
 
     if (from && to) {
+
       sendToUser(
         to,
         'typing',
@@ -524,18 +590,16 @@ io.on('connection', socket => {
     }
   });
 
-
   socket.on('stop-typing', raw => {
 
     const from =
       socket.data.username;
 
-    const to = clean(
-      raw?.to,
-      50
-    );
+    const to =
+      clean(raw?.to, 50);
 
     if (from && to) {
+
       sendToUser(
         to,
         'stop-typing',
@@ -544,10 +608,9 @@ io.on('connection', socket => {
     }
   });
 
-
-  // ==============================
-  // WEBRTC CALL SIGNALING
-  // ==============================
+  // =========================
+  // WEBRTC 1-TO-1
+  // =========================
 
   for (
     const event of [
@@ -564,10 +627,8 @@ io.on('connection', socket => {
       const from =
         socket.data.username;
 
-      const to = clean(
-        raw?.to,
-        50
-      );
+      const to =
+        clean(raw?.to, 50);
 
       if (
         !from ||
@@ -578,6 +639,7 @@ io.on('connection', socket => {
         if (
           event === 'call-offer'
         ) {
+
           socket.emit(
             'call-error',
             {
@@ -606,10 +668,9 @@ io.on('connection', socket => {
     });
   }
 
-
-  // ==============================
+  // =========================
   // GROUP CALL
-  // ==============================
+  // =========================
 
   socket.on(
     'group-call-create',
@@ -631,7 +692,8 @@ io.on('connection', socket => {
 
       if (!from) return;
 
-      const roomId = id();
+      const roomId =
+        createId();
 
       const unique = [
         ...new Set([
@@ -675,7 +737,6 @@ io.on('connection', socket => {
     }
   );
 
-
   socket.on(
     'group-call-join',
     raw => {
@@ -689,10 +750,8 @@ io.on('connection', socket => {
           100
         );
 
-      if (
-        !from ||
-        !roomId
-      ) return;
+      if (!from || !roomId)
+        return;
 
       socket.join(
         `group:${roomId}`
@@ -719,15 +778,16 @@ io.on('connection', socket => {
         const sid of room
       ) {
 
-        const u =
+        const username =
           users.get(sid)
             ?.username;
 
         if (
-          u &&
-          u !== from
+          username &&
+          username !== from
         ) {
-          peers.push(u);
+
+          peers.push(username);
         }
       }
 
@@ -741,7 +801,6 @@ io.on('connection', socket => {
     }
   );
 
-
   socket.on(
     'group-signal',
     raw => {
@@ -750,7 +809,10 @@ io.on('connection', socket => {
         socket.data.username;
 
       const to =
-        clean(raw?.to, 50);
+        clean(
+          raw?.to,
+          50
+        );
 
       const roomId =
         clean(
@@ -780,7 +842,6 @@ io.on('connection', socket => {
     }
   );
 
-
   socket.on(
     'group-call-leave',
     raw => {
@@ -800,10 +861,8 @@ io.on('connection', socket => {
         );
       }
 
-      if (
-        from &&
-        roomId
-      ) {
+      if (from && roomId) {
+
         socket
           .to(`group:${roomId}`)
           .emit(
@@ -817,33 +876,32 @@ io.on('connection', socket => {
     }
   );
 
-
-  // ==============================
+  // =========================
   // DISCONNECT
-  // ==============================
+  // =========================
 
-  socket.on(
-    'disconnect',
-    () => {
+  socket.on('disconnect', () => {
 
-      const username =
-        socket.data.username;
+    const username =
+      socket.data.username;
 
-      if (
-        username &&
-        byName.get(username) ===
-          socket.id
-      ) {
-        byName.delete(username);
-      }
-
-      users.delete(
+    if (
+      username &&
+      byName.get(username) ===
         socket.id
-      );
+    ) {
 
-      presence();
+      byName.delete(
+        username
+      );
     }
-  );
+
+    users.delete(
+      socket.id
+    );
+
+    sendPresence();
+  });
 });
 
 server.listen(
