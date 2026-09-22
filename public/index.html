@@ -2,2238 +2,1979 @@
 <html lang="ht">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#10bfa3">
-<title>ZIQVONA — Contacts</title>
+<meta name="viewport"
+      content="width=device-width,initial-scale=1.0">
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/socket.io/socket.io.js"></script>
+<title>ZIQVONA</title>
+
+<meta name="theme-color"
+      content="#10bfa3">
 
 <style>
-:root{
-  --turq:#10bfa3;
-  --turq2:#0aa98f;
-  --dark:#071b19;
-  --dark2:#0c2724;
-  --bg:#eef5f3;
-  --white:#fff;
-  --text:#102522;
-  --muted:#71817e;
-  --border:#dce8e5;
-  --danger:#e74c3c;
-  --green:#22c55e;
-  --shadow:0 12px 35px rgba(10,55,48,.12);
-}
-
-*{box-sizing:border-box}
-
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  background:var(--bg);
-  color:var(--text);
-}
-
-button,input,textarea{font:inherit}
-
-button{
-  cursor:pointer;
-  border:0;
-}
-
-.hidden{display:none!important}
-
-/* ================= AUTH ================= */
-
-#authPage{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  background:
-    radial-gradient(circle at top right,rgba(16,191,163,.20),transparent 35%),
-    linear-gradient(135deg,#eefbf8,#f7fbfa);
-}
-
-.auth-card{
-  width:min(440px,100%);
-  background:#fff;
-  border-radius:28px;
-  padding:34px;
-  box-shadow:var(--shadow);
-}
-
-.logo{
-  width:78px;
-  height:78px;
-  border-radius:23px;
-  background:linear-gradient(135deg,var(--turq),#087e6c);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-weight:900;
-  font-size:23px;
-  margin:0 auto 18px;
-  box-shadow:0 10px 25px rgba(16,191,163,.28);
-}
-
-.auth-card h1{
-  text-align:center;
-  margin:0;
-  font-size:28px;
-}
-
-.auth-sub{
-  text-align:center;
-  color:var(--muted);
-  margin:8px 0 26px;
-}
-
-.auth-tabs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  background:#edf5f3;
-  padding:5px;
-  border-radius:14px;
-  margin-bottom:18px;
-}
-
-.auth-tab{
-  padding:11px;
-  border-radius:10px;
-  background:transparent;
-  color:var(--muted);
-  font-weight:700;
-}
-
-.auth-tab.active{
-  background:#fff;
-  color:var(--turq2);
-  box-shadow:0 3px 12px rgba(0,0,0,.07);
-}
-
-.field{
-  margin-bottom:14px;
-}
-
-.field label{
-  display:block;
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:7px;
-}
-
-.field input{
-  width:100%;
-  border:1px solid var(--border);
-  padding:14px 15px;
-  border-radius:13px;
-  outline:none;
-  background:#fbfdfc;
-}
-
-.field input:focus{
-  border-color:var(--turq);
-  box-shadow:0 0 0 3px rgba(16,191,163,.10);
-}
-
-.primary{
-  width:100%;
-  padding:14px;
-  background:var(--turq);
-  color:#fff;
-  border-radius:13px;
-  font-weight:800;
-  margin-top:4px;
-}
-
-.primary:hover{background:var(--turq2)}
-
-.auth-note{
-  text-align:center;
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-  margin-top:18px;
-}
-
-#otpBox{
-  text-align:center;
-}
-
-.otp-title{
-  font-size:20px;
-  font-weight:800;
-  margin-bottom:7px;
-}
-
-.otp-info{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:20px;
-}
-
-#otpInput{
-  text-align:center;
-  font-size:28px;
-  letter-spacing:9px;
-  font-weight:800;
-}
-
-.back-btn{
-  background:none;
-  color:var(--turq2);
-  margin-top:14px;
-  font-weight:700;
-}
-
-/* ================= APP ================= */
-
-#appPage{
-  width:100%;
-  height:100vh;
-  display:grid;
-  grid-template-columns:360px 1fr;
-  overflow:hidden;
-}
-
-.sidebar{
-  background:#fff;
-  border-right:1px solid var(--border);
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-}
-
-.side-head{
-  background:var(--dark);
-  color:#fff;
-  padding:18px;
-}
-
-.brand-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-weight:900;
-  font-size:21px;
-}
-
-.brand-logo{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  background:var(--turq);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-}
-
-.icon-btn{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  background:rgba(255,255,255,.10);
-  color:#fff;
-}
-
-.my-profile{
-  display:flex;
-  gap:12px;
-  align-items:center;
-  padding-top:18px;
-}
-
-.avatar{
-  width:48px;
-  height:48px;
-  border-radius:50%;
-  object-fit:cover;
-  background:#dff6f1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--turq2);
-  font-weight:900;
-  flex:none;
+* {
+  box-sizing: border-box;
 }
 
-.avatar.small{
-  width:42px;
-  height:42px;
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  font-family:
+    Inter,
+    Arial,
+    sans-serif;
+  background: #f3f7f6;
+  color: #172321;
 }
 
-.avatar.large{
-  width:78px;
-  height:78px;
-  font-size:24px;
+button,
+input,
+textarea {
+  font: inherit;
 }
 
-.profile-name{
-  font-weight:800;
+button {
+  cursor: pointer;
 }
 
-.profile-status{
-  font-size:12px;
-  opacity:.75;
-  margin-top:3px;
+.hidden {
+  display: none !important;
 }
 
-.search-area{
-  padding:13px;
-  border-bottom:1px solid var(--border);
+.app {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
 }
 
-.search{
-  width:100%;
-  border:1px solid var(--border);
-  background:#f5f9f8;
-  padding:12px 14px;
-  border-radius:13px;
-  outline:none;
+.sidebar {
+  width: 360px;
+  background: #ffffff;
+  border-right: 1px solid #e4ecea;
+  display: flex;
+  flex-direction: column;
 }
 
-.tabs{
-  display:flex;
-  gap:5px;
-  padding:10px 12px;
-  border-bottom:1px solid var(--border);
+.brand {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #eef3f2;
 }
 
-.tab{
-  flex:1;
-  padding:9px 5px;
-  border-radius:10px;
-  background:transparent;
-  color:var(--muted);
-  font-weight:700;
-  font-size:12px;
+.logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: #10bfa3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 23px;
 }
 
-.tab.active{
-  color:var(--turq2);
-  background:#e7f8f4;
+.brand strong {
+  font-size: 20px;
 }
 
-.list{
-  overflow:auto;
-  flex:1;
+.brand small {
+  display: block;
+  color: #80908d;
+  margin-top: 2px;
 }
 
-.user-item{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:13px 15px;
-  cursor:pointer;
-  border-bottom:1px solid #edf3f1;
+.profileBar {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fbfa;
 }
 
-.user-item:hover{
-  background:#f3faf8;
+.avatar {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 50%;
+  background: #10bfa3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  overflow: hidden;
 }
 
-.user-main{
-  min-width:0;
-  flex:1;
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.user-top{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
+.profileInfo {
+  flex: 1;
+  min-width: 0;
 }
 
-.user-name{
-  font-weight:800;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.profileInfo strong,
+.profileInfo span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.user-time{
-  font-size:10px;
-  color:var(--muted);
+.profileInfo span {
+  font-size: 13px;
+  color: #7d8b89;
+  margin-top: 3px;
 }
 
-.user-preview{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:3px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+.iconBtn {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 12px;
+  background: white;
 }
 
-.online-dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:#aab9b6;
-  margin-left:auto;
+.iconBtn:hover {
+  background: #eaf8f5;
 }
 
-.online-dot.on{
-  background:var(--green);
+.search {
+  padding: 14px;
 }
 
-/* ================= MAIN ================= */
-
-.main{
-  min-width:0;
-  display:flex;
-  flex-direction:column;
-  background:#edf5f3;
-}
-
-.empty{
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:30px;
+.search input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dfe9e6;
+  border-radius: 13px;
+  outline: none;
 }
 
-.empty-box{
-  max-width:450px;
+.search input:focus {
+  border-color: #10bfa3;
 }
 
-.empty-logo{
-  width:90px;
-  height:90px;
-  margin:auto;
-  border-radius:27px;
-  background:var(--turq);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:25px;
-  font-weight:900;
+.filters {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 14px;
 }
 
-.empty h2{
-  margin:18px 0 8px;
+.filter {
+  border: 0;
+  padding: 8px 13px;
+  border-radius: 999px;
+  background: #eef4f2;
 }
 
-.empty p{
-  color:var(--muted);
-  line-height:1.6;
+.filter.active {
+  background: #10bfa3;
+  color: white;
 }
-
-/* ================= CHAT ================= */
 
-.chat{
-  display:none;
-  height:100%;
-  flex-direction:column;
+.userList {
+  flex: 1;
+  overflow: auto;
 }
 
-.chat-head{
-  min-height:72px;
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  padding:12px 18px;
-  gap:12px;
+.userItem {
+  padding: 13px 16px;
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f4;
 }
 
-.chat-person{
-  flex:1;
-  min-width:0;
+.userItem:hover,
+.userItem.active {
+  background: #effaf7;
 }
 
-.chat-name{
-  font-weight:900;
+.userText {
+  min-width: 0;
+  flex: 1;
 }
 
-.chat-status{
-  font-size:12px;
-  color:var(--muted);
-  margin-top:2px;
+.userText strong,
+.userText span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.chat-actions{
-  display:flex;
-  gap:7px;
+.userText span {
+  font-size: 13px;
+  color: #81908d;
+  margin-top: 4px;
 }
 
-.chat-action{
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  background:#edf7f5;
-  color:var(--turq2);
+.onlineDot {
+  width: 9px;
+  height: 9px;
+  background: #10bfa3;
+  border-radius: 50%;
 }
 
-.messages{
-  flex:1;
-  overflow:auto;
-  padding:22px;
-  background:
-    radial-gradient(circle at 20% 20%,rgba(16,191,163,.05),transparent 25%),
-    #eaf3f1;
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #eef5f3;
 }
 
-.message{
-  max-width:min(70%,560px);
-  margin-bottom:10px;
-  padding:10px 13px;
-  border-radius:15px;
-  line-height:1.45;
-  font-size:14px;
-  box-shadow:0 2px 7px rgba(0,0,0,.04);
+.chatHeader {
+  min-height: 76px;
+  background: white;
+  border-bottom: 1px solid #e3ece9;
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  gap: 12px;
 }
 
-.message.mine{
-  margin-left:auto;
-  background:#d5f8ef;
-  border-bottom-right-radius:4px;
+.chatHeaderInfo {
+  flex: 1;
+  min-width: 0;
 }
 
-.message.theirs{
-  background:#fff;
-  border-bottom-left-radius:4px;
+.chatHeaderInfo strong,
+.chatHeaderInfo span {
+  display: block;
 }
 
-.msg-time{
-  display:block;
-  text-align:right;
-  color:#83918e;
-  font-size:9px;
-  margin-top:4px;
+.chatHeaderInfo span {
+  font-size: 13px;
+  color: #82908e;
+  margin-top: 3px;
 }
 
-.composer{
-  padding:11px;
-  background:#fff;
-  border-top:1px solid var(--border);
-  display:flex;
-  gap:8px;
-  align-items:center;
+.chatActions {
+  display: flex;
+  gap: 7px;
 }
 
-.composer input{
-  flex:1;
-  border:1px solid var(--border);
-  padding:12px 14px;
-  border-radius:13px;
-  outline:none;
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
 }
 
-.send{
-  width:44px;
-  height:44px;
-  border-radius:13px;
-  background:var(--turq);
-  color:#fff;
+.empty {
+  margin: auto;
+  text-align: center;
+  color: #7e8e8a;
 }
 
-/* ================= STATUS ================= */
-
-.status-page{
-  display:none;
-  height:100%;
-  flex-direction:column;
+.message {
+  max-width: min(75%, 620px);
+  padding: 10px 13px;
+  border-radius: 15px;
+  background: white;
+  box-shadow:
+    0 2px 10px rgba(
+      0,
+      0,
+      0,
+      .03
+    );
 }
 
-.status-head{
-  padding:18px;
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  font-size:20px;
-  font-weight:900;
+.message.mine {
+  align-self: flex-end;
+  background: #d9f8f0;
+  border-bottom-right-radius: 5px;
 }
 
-.status-tools{
-  padding:15px;
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  display:flex;
-  gap:8px;
+.message.theirs {
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
 }
 
-.status-tools button{
-  padding:10px 13px;
-  border-radius:11px;
-  background:#e8f8f4;
-  color:var(--turq2);
-  font-weight:800;
+.messageText {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.status-list{
-  padding:18px;
-  overflow:auto;
+.messageTime {
+  margin-top: 5px;
+  font-size: 10px;
+  color: #8a9794;
+  text-align: right;
 }
 
-.status-card{
-  background:#fff;
-  border-radius:17px;
-  padding:15px;
-  margin-bottom:12px;
-  box-shadow:0 4px 14px rgba(0,0,0,.04);
+.composer {
+  padding: 12px 16px;
+  background: white;
+  border-top: 1px solid #e3ece9;
+  display: flex;
+  gap: 9px;
+  align-items: flex-end;
 }
 
-.status-user{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.composer textarea {
+  flex: 1;
+  min-height: 45px;
+  max-height: 140px;
+  resize: vertical;
+  border: 1px solid #dfe9e6;
+  border-radius: 14px;
+  padding: 12px;
+  outline: none;
 }
 
-.status-content{
-  margin-top:13px;
-  line-height:1.55;
+.composer textarea:focus {
+  border-color: #10bfa3;
 }
-
-/* ================= PROFILE PANEL ================= */
 
-.panel{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.38);
-  z-index:50;
-  align-items:flex-end;
-  justify-content:flex-end;
+.sendBtn {
+  width: 48px;
+  height: 45px;
+  border: 0;
+  border-radius: 14px;
+  background: #10bfa3;
+  color: white;
+  font-weight: 800;
 }
 
-.panel-card{
-  width:min(430px,100%);
-  height:100%;
-  background:#fff;
-  padding:22px;
-  overflow:auto;
+.networkBar {
+  position: fixed;
+  left: 360px;
+  right: 0;
+  bottom: 74px;
+  text-align: center;
+  padding: 7px;
+  font-size: 12px;
+  z-index: 5;
 }
 
-.panel-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:20px;
+.networkBar.online {
+  background: #dff8f1;
+  color: #167762;
 }
 
-.close{
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  background:#edf5f3;
+.networkBar.offline {
+  background: #fff1d9;
+  color: #8c641d;
 }
 
-.profile-center{
-  text-align:center;
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(
+    0,
+    0,
+    0,
+    .48
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
 }
 
-.profile-center .avatar{
-  margin:auto;
+.card {
+  width: min(440px, 100%);
+  background: white;
+  border-radius: 22px;
+  padding: 25px;
+  box-shadow:
+    0 20px 70px rgba(
+      0,
+      0,
+      0,
+      .18
+    );
 }
 
-.profile-fields{
-  margin-top:25px;
+.card h2 {
+  margin: 0 0 8px;
 }
 
-.danger{
-  width:100%;
-  padding:13px;
-  border-radius:12px;
-  background:#fff0ef;
-  color:var(--danger);
-  font-weight:800;
-  margin-top:12px;
+.card p {
+  color: #7c8987;
+  line-height: 1.5;
 }
 
-/* ================= CALL ================= */
-
-.call-overlay{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:100;
-  background:linear-gradient(135deg,#061b18,#0d3731);
-  color:#fff;
-  align-items:center;
-  justify-content:center;
+.field {
+  margin: 14px 0;
 }
 
-.call-box{
-  width:min(700px,92%);
-  text-align:center;
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 7px;
 }
 
-.call-avatar{
-  width:110px;
-  height:110px;
-  border-radius:50%;
-  margin:20px auto;
-  object-fit:cover;
-  background:var(--turq);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  font-weight:900;
+.field input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dfe9e6;
+  border-radius: 12px;
+  outline: none;
 }
 
-.call-name{
-  font-size:27px;
-  font-weight:900;
+.primary,
+.secondary {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
 }
 
-.call-state{
-  opacity:.75;
-  margin:8px;
+.primary {
+  background: #10bfa3;
+  color: white;
 }
 
-.call-buttons{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:30px;
+.secondary {
+  background: #edf3f1;
 }
 
-.call-btn{
-  width:56px;
-  height:56px;
-  border-radius:50%;
-  background:rgba(255,255,255,.13);
-  color:#fff;
+.callScreen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #12211e;
+  color: white;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
-.call-btn.end{
-  background:#e74c3c;
+.callScreen.show {
+  display: flex;
 }
 
-.video-local{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  width:180px;
-  max-height:220px;
-  border-radius:15px;
-  background:#000;
-  object-fit:cover;
-  display:none;
+.callAvatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #10bfa3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  font-weight: 900;
 }
 
-.video-remote{
-  width:100%;
-  max-height:60vh;
-  border-radius:18px;
-  background:#000;
-  object-fit:contain;
-  display:none;
+.hang {
+  margin-top: 35px;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  border: 0;
+  background: #e55;
+  color: white;
+  font-size: 25px;
 }
 
-/* ================= TOAST ================= */
-
-#toast{
-  position:fixed;
-  left:50%;
-  bottom:25px;
-  transform:translateX(-50%);
-  background:#102522;
-  color:#fff;
-  padding:12px 17px;
-  border-radius:12px;
-  z-index:200;
-  display:none;
-  font-size:13px;
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 25px;
+  transform: translateX(-50%);
+  background: #152522;
+  color: white;
+  padding: 11px 16px;
+  border-radius: 12px;
+  display: none;
+  z-index: 200;
 }
-
-/* ================= MOBILE ================= */
 
-.mobile-back{
-  display:none;
+.toast.show {
+  display: block;
 }
 
-@media(max-width:760px){
+@media(max-width:800px) {
 
-  #appPage{
-    display:block;
+  .sidebar {
+    width: 100%;
   }
 
-  .sidebar{
-    width:100%;
-    height:100vh;
+  .main {
+    display: none;
   }
 
-  .main{
-    display:none;
-    position:fixed;
-    inset:0;
-    z-index:20;
+  .sidebar.chat-open {
+    display: none;
   }
 
-  #appPage.chat-open .sidebar{
-    display:none;
+  .networkBar {
+    left: 0;
   }
 
-  #appPage.chat-open .main{
-    display:flex;
-  }
-
-  .mobile-back{
-    display:block;
-    width:38px;
-    height:38px;
-    border-radius:11px;
-    background:#edf7f5;
-    color:var(--turq2);
-  }
-
-  .message{
-    max-width:84%;
-  }
-
-  .panel-card{
-    width:100%;
-  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ================= AUTH ================= -->
+<div class="app">
 
-<section id="authPage">
+  <aside class="sidebar" id="sidebar">
 
-  <div class="auth-card">
+    <div class="brand">
 
-    <div class="logo">Z</div>
-
-    <h1>ZIQVONA</h1>
-    <div class="auth-sub">
-      Konekte oswa kreye kont ou san modpas
-    </div>
-
-    <div id="loginBox">
-
-      <div class="auth-tabs">
-        <button id="emailTab" class="auth-tab active">
-          📧 Email
-        </button>
-
-        <button id="phoneTab" class="auth-tab">
-          📱 Phone
-        </button>
+      <div class="logo">
+        Z
       </div>
 
-      <div id="emailField" class="field">
-        <label>Email</label>
-        <input
-          id="emailInput"
-          type="email"
-          autocomplete="email"
-          placeholder="ou@example.com"
-        >
-      </div>
-
-      <div id="phoneField" class="field hidden">
-        <label>Nimewo telefòn</label>
-        <input
-          id="phoneInput"
-          type="tel"
-          autocomplete="tel"
-          placeholder="+1 809 000 0000"
-        >
-      </div>
-
-      <button id="sendOtpBtn" class="primary">
-        CONTINYE
-      </button>
-
-      <div class="auth-note">
-        ZIQVONA ap voye yon kòd verifikasyon.
-        <br>
-        Ou pa bezwen kreye oswa sonje okenn modpas.
+      <div>
+        <strong>ZIQVONA</strong>
+        <small>
+          Better vibes • One family
+        </small>
       </div>
 
     </div>
 
-    <div id="otpBox" class="hidden">
+    <div class="profileBar">
 
-      <div class="otp-title">Verifye kont ou</div>
-
-      <div id="otpInfo" class="otp-info">
-        Mete kòd 6 chif nou voye ba ou.
+      <div class="avatar" id="myAvatar">
+        Z
       </div>
 
-      <div class="field">
-        <input
-          id="otpInput"
-          inputmode="numeric"
-          maxlength="6"
-          autocomplete="one-time-code"
-          placeholder="000000"
-        >
-      </div>
+      <div class="profileInfo">
 
-      <button id="verifyOtpBtn" class="primary">
-        VERIFYE
-      </button>
-
-      <button id="backLoginBtn" class="back-btn">
-        ← Chanje email/nimewo
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ================= APP ================= -->
-
-<section id="appPage" class="hidden">
-
-  <aside class="sidebar">
-
-    <div class="side-head">
-
-      <div class="brand-row">
-
-        <div class="brand">
-          <div class="brand-logo">Z</div>
+        <strong id="myName">
           ZIQVONA
-        </div>
+        </strong>
 
-        <button id="profileBtn" class="icon-btn">👤</button>
-
-      </div>
-
-      <div class="my-profile">
-
-        <div id="myAvatar" class="avatar">Z</div>
-
-        <div>
-          <div id="myName" class="profile-name">ZIQVONA User</div>
-          <div id="myStatus" class="profile-status">
-            Disponib
-          </div>
-        </div>
+        <span id="myStatus">
+          Disponib
+        </span>
 
       </div>
+
+      <button
+        class="iconBtn"
+        id="profileBtn">
+        ⚙️
+      </button>
 
     </div>
 
-    <div class="search-area">
+    <div class="search">
+
       <input
         id="searchInput"
-        class="search"
-        placeholder="🔎 Chèche yon moun..."
-      >
-    </div>
-
-    <div class="tabs">
-
-      <button class="tab active" data-tab="contacts">
-        Contacts
-      </button>
-
-      <button class="tab" data-tab="chats">
-        Chats
-      </button>
-
-      <button class="tab" data-tab="status">
-        Status
-      </button>
+        placeholder="Chèche moun..."
+        autocomplete="off">
 
     </div>
 
-    <div id="contactsList" class="list"></div>
+    <div class="filters">
+
+      <button
+        class="filter active"
+        data-filter="all">
+        Tout
+      </button>
+
+      <button
+        class="filter"
+        data-filter="unread">
+        Pa li
+      </button>
+
+      <button
+        class="filter"
+        data-filter="group">
+        Gwoup
+      </button>
+
+    </div>
+
+    <div
+      class="userList"
+      id="userList">
+    </div>
 
   </aside>
 
-
   <main class="main">
 
-    <div id="emptyPage" class="empty">
+    <header class="chatHeader">
 
-      <div class="empty-box">
+      <div
+        class="avatar"
+        id="chatAvatar">
+        Z
+      </div>
 
-        <div class="empty-logo">Z</div>
+      <div class="chatHeaderInfo">
 
-        <h2>Byenvini nan ZIQVONA</h2>
+        <strong id="chatName">
+          Chwazi yon moun
+        </strong>
 
-        <p>
-          Chwazi yon moun nan Contacts pou kòmanse yon
-          konvèsasyon prive.
-        </p>
+        <span id="chatStatus">
+          ZIQVONA
+        </span>
 
       </div>
 
-    </div>
+      <div class="chatActions">
 
-
-    <!-- CHAT -->
-
-    <div id="chatPage" class="chat">
-
-      <div class="chat-head">
-
-        <button id="mobileBack" class="mobile-back">
-          ←
+        <button
+          class="iconBtn"
+          id="voiceCallBtn">
+          📞
         </button>
 
-        <div id="chatAvatar" class="avatar">Z</div>
-
-        <div class="chat-person">
-
-          <div id="chatName" class="chat-name">
-            Contact
-          </div>
-
-          <div id="chatStatus" class="chat-status">
-            Offline
-          </div>
-
-        </div>
-
-        <div class="chat-actions">
-
-          <button
-            id="voiceCallBtn"
-            class="chat-action"
-            title="Voice call"
-          >📞</button>
-
-          <button
-            id="videoCallBtn"
-            class="chat-action"
-            title="Video call"
-          >🎥</button>
-
-          <button
-            id="chatProfileBtn"
-            class="chat-action"
-            title="Profile"
-          >👤</button>
-
-        </div>
-
-      </div>
-
-      <div id="messages" class="messages"></div>
-
-      <div class="composer">
-
-        <button id="emojiBtn" class="chat-action">
-          😊
-        </button>
-
-        <button id="photoBtn" class="chat-action">
-          📷
-        </button>
-
-        <input
-          id="messageInput"
-          placeholder="Ekri yon mesaj..."
-        >
-
-        <button id="sendBtn" class="send">
-          ➤
+        <button
+          class="iconBtn"
+          id="videoCallBtn">
+          🎥
         </button>
 
       </div>
 
-      <input
-        id="photoInput"
-        type="file"
-        accept="image/*"
-        class="hidden"
-      >
+    </header>
 
-    </div>
+    <section
+      class="messages"
+      id="messages">
 
-
-    <!-- STATUS -->
-
-    <div id="statusPage" class="status-page">
-
-      <div class="status-head">
-        Status
+      <div class="empty">
+        Chwazi yon kontak pou kòmanse yon chat.
       </div>
 
-      <div class="status-tools">
+    </section>
 
-        <button id="newTextStatus">
-          ✍️ Text
-        </button>
+    <div class="composer">
 
-        <button id="newPhotoStatus">
-          📷 Photo
-        </button>
+      <button
+        class="iconBtn"
+        id="emojiBtn">
+        😊
+      </button>
 
-      </div>
+      <button
+        class="iconBtn"
+        id="fileBtn">
+        📎
+      </button>
 
-      <div id="statusList" class="status-list"></div>
+      <textarea
+        id="messageInput"
+        placeholder="Ekri yon mesaj..."
+        rows="1">
+      </textarea>
+
+      <button
+        class="sendBtn"
+        id="sendBtn">
+        ➤
+      </button>
 
     </div>
 
   </main>
 
-</section>
-
-
-<!-- ================= PROFILE PANEL ================= -->
-
-<div id="profilePanel" class="panel">
-
-  <div class="panel-card">
-
-    <div class="panel-head">
-
-      <strong>My Profile</strong>
-
-      <button id="closeProfile" class="close">
-        ✕
-      </button>
-
-    </div>
-
-    <div class="profile-center">
-
-      <div id="profileAvatar" class="avatar large">
-        Z
-      </div>
-
-      <input
-        id="avatarInput"
-        type="file"
-        accept="image/*"
-        class="hidden"
-      >
-
-      <button
-        id="changeAvatarBtn"
-        class="back-btn"
-      >
-        Chanje foto
-      </button>
-
-    </div>
-
-    <div class="profile-fields">
-
-      <div class="field">
-        <label>Display name</label>
-        <input id="profileNameInput">
-      </div>
-
-      <div class="field">
-        <label>Username</label>
-        <input id="profileUsernameInput">
-      </div>
-
-      <div class="field">
-        <label>Status / About</label>
-        <textarea
-          id="profileStatusInput"
-          rows="4"
-          style="width:100%;border:1px solid var(--border);border-radius:13px;padding:12px;resize:none"
-        ></textarea>
-      </div>
-
-      <button id="saveProfileBtn" class="primary">
-        SOVE PROFILE
-      </button>
-
-      <button id="logoutBtn" class="danger">
-        DEKONEKTE
-      </button>
-
-    </div>
-
-  </div>
-
 </div>
 
+<input
+  id="fileInput"
+  type="file"
+  hidden
+  accept="image/*,video/*,audio/*">
 
-<!-- ================= CALL ================= -->
+<div
+  class="modal"
+  id="loginModal">
 
-<div id="callOverlay" class="call-overlay">
+  <form
+    class="card"
+    id="loginForm">
 
-  <div class="call-box">
-
-    <div id="callAvatar" class="call-avatar">
+    <div
+      class="logo"
+      style="margin-bottom:14px">
       Z
     </div>
 
-    <div id="callName" class="call-name">
-      Contact
-    </div>
+    <h2>
+      Byenveni sou ZIQVONA
+    </h2>
 
-    <div id="callState" class="call-state">
-      Calling...
-    </div>
+    <p>
+      Kreye non ou pou antre nan Room Page la.
+    </p>
 
-    <video
-      id="remoteVideo"
-      class="video-remote"
-      autoplay
-      playsinline
-    ></video>
+    <div class="field">
 
-    <video
-      id="localVideo"
-      class="video-local"
-      autoplay
-      muted
-      playsinline
-    ></video>
+      <label>
+        Non ou
+      </label>
 
-    <div class="call-buttons">
-
-      <button id="acceptCallBtn" class="call-btn hidden">
-        ✓
-      </button>
-
-      <button id="rejectCallBtn" class="call-btn end hidden">
-        ✕
-      </button>
-
-      <button id="endCallBtn" class="call-btn end">
-        ☎
-      </button>
+      <input
+        id="loginName"
+        required
+        maxlength="40"
+        placeholder="Egzanp: Carl">
 
     </div>
 
-  </div>
+    <div class="field">
+
+      <label>
+        Status
+      </label>
+
+      <input
+        id="loginStatus"
+        maxlength="80"
+        placeholder="Disponib">
+
+    </div>
+
+    <div class="field">
+
+      <label>
+        Foto profil (opsyonèl)
+      </label>
+
+      <input
+        id="loginPhoto"
+        type="file"
+        accept="image/*">
+
+    </div>
+
+    <button
+      class="primary"
+      type="submit">
+
+      Konekte sou ZIQVONA
+
+    </button>
+
+  </form>
 
 </div>
 
+<div
+  class="modal hidden"
+  id="profileModal">
 
-<div id="toast"></div>
+  <form
+    class="card"
+    id="profileForm">
 
+    <h2>
+      Profile ZIQVONA
+    </h2>
+
+    <p>
+      Chanje non, status oswa foto profil ou.
+    </p>
+
+    <div class="field">
+
+      <label>
+        Non
+      </label>
+
+      <input
+        id="profileName"
+        maxlength="40">
+
+    </div>
+
+    <div class="field">
+
+      <label>
+        Status
+      </label>
+
+      <input
+        id="profileStatus"
+        maxlength="80">
+
+    </div>
+
+    <div class="field">
+
+      <label>
+        Nouvo foto
+      </label>
+
+      <input
+        id="profilePhoto"
+        type="file"
+        accept="image/*">
+
+    </div>
+
+    <button
+      class="primary"
+      type="submit">
+
+      Sove chanjman
+
+    </button>
+
+    <button
+      class="secondary"
+      type="button"
+      id="closeProfile">
+
+      Fèmen
+
+    </button>
+
+  </form>
+
+</div>
+
+<div
+  class="modal hidden"
+  id="newChatModal">
+
+  <form
+    class="card"
+    id="newChatForm">
+
+    <h2>
+      Nouvo chat
+    </h2>
+
+    <p>
+      Ajoute yon moun pou kreye yon nouvo Room.
+    </p>
+
+    <div class="field">
+
+      <label>
+        Non moun nan
+      </label>
+
+      <input
+        id="newChatName"
+        required
+        maxlength="40"
+        placeholder="Egzanp: Jean">
+
+    </div>
+
+    <div class="field">
+
+      <label>
+        Status
+      </label>
+
+      <input
+        id="newChatStatus"
+        maxlength="80"
+        placeholder="Disponib">
+
+    </div>
+
+    <button
+      class="primary"
+      type="submit">
+
+      Kreye chat
+
+    </button>
+
+    <button
+      class="secondary"
+      type="button"
+      id="closeNewChat">
+
+      Anile
+
+    </button>
+
+  </form>
+
+</div>
+
+<div
+  class="callScreen"
+  id="callScreen">
+
+  <div
+    class="callAvatar"
+    id="callAvatar">
+    Z
+  </div>
+
+  <h2 id="callName">
+    ZIQVONA
+  </h2>
+
+  <div id="callType">
+    Apèl vwa
+  </div>
+
+  <div
+    style="
+      opacity:.75;
+      margin-top:8px;
+      font-size:13px
+    ">
+
+    Room pare.
+    Koneksyon WebRTC reyèl bezwen signaling backend.
+
+  </div>
+
+  <button
+    class="hang"
+    id="hangBtn">
+    ☎
+  </button>
+
+</div>
+
+<div
+  id="networkBar"
+  class="networkBar offline">
+
+  <span id="networkDot">
+    ●
+  </span>
+
+  <span id="networkText">
+    Offline — mesaj yo ap tann koneksyon
+  </span>
+
+</div>
+
+<div
+  class="toast"
+  id="toast">
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
-/* =========================================================
-   ZIQVONA CONFIG
-========================================================= */
+(function () {
 
-const SUPABASE_URL =
-  "https://hkirnyqousvmphpwqfga.supabase.co";
+"use strict";
 
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
+/*
+  ZIQVONA OFFLINE-FIRST CLIENT
+*/
 
-const APP_URL =
-  "https://ziqvona.onrender.com";
+const STORAGE = {
+  USER:
+    "ziqvona_user",
 
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
+  QUEUE:
+    "ziqvona_message_queue",
 
+  CONTACTS:
+    "ziqvona_contacts",
 
-/* =========================================================
-   STATE
-========================================================= */
-
-let session = null;
-let me = null;
-let selectedUser = null;
-let users = [];
-let messages = [];
-let currentTab = "contacts";
-
-let otpMode = "email";
-let otpTarget = "";
+  PROFILES:
+    "ziqvona_profiles"
+};
 
 let socket = null;
 
-let peerConnection = null;
+let me = null;
+
+let activeUser = null;
+
+let profiles = {};
+
+let onlineUsers = [];
+
+let messageQueue = [];
+
+let chats = {};
+
+let pendingIncomingCall = null;
+
 let localStream = null;
-let currentCallId = null;
-let currentCallType = null;
-let incomingCall = false;
 
-let iceServers = [
-  {urls:"stun:stun.l.google.com:19302"}
-];
+let peerConnection = null;
 
+let callTarget = null;
 
-/* =========================================================
-   HELPERS
-========================================================= */
+let callType = "voice";
 
-const $ = id => document.getElementById(id);
-
-function escapeHtml(value){
-  return String(value ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
+function $(id) {
+  return document.getElementById(id);
 }
 
-function toast(message){
-  const box = $("toast");
-  box.textContent = message;
-  box.style.display = "block";
+function toast(message) {
 
-  clearTimeout(window.__toastTimer);
+  const el = $("toast");
 
-  window.__toastTimer =
-    setTimeout(() => {
-      box.style.display = "none";
-    },3000);
+  el.textContent = message;
+
+  el.classList.add("show");
+
+  setTimeout(() => {
+    el.classList.remove("show");
+  }, 2600);
 }
 
-function avatarHtml(user, large=false){
+function loadJSON(key, fallback) {
 
-  const name =
-    user?.display_name ||
-    user?.displayName ||
-    user?.username ||
-    "Z";
+  try {
 
-  const avatar =
-    user?.avatar_url ||
-    user?.avatar ||
-    "";
+    const raw =
+      localStorage.getItem(key);
 
-  if(avatar){
+    return raw
+      ? JSON.parse(raw)
+      : fallback;
+
+  } catch {
+
+    return fallback;
+  }
+}
+
+function saveJSON(key, value) {
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(value)
+  );
+}
+
+function clientId() {
+
+  return `${Date.now()}-${Math.random()
+    .toString(36)
+    .slice(2)}`;
+}
+
+function setNetworkState() {
+
+  const online =
+    navigator.onLine;
+
+  const bar =
+    $("networkBar");
+
+  const text =
+    $("networkText");
+
+  bar.classList.toggle(
+    "online",
+    online
+  );
+
+  bar.classList.toggle(
+    "offline",
+    !online
+  );
+
+  text.textContent = online
+    ? "Online — ZIQVONA konekte"
+    : "Offline — mesaj yo ap tann koneksyon";
+}
+
+function avatarHTML(profile) {
+
+  if (
+    profile &&
+    profile.avatar
+  ) {
+
     return `
       <img
-        class="avatar ${large ? "large":""}"
-        src="${escapeHtml(avatar)}"
-        alt=""
-      >
+        src="${profile.avatar}"
+        alt="">
     `;
   }
 
-  return `
-    <div class="avatar ${large ? "large":""}">
-      ${escapeHtml(name.charAt(0).toUpperCase())}
-    </div>
-  `;
+  const name =
+    profile?.displayName ||
+    profile?.username ||
+    "Z";
+
+  return (
+    name.charAt(0)
+      .toUpperCase()
+  );
 }
 
-function normalizeUser(user){
+function updateMyProfileUI() {
 
-  return {
-    id:user.id || user.user_id || user.uid,
-    username:user.username || "",
-    display_name:
-      user.display_name ||
-      user.displayName ||
-      user.username ||
-      "ZIQVONA User",
-    status:user.status || "",
-    avatar_url:
-      user.avatar_url ||
-      user.avatar ||
-      "",
-    online:
-      !!(
-        user.online ||
-        user.isOnline
+  if (!me) return;
+
+  $("myName").textContent =
+    me.displayName || me.username;
+
+  $("myStatus").textContent =
+    me.status || "Disponib";
+
+  $("myAvatar").innerHTML =
+    avatarHTML(me);
+}
+
+function updateChatHeader() {
+
+  if (!activeUser) {
+
+    $("chatName").textContent =
+      "Chwazi yon moun";
+
+    $("chatStatus").textContent =
+      "ZIQVONA";
+
+    $("chatAvatar").innerHTML =
+      "Z";
+
+    return;
+  }
+
+  const profile =
+    profiles[activeUser] ||
+    {
+      username: activeUser,
+      displayName: activeUser,
+      status: "Disponib"
+    };
+
+  $("chatName").textContent =
+    profile.displayName ||
+    activeUser;
+
+  $("chatStatus").textContent =
+    onlineUsers.includes(activeUser)
+      ? "● Online"
+      : "Offline";
+
+  $("chatAvatar").innerHTML =
+    avatarHTML(profile);
+}
+
+function renderUsers(list) {
+
+  const container =
+    $("userList");
+
+  container.innerHTML = "";
+
+  if (!list.length) {
+
+    container.innerHTML = `
+      <div
+        style="
+          padding:25px;
+          text-align:center;
+          color:#81908d
+        ">
+        Pa gen kontak.
+      </div>
+    `;
+
+    return;
+  }
+
+  list.forEach(profile => {
+
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "userItem" +
+      (
+        activeUser ===
+        profile.username
+          ? " active"
+          : ""
+      );
+
+    item.innerHTML = `
+
+      <div class="avatar">
+        ${avatarHTML(profile)}
+      </div>
+
+      <div class="userText">
+
+        <strong>
+          ${escapeHTML(
+            profile.displayName ||
+            profile.username
+          )}
+        </strong>
+
+        <span>
+          ${escapeHTML(
+            profile.status ||
+            "Disponib"
+          )}
+        </span>
+
+      </div>
+
+      ${
+        onlineUsers.includes(
+          profile.username
+        )
+          ? `<div class="onlineDot"></div>`
+          : ""
+      }
+
+    `;
+
+    item.addEventListener(
+      "click",
+      () => openChat(
+        profile.username
       )
-  };
+    );
+
+    container.appendChild(item);
+  });
 }
 
+function escapeHTML(value) {
 
-/* =========================================================
-   AUTH UI
-========================================================= */
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-$("emailTab").onclick = () => {
+function refreshUserList() {
 
-  otpMode = "email";
+  const query =
+    $("searchInput")
+      .value
+      .trim()
+      .toLowerCase();
 
-  $("emailTab").classList.add("active");
-  $("phoneTab").classList.remove("active");
+  let list =
+    Object.values(profiles)
+      .filter(
+        profile =>
+          profile.username !==
+          me?.username
+      );
 
-  $("emailField").classList.remove("hidden");
-  $("phoneField").classList.add("hidden");
-};
+  if (query) {
 
-$("phoneTab").onclick = () => {
+    list = list.filter(profile =>
 
-  otpMode = "phone";
+      profile.username
+        .toLowerCase()
+        .includes(query)
 
-  $("phoneTab").classList.add("active");
-  $("emailTab").classList.remove("active");
+      ||
 
-  $("phoneField").classList.remove("hidden");
-  $("emailField").classList.add("hidden");
-};
+      (
+        profile.displayName ||
+        ""
+      )
+        .toLowerCase()
+        .includes(query)
 
-
-/* =========================================================
-   SEND OTP
-========================================================= */
-
-$("sendOtpBtn").onclick = async () => {
-
-  let error = null;
-
-  if(otpMode === "email"){
-
-    const email =
-      $("emailInput").value.trim();
-
-    if(!email){
-      toast("Antre email ou.");
-      return;
-    }
-
-    otpTarget = email;
-
-    const result =
-      await supabaseClient.auth.signInWithOtp({
-        email,
-        options:{
-          shouldCreateUser:true
-        }
-      });
-
-    error = result.error;
-
-  }else{
-
-    const phone =
-      $("phoneInput").value.trim();
-
-    if(!phone){
-      toast("Antre nimewo telefòn ou.");
-      return;
-    }
-
-    otpTarget = phone;
-
-    const result =
-      await supabaseClient.auth.signInWithOtp({
-        phone,
-        options:{
-          shouldCreateUser:true
-        }
-      });
-
-    error = result.error;
+    );
   }
 
-  if(error){
+  renderUsers(list);
+}
 
-    console.error(error);
+function renderMessages() {
 
-    toast(
-      error.message ||
-      "OTP pa t kapab voye."
+  const container =
+    $("messages");
+
+  container.innerHTML = "";
+
+  if (!activeUser) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Chwazi yon kontak pou kòmanse yon chat.
+      </div>
+    `;
+
+    return;
+  }
+
+  const list =
+    chats[activeUser] || [];
+
+  if (!list.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Pa gen mesaj ankò.<br>
+        Voye premye mesaj la.
+      </div>
+    `;
+
+    return;
+  }
+
+  list.forEach(message => {
+
+    const mine =
+      message.from ===
+      me.username;
+
+    const bubble =
+      document.createElement("div");
+
+    bubble.className =
+      "message " +
+      (
+        mine
+          ? "mine"
+          : "theirs"
+      );
+
+    if (
+      message.kind ===
+      "text"
+    ) {
+
+      bubble.innerHTML = `
+
+        <div class="messageText">
+          ${escapeHTML(
+            message.text
+          )}
+        </div>
+
+        <div class="messageTime">
+          ${formatTime(
+            message.time
+          )}
+        </div>
+
+      `;
+
+    } else if (
+      message.kind ===
+      "voice"
+    ) {
+
+      bubble.innerHTML = `
+
+        <audio
+          controls
+          src="${message.data}">
+        </audio>
+
+        <div class="messageTime">
+          ${formatTime(
+            message.time
+          )}
+        </div>
+      `;
+
+    } else if (
+      message.kind ===
+      "video"
+    ) {
+
+      bubble.innerHTML = `
+
+        <video
+          controls
+          style="
+            max-width:280px;
+            border-radius:12px
+          "
+          src="${message.data}">
+        </video>
+
+        <div class="messageTime">
+          ${formatTime(
+            message.time
+          )}
+        </div>
+
+      `;
+    }
+
+    container.appendChild(
+      bubble
+    );
+  });
+
+  container.scrollTop =
+    container.scrollHeight;
+}
+
+function formatTime(time) {
+
+  try {
+
+    return new Date(time)
+      .toLocaleTimeString(
+        [],
+        {
+          hour: "2-digit",
+          minute: "2-digit"
+        }
+      );
+
+  } catch {
+
+    return "";
+  }
+}
+
+function addMessage(message) {
+
+  if (!message) return;
+
+  const other =
+    message.from ===
+    me?.username
+      ? message.to
+      : message.from;
+
+  if (!other) return;
+
+  if (!chats[other]) {
+    chats[other] = [];
+  }
+
+  const exists =
+    chats[other].some(
+      m =>
+        m.id &&
+        message.id &&
+        m.id === message.id
     );
 
-    return;
-  }
+  if (!exists) {
 
-  $("loginBox").classList.add("hidden");
-  $("otpBox").classList.remove("hidden");
-
-  $("otpInfo").textContent =
-    otpMode === "email"
-      ? `Nou voye kòd la sou ${otpTarget}`
-      : `Nou voye SMS la sou ${otpTarget}`;
-
-  $("otpInput").focus();
-
-  toast("Kòd la voye.");
-};
-
-
-/* =========================================================
-   VERIFY OTP
-========================================================= */
-
-$("verifyOtpBtn").onclick = async () => {
-
-  const token =
-    $("otpInput").value.trim();
-
-  if(!/^\d{6}$/.test(token)){
-    toast("Mete yon kòd 6 chif.");
-    return;
-  }
-
-  let result;
-
-  if(otpMode === "email"){
-
-    result =
-      await supabaseClient.auth.verifyOtp({
-        email:otpTarget,
-        token,
-        type:"email"
-      });
-
-  }else{
-
-    result =
-      await supabaseClient.auth.verifyOtp({
-        phone:otpTarget,
-        token,
-        type:"sms"
-      });
-  }
-
-  if(result.error){
-
-    console.error(result.error);
-
-    toast(
-      result.error.message ||
-      "Kòd la pa bon."
+    chats[other].push(
+      message
     );
 
+    if (
+      chats[other].length >
+      500
+    ) {
+
+      chats[other] =
+        chats[other].slice(-500);
+    }
+  }
+
+  if (
+    activeUser === other
+  ) {
+
+    renderMessages();
+  }
+
+  saveJSON(
+    "ziqvona_chats",
+    chats
+  );
+}
+
+function removeQueuedMessage(
+  clientIdValue
+) {
+
+  if (!clientIdValue)
+    return;
+
+  messageQueue =
+    messageQueue.filter(
+      item =>
+        item.clientId !==
+        clientIdValue
+    );
+
+  saveJSON(
+    STORAGE.QUEUE,
+    messageQueue
+  );
+}
+
+function queueMessage(
+  to,
+  text
+) {
+
+  const item = {
+
+    clientId:
+      clientId(),
+
+    to,
+
+    text,
+
+    createdAt:
+      new Date().toISOString()
+  };
+
+  messageQueue.push(item);
+
+  saveJSON(
+    STORAGE.QUEUE,
+    messageQueue
+  );
+
+  // Montre li imedyatman
+  // nan chat la kòm pending.
+  addMessage({
+    id:
+      "local-" +
+      item.clientId,
+
+    clientId:
+      item.clientId,
+
+    kind: "text",
+
+    from:
+      me.username,
+
+    to,
+
+    text,
+
+    time:
+      item.createdAt,
+
+    pending: true
+  });
+}
+
+function flushQueue() {
+
+  if (
+    !navigator.onLine ||
+    !socket ||
+    !socket.connected ||
+    !me
+  ) {
     return;
   }
 
-  session = result.data.session;
+  const queue =
+    [...messageQueue];
 
-  await enterApp();
-};
+  queue.forEach(item => {
 
+    socket.emit(
+      "private-message",
+      {
+        to:
+          item.to,
 
-$("backLoginBtn").onclick = () => {
+        text:
+          item.text,
 
-  $("otpBox").classList.add("hidden");
-  $("loginBox").classList.remove("hidden");
+        clientId:
+          item.clientId
+      }
+    );
+  });
+}
 
-  $("otpInput").value = "";
-};
+function connectSocket() {
 
+  if (socket) {
 
-/* =========================================================
-   BOOT
-========================================================= */
-
-async function boot(){
-
-  try{
-
-    const result =
-      await supabaseClient.auth.getSession();
-
-    session = result.data.session;
-
-    if(session){
-      await enterApp();
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    toast("ZIQVONA pa kapab verifye session lan.");
+    try {
+      socket.disconnect();
+    } catch {}
   }
 
-  supabaseClient.auth.onAuthStateChange(
-    async (_event,newSession) => {
+  socket =
+    io({
+      transports: [
+        "websocket",
+        "polling"
+      ],
 
-      session = newSession;
+      reconnection: true,
 
-      if(session && !$("appPage").classList.contains("hidden")){
+      reconnectionAttempts: Infinity,
+
+      reconnectionDelay: 1000,
+
+      reconnectionDelayMax: 5000
+    });
+
+  socket.on(
+    "connect",
+    () => {
+
+      setNetworkState();
+
+      if (!me) return;
+
+      socket.emit(
+        "register",
+        {
+          username:
+            me.username,
+
+          displayName:
+            me.displayName,
+
+          status:
+            me.status,
+
+          avatar:
+            me.avatar || ""
+        }
+      );
+    }
+  );
+
+  socket.on(
+    "disconnect",
+    () => {
+
+      setNetworkState();
+    }
+  );
+
+  socket.on(
+    "connect_error",
+    () => {
+
+      setNetworkState();
+    }
+  );
+
+  socket.on(
+    "registered",
+    data => {
+
+      me =
+        data.me || me;
+
+      profiles =
+        data.profiles || profiles;
+
+      onlineUsers =
+        data.online || [];
+
+      localStorage.setItem(
+        STORAGE.USER,
+        JSON.stringify(me)
+      );
+
+      updateMyProfileUI();
+
+      refreshUserList();
+
+      updateChatHeader();
+
+      flushQueue();
+    }
+  );
+
+  socket.on(
+    "presence",
+    data => {
+
+      onlineUsers =
+        data.online || [];
+
+      profiles =
+        data.profiles || profiles;
+
+      refreshUserList();
+
+      updateChatHeader();
+    }
+  );
+
+  socket.on(
+    "private-message",
+    message => {
+
+      addMessage(message);
+
+      // IMPORTANT:
+      // Queue lokal la retire sèlman
+      // apre server la voye echo
+      // ki gen menm clientId.
+      if (
+        message.from ===
+          me?.username &&
+        message.clientId
+      ) {
+
+        removeQueuedMessage(
+          message.clientId
+        );
+      }
+    }
+  );
+
+  socket.on(
+    "history",
+    data => {
+
+      if (!data?.with)
         return;
+
+      chats[data.with] =
+        data.messages || [];
+
+      saveJSON(
+        "ziqvona_chats",
+        chats
+      );
+
+      if (
+        activeUser ===
+        data.with
+      ) {
+
+        renderMessages();
+      }
+    }
+  );
+
+  socket.on(
+    "profile-updated",
+    profile => {
+
+      if (!profile)
+        return;
+
+      profiles[
+        profile.username
+      ] = profile;
+
+      if (
+        me &&
+        profile.username ===
+          me.username
+      ) {
+
+        me = profile;
+
+        localStorage.setItem(
+          STORAGE.USER,
+          JSON.stringify(me)
+        );
+
+        updateMyProfileUI();
       }
 
-      if(session){
-        await enterApp();
+      refreshUserList();
+
+      updateChatHeader();
+    }
+  );
+
+  socket.on(
+    "search-results",
+    results => {
+
+      renderUsers(
+        results || []
+      );
+    }
+  );
+
+  socket.on(
+    "typing",
+    data => {
+
+      if (
+        data?.from ===
+        activeUser
+      ) {
+
+        $("chatStatus")
+          .textContent =
+          "ap ekri...";
       }
+    }
+  );
+
+  socket.on(
+    "stop-typing",
+    data => {
+
+      if (
+        data?.from ===
+        activeUser
+      ) {
+
+        updateChatHeader();
+      }
+    }
+  );
+
+  socket.on(
+    "error-message",
+    data => {
+
+      toast(
+        data?.message ||
+        "Gen yon erè."
+      );
+    }
+  );
+
+  socket.on(
+    "message-error",
+    data => {
+
+      toast(
+        data?.message ||
+        "Mesaj la pa ka voye."
+      );
+    }
+  );
+
+  // =========================
+  // CALL EVENTS
+  // =========================
+
+  socket.on(
+    "call-offer",
+    async data => {
+
+      await receiveCallOffer(
+        data
+      );
+    }
+  );
+
+  socket.on(
+    "call-answer",
+    async data => {
+
+      if (
+        peerConnection &&
+        data?.answer
+      ) {
+
+        await peerConnection
+          .setRemoteDescription(
+            new RTCSessionDescription(
+              data.answer
+            )
+          );
+      }
+    }
+  );
+
+  socket.on(
+    "ice-candidate",
+    async data => {
+
+      if (
+        peerConnection &&
+        data?.candidate
+      ) {
+
+        try {
+
+          await peerConnection
+            .addIceCandidate(
+              new RTCIceCandidate(
+                data.candidate
+              )
+            );
+
+        } catch {}
+      }
+    }
+  );
+
+  socket.on(
+    "call-reject",
+    () => {
+
+      closeCall();
+
+      toast(
+        "Apèl la te refize."
+      );
+    }
+  );
+
+  socket.on(
+    "call-end",
+    () => {
+
+      closeCall();
+    }
+  );
+
+  socket.on(
+    "call-error",
+    data => {
+
+      closeCall();
+
+      toast(
+        data?.message ||
+        "Apèl la pa disponib."
+      );
     }
   );
 }
 
+async function openChat(
+  username
+) {
 
-/* =========================================================
-   ENTER APP
-========================================================= */
+  activeUser =
+    username;
 
-async function enterApp(){
+  updateChatHeader();
 
-  if(!session) return;
+  renderMessages();
 
-  $("authPage").classList.add("hidden");
-  $("appPage").classList.remove("hidden");
+  if (
+    socket &&
+    socket.connected
+  ) {
 
-  await loadMyProfile();
-  await loadTurn();
-  connectSocket();
-
-}
-
-
-/* =========================================================
-   LOAD PROFILE
-========================================================= */
-
-async function loadMyProfile(){
-
-  try{
-
-    const userId = session.user.id;
-
-    const {data,error} =
-      await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("id",userId)
-        .maybeSingle();
-
-    if(error){
-      console.error(error);
-    }
-
-    if(data){
-
-      me = normalizeUser(data);
-
-    }else{
-
-      const fallbackName =
-        session.user.email
-        ? session.user.email.split("@")[0]
-        : "ZIQVONA User";
-
-      const profile = {
-        id:userId,
-        username:fallbackName,
-        display_name:fallbackName,
-        status:"Disponib",
-        avatar_url:""
-      };
-
-      const insert =
-        await supabaseClient
-          .from("profiles")
-          .upsert(profile);
-
-      if(insert.error){
-        console.error(insert.error);
+    socket.emit(
+      "get-history",
+      {
+        with:
+          username
       }
-
-      me = normalizeUser(profile);
-    }
-
-    renderMyProfile();
-
-  }catch(error){
-
-    console.error(error);
-
-    me = {
-      id:session.user.id,
-      username:
-        session.user.email?.split("@")[0] ||
-        "ziqvona",
-      display_name:
-        session.user.email?.split("@")[0] ||
-        "ZIQVONA User",
-      status:"Disponib",
-      avatar_url:""
-    };
-
-    renderMyProfile();
-  }
-}
-
-
-function renderMyProfile(){
-
-  $("myName").textContent =
-    me.display_name;
-
-  $("myStatus").textContent =
-    me.status ||
-    "Disponib";
-
-  $("myAvatar").innerHTML =
-    me.avatar_url
-      ? `<img class="avatar" src="${escapeHtml(me.avatar_url)}">`
-      : escapeHtml(
-          me.display_name
-            .charAt(0)
-            .toUpperCase()
-        );
-}
-
-
-/* =========================================================
-   SOCKET.IO
-========================================================= */
-
-function connectSocket(){
-
-  if(socket){
-
-    try{
-      socket.disconnect();
-    }catch(_){}
-  }
-
-  socket = io({
-    transports:["websocket","polling"],
-    reconnection:true
-  });
-
-  socket.on("connect",() => {
-
-    console.log("ZIQVONA Socket connected");
-
-    /*
-      Keep compatibility with the current
-      ZIQVONA server register contract.
-    */
-
-    socket.emit("register",{
-
-      userId:me.id,
-
-      username:me.username,
-
-      displayName:me.display_name,
-
-      status:me.status,
-
-      avatar:me.avatar_url
-    });
-
-    loadContacts();
-  });
-
-
-  socket.on("presence",(data) => {
-
-    if(Array.isArray(data)){
-      users = data.map(normalizeUser);
-    }
-
-    if(data?.users){
-      users = data.users.map(normalizeUser);
-    }
-
-    renderUsers();
-  });
-
-
-  socket.on("search-results",(data) => {
-
-    const result =
-      Array.isArray(data)
-        ? data
-        : data?.users || [];
-
-    users =
-      result
-        .map(normalizeUser)
-        .filter(u => u.id !== me.id);
-
-    renderUsers();
-  });
-
-
-  socket.on("private-message",(message) => {
-
-    const senderId =
-      message.sender_id ||
-      message.senderId ||
-      message.from;
-
-    const receiverId =
-      message.receiver_id ||
-      message.receiverId ||
-      message.to;
-
-    const otherId =
-      senderId === me.id
-        ? receiverId
-        : senderId;
-
-    if(
-      selectedUser &&
-      otherId === selectedUser.id
-    ){
-
-      messages.push(message);
-      renderMessages();
-    }
-  });
-
-
-  socket.on("call-offer", async data => {
-
-    await receiveCallOffer(data);
-
-  });
-
-
-  socket.on("call-answer", async data => {
-
-    if(
-      peerConnection &&
-      data?.answer
-    ){
-
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(data.answer)
-      );
-    }
-  });
-
-
-  socket.on("ice-candidate", async data => {
-
-    if(
-      peerConnection &&
-      data?.candidate
-    ){
-
-      try{
-
-        await peerConnection.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
-
-      }catch(error){
-
-        console.error(error);
-      }
-    }
-  });
-
-
-  socket.on("call-reject",() => {
-
-    toast("Apèl la te refize.");
-    closeCall();
-
-  });
-
-
-  socket.on("call-end",() => {
-
-    closeCall();
-
-  });
-
-
-  socket.on("call-error",data => {
-
-    toast(
-      data?.message ||
-      "Apèl la pa t kapab konekte."
-    );
-
-    closeCall();
-  });
-
-
-  socket.on("force-disconnect",() => {
-
-    toast("Session ou te dekonekte.");
-
-  });
-}
-
-
-/* =========================================================
-   CONTACTS
-========================================================= */
-
-async function loadContacts(){
-
-  /*
-    First ask the existing realtime server.
-    This keeps compatibility with the current
-    ZIQVONA server.
-  */
-
-  if(socket?.connected){
-
-    socket.emit("presence");
-
-    socket.emit("search-users",{
-      query:""
-    });
-  }
-
-  /*
-    Also read profiles directly from Supabase.
-    RLS controls which rows are visible.
-  */
-
-  try{
-
-    const {data,error} =
-      await supabaseClient
-        .from("profiles")
-        .select(
-          "id,username,display_name,status,avatar_url"
-        )
-        .neq("id",me.id)
-        .order("display_name",{ascending:true});
-
-    if(!error && data){
-
-      const dbUsers =
-        data.map(normalizeUser);
-
-      const map =
-        new Map();
-
-      [...users,...dbUsers].forEach(user => {
-
-        if(user.id && user.id !== me.id){
-          map.set(user.id,{
-            ...map.get(user.id),
-            ...user
-          });
-        }
-      });
-
-      users =
-        [...map.values()];
-
-      renderUsers();
-    }
-
-  }catch(error){
-
-    console.error(error);
-  }
-}
-
-
-$("searchInput").addEventListener(
-  "input",
-  async e => {
-
-    const query =
-      e.target.value.trim();
-
-    if(!query){
-
-      await loadContacts();
-      return;
-    }
-
-    if(socket?.connected){
-
-      socket.emit("search-users",{
-        query
-      });
-    }
-
-    try{
-
-      const {data,error} =
-        await supabaseClient
-          .from("profiles")
-          .select(
-            "id,username,display_name,status,avatar_url"
-          )
-          .or(
-            `username.ilike.%${query}%,display_name.ilike.%${query}%`
-          )
-          .neq("id",me.id)
-          .limit(50);
-
-      if(!error && data){
-
-        users =
-          data.map(normalizeUser);
-
-        renderUsers();
-      }
-
-    }catch(error){
-
-      console.error(error);
-    }
-  }
-);
-
-
-function renderUsers(){
-
-  const list = $("contactsList");
-
-  let filtered =
-    users.filter(
-      u => u.id && u.id !== me.id
-    );
-
-  if(currentTab === "chats"){
-
-    /*
-      The chat list will naturally grow as messages arrive.
-      For now show known contacts.
-    */
-
-    filtered = filtered.filter(u =>
-      true
     );
   }
 
-  if(!filtered.length){
-
-    list.innerHTML = `
-      <div style="padding:30px;text-align:center;color:#71817e">
-        <div style="font-size:35px">👥</div>
-        <p>Pa gen lòt itilizatè ki parèt ankò.</p>
-        <small>
-          Chèche yon username oswa non moun nan.
-        </small>
-      </div>
-    `;
-
-    return;
-  }
-
-  list.innerHTML =
-    filtered.map(user => `
-
-      <div
-        class="user-item"
-        data-id="${escapeHtml(user.id)}"
-      >
-
-        ${avatarHtml(user)}
-
-        <div class="user-main">
-
-          <div class="user-top">
-
-            <div class="user-name">
-              ${escapeHtml(user.display_name)}
-            </div>
-
-          </div>
-
-          <div class="user-preview">
-            ${escapeHtml(
-              user.status ||
-              user.username ||
-              "Disponib sou ZIQVONA"
-            )}
-          </div>
-
-        </div>
-
-        <div class="online-dot ${user.online ? "on":""}">
-        </div>
-
-      </div>
-
-    `).join("");
-
-  list
-    .querySelectorAll(".user-item")
-    .forEach(item => {
-
-      item.onclick = () => {
-
-        const user =
-          users.find(
-            u => u.id === item.dataset.id
-          );
-
-        if(user){
-          openChat(user);
-        }
-      };
-    });
-}
-
-
-/* =========================================================
-   CHAT
-========================================================= */
-
-async function openChat(user){
-
-  selectedUser = normalizeUser(user);
-
-  $("emptyPage").style.display = "none";
-
-  $("statusPage").style.display = "none";
-
-  $("chatPage").style.display = "flex";
-
-  $("appPage").classList.add("chat-open");
-
-  $("chatName").textContent =
-    selectedUser.display_name;
-
-  $("chatStatus").textContent =
-    selectedUser.online
-      ? "Online"
-      : (
-        selectedUser.status ||
-        "Offline"
-      );
-
-  $("chatAvatar").outerHTML =
-    avatarHtml(
-      selectedUser
-    ).replace(
-      '<div class="avatar"',
-      '<div id="chatAvatar" class="avatar"'
+  // Sou telefòn
+  $("sidebar")
+    .classList.add(
+      "chat-open"
     );
-
-  messages = [];
-
-  await loadHistory();
 }
 
-
-async function loadHistory(){
-
-  if(!selectedUser) return;
-
-  /*
-    Existing server contract.
-  */
-
-  if(socket?.connected){
-
-    socket.emit("get-history",{
-
-      userId:selectedUser.id,
-
-      username:selectedUser.username,
-
-      otherUserId:selectedUser.id,
-
-      otherUsername:selectedUser.username
-    });
-  }
-
-  /*
-    Supabase fallback for persisted messages.
-    Because messages.conversation_id is TEXT,
-    we use a deterministic conversation id.
-  */
-
-  try{
-
-    const conversationId =
-      makeConversationId(
-        me.id,
-        selectedUser.id
-      );
-
-    const {data,error} =
-      await supabaseClient
-        .from("messages")
-        .select("*")
-        .eq(
-          "conversation_id",
-          conversationId
-        )
-        .order("created_at",{ascending:true})
-        .limit(500);
-
-    if(!error && data){
-
-      messages = data;
-
-      renderMessages();
-    }
-
-  }catch(error){
-
-    console.error(error);
-  }
-}
-
-
-function makeConversationId(a,b){
-
-  return [String(a),String(b)]
-    .sort()
-    .join("_");
-}
-
-
-function renderMessages(){
-
-  const box = $("messages");
-
-  if(!messages.length){
-
-    box.innerHTML = `
-      <div style="text-align:center;color:#71817e;padding:35px">
-        Kòmanse premye mesaj la 👋
-      </div>
-    `;
-
-    return;
-  }
-
-  box.innerHTML =
-    messages.map(msg => {
-
-      const sender =
-        msg.sender_id ||
-        msg.senderId ||
-        msg.from;
-
-      const mine =
-        sender === me.id;
-
-      const body =
-        msg.body ||
-        msg.text ||
-        msg.message ||
-        "";
-
-      const date =
-        msg.created_at
-          ? new Date(msg.created_at)
-          : new Date();
-
-      return `
-        <div class="message ${mine ? "mine":"theirs"}">
-
-          ${escapeHtml(body)}
-
-          <span class="msg-time">
-            ${date.toLocaleTimeString([],{
-              hour:"2-digit",
-              minute:"2-digit"
-            })}
-          </span>
-
-        </div>
-      `;
-
-    }).join("");
-
-  box.scrollTop =
-    box.scrollHeight;
-}
-
-
-async function sendMessage(){
-
-  if(!selectedUser) return;
+function sendCurrentMessage() {
 
   const input =
     $("messageInput");
@@ -2241,1044 +1982,1058 @@ async function sendMessage(){
   const text =
     input.value.trim();
 
-  if(!text) return;
+  if (
+    !activeUser ||
+    !text
+  ) {
+
+    if (!activeUser) {
+      toast(
+        "Chwazi yon kontak dabò."
+      );
+    }
+
+    return;
+  }
 
   input.value = "";
 
-  const message = {
-
-    conversation_id:
-      makeConversationId(
-        me.id,
-        selectedUser.id
-      ),
-
-    sender_id:me.id,
-
-    receiver_id:selectedUser.id,
-
-    body:text,
-
-    created_at:
-      new Date().toISOString()
-  };
-
-
-  /*
-    Realtime server.
-  */
-
-  if(socket?.connected){
+  // ONLINE:
+  if (
+    navigator.onLine &&
+    socket &&
+    socket.connected
+  ) {
 
     socket.emit(
       "private-message",
-      message
-    );
-  }
+      {
+        to:
+          activeUser,
 
+        text,
 
-  /*
-    Supabase persistent copy.
-  */
-
-  try{
-
-    const {data,error} =
-      await supabaseClient
-        .from("messages")
-        .insert({
-          conversation_id:
-            message.conversation_id,
-          sender_id:me.id,
-          body:text
-        })
-        .select()
-        .single();
-
-    if(!error && data){
-
-      messages.push(data);
-
-    }else{
-
-      messages.push(message);
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    messages.push(message);
-  }
-
-  renderMessages();
-}
-
-
-$("sendBtn").onclick =
-  sendMessage;
-
-$("messageInput").addEventListener(
-  "keydown",
-  e => {
-
-    if(e.key === "Enter"){
-      sendMessage();
-    }
-  }
-);
-
-
-$("mobileBack").onclick = () => {
-
-  $("appPage").classList.remove("chat-open");
-
-  $("chatPage").style.display = "none";
-
-  $("emptyPage").style.display = "flex";
-
-  selectedUser = null;
-};
-
-
-/* =========================================================
-   TABS
-========================================================= */
-
-document
-  .querySelectorAll(".tab")
-  .forEach(tab => {
-
-    tab.onclick = () => {
-
-      document
-        .querySelectorAll(".tab")
-        .forEach(x =>
-          x.classList.remove("active")
-        );
-
-      tab.classList.add("active");
-
-      currentTab =
-        tab.dataset.tab;
-
-      if(currentTab === "status"){
-
-        $("chatPage").style.display = "none";
-        $("emptyPage").style.display = "none";
-        $("statusPage").style.display = "flex";
-
-        loadStatuses();
-
-      }else{
-
-        $("statusPage").style.display = "none";
-
-        if(selectedUser){
-
-          $("chatPage").style.display = "flex";
-          $("emptyPage").style.display = "none";
-
-        }else{
-
-          $("chatPage").style.display = "none";
-          $("emptyPage").style.display = "flex";
-        }
-
-        renderUsers();
+        clientId:
+          clientId()
       }
-    };
-  });
+    );
 
-
-/* =========================================================
-   PROFILE
-========================================================= */
-
-$("profileBtn").onclick = () => {
-
-  $("profilePanel").style.display = "flex";
-
-  $("profileNameInput").value =
-    me.display_name || "";
-
-  $("profileUsernameInput").value =
-    me.username || "";
-
-  $("profileStatusInput").value =
-    me.status || "";
-
-  $("profileAvatar").innerHTML =
-    me.avatar_url
-      ? `<img class="avatar large" src="${escapeHtml(me.avatar_url)}">`
-      : escapeHtml(
-          me.display_name
-            .charAt(0)
-            .toUpperCase()
-        );
-};
-
-
-$("chatProfileBtn").onclick = () => {
-
-  if(!selectedUser) return;
-
-  $("profilePanel").style.display = "flex";
-
-  $("profileNameInput").value =
-    selectedUser.display_name;
-
-  $("profileUsernameInput").value =
-    selectedUser.username;
-
-  $("profileStatusInput").value =
-    selectedUser.status || "";
-
-  $("profileNameInput").disabled = true;
-  $("profileUsernameInput").disabled = true;
-  $("profileStatusInput").disabled = true;
-
-  $("saveProfileBtn").classList.add("hidden");
-  $("changeAvatarBtn").classList.add("hidden");
-
-  $("profileAvatar").innerHTML =
-    selectedUser.avatar_url
-      ? `<img class="avatar large" src="${escapeHtml(selectedUser.avatar_url)}">`
-      : escapeHtml(
-          selectedUser.display_name
-            .charAt(0)
-            .toUpperCase()
-        );
-};
-
-
-$("closeProfile").onclick = () => {
-
-  $("profilePanel").style.display = "none";
-
-  $("profileNameInput").disabled = false;
-  $("profileUsernameInput").disabled = false;
-  $("profileStatusInput").disabled = false;
-
-  $("saveProfileBtn").classList.remove("hidden");
-  $("changeAvatarBtn").classList.remove("hidden");
-};
-
-
-$("changeAvatarBtn").onclick = () => {
-
-  $("avatarInput").click();
-};
-
-
-$("avatarInput").onchange = async () => {
-
-  const file =
-    $("avatarInput").files[0];
-
-  if(!file) return;
-
-  if(file.size > 2 * 1024 * 1024){
-
-    toast("Foto a twò gwo. Maksimòm 2MB.");
     return;
   }
 
-  /*
-    Simple local data URL for immediate UI.
-    For production storage, Supabase Storage
-    should be connected next.
-  */
+  // OFFLINE:
+  queueMessage(
+    activeUser,
+    text
+  );
 
-  const reader =
-    new FileReader();
+  toast(
+    "Mesaj la sere. Li pral voye lè entènèt la retounen."
+  );
+}
 
-  reader.onload = async () => {
+function setupLogin() {
 
-    me.avatar_url =
-      reader.result;
-
-    renderMyProfile();
-
-    $("profileAvatar").innerHTML =
-      `<img class="avatar large" src="${reader.result}">`;
-
-    toast(
-      "Foto a chanje pou session sa a."
+  const saved =
+    loadJSON(
+      STORAGE.USER,
+      null
     );
-  };
 
-  reader.readAsDataURL(file);
-};
+  if (saved) {
 
+    me = saved;
 
-$("saveProfileBtn").onclick =
-  async () => {
+    updateMyProfileUI();
 
-    const displayName =
-      $("profileNameInput")
-        .value
-        .trim();
+    $("loginModal")
+      .classList.add(
+        "hidden"
+      );
 
-    const username =
-      $("profileUsernameInput")
-        .value
-        .trim();
+    connectSocket();
 
-    const status =
-      $("profileStatusInput")
-        .value
-        .trim();
+  } else {
 
-    if(!displayName){
+    $("loginModal")
+      .classList.remove(
+        "hidden"
+      );
+  }
 
-      toast("Mete non ou.");
-      return;
-    }
+  $("loginForm")
+    .addEventListener(
+      "submit",
+      async event => {
 
-    const update = {
+        event.preventDefault();
 
-      id:me.id,
+        const username =
+          $("loginName")
+            .value
+            .trim();
 
-      username:
-        username ||
-        me.username,
+        const status =
+          $("loginStatus")
+            .value
+            .trim() ||
+          "Disponib";
 
-      display_name:
-        displayName,
+        const file =
+          $("loginPhoto")
+            .files[0];
 
-      status,
+        let avatar = "";
 
-      avatar_url:
-        me.avatar_url || ""
-    };
+        if (file) {
 
-
-    const {data,error} =
-      await supabaseClient
-        .from("profiles")
-        .upsert(update)
-        .select()
-        .single();
-
-    if(error){
-
-      console.error(error);
-
-      toast(error.message);
-      return;
-    }
-
-    me =
-      normalizeUser(data || update);
-
-    renderMyProfile();
-
-    if(socket?.connected){
-
-      socket.emit(
-        "update-profile",
-        {
-          username:me.username,
-          displayName:me.display_name,
-          status:me.status,
-          avatar:me.avatar_url
+          avatar =
+            await readFileAsDataURL(
+              file
+            );
         }
+
+        me = {
+
+          username,
+
+          displayName:
+            username,
+
+          status,
+
+          avatar
+        };
+
+        saveJSON(
+          STORAGE.USER,
+          me
+        );
+
+        $("loginModal")
+          .classList.add(
+            "hidden"
+          );
+
+        updateMyProfileUI();
+
+        connectSocket();
+      }
+    );
+}
+
+function readFileAsDataURL(
+  file
+) {
+
+  return new Promise(
+    (resolve, reject) => {
+
+      const reader =
+        new FileReader();
+
+      reader.onload =
+        () =>
+          resolve(
+            reader.result
+          );
+
+      reader.onerror =
+        reject;
+
+      reader.readAsDataURL(
+        file
       );
     }
-
-    $("closeProfile").click();
-
-    toast("Profile la sove.");
-  };
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-let statuses = [];
-
-
-async function loadStatuses(){
-
-  /*
-    Status is prepared as a local/UI layer first.
-    Persistent status table can be added without
-    changing the Room layout.
-  */
-
-  const list =
-    $("statusList");
-
-  if(!statuses.length){
-
-    list.innerHTML = `
-      <div style="text-align:center;color:#71817e;padding:45px">
-        <div style="font-size:45px">◯</div>
-        <p>Pa gen status pou kounye a.</p>
-        <small>
-          Poste premye status ou.
-        </small>
-      </div>
-    `;
-
-    return;
-  }
-
-  list.innerHTML =
-    statuses.map(s => `
-
-      <div class="status-card">
-
-        <div class="status-user">
-
-          ${avatarHtml(me)}
-
-          <div>
-            <strong>
-              ${escapeHtml(me.display_name)}
-            </strong>
-
-            <div style="font-size:11px;color:#71817e">
-              ${new Date(s.created_at)
-                .toLocaleString()}
-            </div>
-          </div>
-
-        </div>
-
-        <div class="status-content">
-          ${escapeHtml(s.text)}
-        </div>
-
-      </div>
-
-    `).join("");
+  );
 }
 
+function setupProfile() {
 
-$("newTextStatus").onclick =
-  async () => {
+  $("profileBtn")
+    .addEventListener(
+      "click",
+      () => {
 
-    const text =
-      prompt("Ekri status ou:");
+        if (!me) return;
 
-    if(!text?.trim()) return;
+        $("profileName")
+          .value =
+          me.displayName ||
+          me.username;
 
-    statuses.unshift({
+        $("profileStatus")
+          .value =
+          me.status ||
+          "Disponib";
 
-      text:text.trim(),
+        $("profileModal")
+          .classList.remove(
+            "hidden"
+          );
+      }
+    );
 
-      created_at:
-        new Date().toISOString()
+  $("closeProfile")
+    .addEventListener(
+      "click",
+      () => {
+
+        $("profileModal")
+          .classList.add(
+            "hidden"
+          );
+      }
+    );
+
+  $("profileForm")
+    .addEventListener(
+      "submit",
+      async event => {
+
+        event.preventDefault();
+
+        const displayName =
+          $("profileName")
+            .value
+            .trim();
+
+        const status =
+          $("profileStatus")
+            .value
+            .trim();
+
+        const file =
+          $("profilePhoto")
+            .files[0];
+
+        let avatar =
+          me.avatar || "";
+
+        if (file) {
+
+          avatar =
+            await readFileAsDataURL(
+              file
+            );
+        }
+
+        const profile = {
+
+          username:
+            me.username,
+
+          displayName:
+            displayName ||
+            me.username,
+
+          status:
+            status ||
+            "Disponib",
+
+          avatar
+        };
+
+        me = profile;
+
+        saveJSON(
+          STORAGE.USER,
+          me
+        );
+
+        updateMyProfileUI();
+
+        if (
+          socket &&
+          socket.connected
+        ) {
+
+          socket.emit(
+            "update-profile",
+            {
+              displayName:
+                profile.displayName,
+
+              status:
+                profile.status,
+
+              avatar:
+                profile.avatar
+            }
+          );
+        }
+
+        $("profileModal")
+          .classList.add(
+            "hidden"
+          );
+
+        toast(
+          "Profile la sove."
+        );
+      }
+    );
+}
+
+function setupEvents() {
+
+  $("sendBtn")
+    .addEventListener(
+      "click",
+      sendCurrentMessage
+    );
+
+  $("messageInput")
+    .addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key ===
+          "Enter" &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          sendCurrentMessage();
+        }
+      }
+    );
+
+  $("messageInput")
+    .addEventListener(
+      "input",
+      () => {
+
+        if (
+          activeUser &&
+          socket &&
+          socket.connected
+        ) {
+
+          socket.emit(
+            "typing",
+            {
+              to:
+                activeUser
+            }
+          );
+
+          clearTimeout(
+            window._typingTimer
+          );
+
+          window._typingTimer =
+            setTimeout(
+              () => {
+
+                socket.emit(
+                  "stop-typing",
+                  {
+                    to:
+                      activeUser
+                  }
+                );
+
+              },
+              900
+            );
+        }
+      }
+    );
+
+  $("searchInput")
+    .addEventListener(
+      "input",
+      () => {
+
+        const query =
+          $("searchInput")
+            .value
+            .trim();
+
+        if (
+          socket &&
+          socket.connected
+        ) {
+
+          socket.emit(
+            "search-users",
+            {
+              query
+            }
+          );
+
+        } else {
+
+          refreshUserList();
+        }
+      }
+    );
+
+  document
+    .querySelectorAll(
+      ".filter"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () => {
+
+          document
+            .querySelectorAll(
+              ".filter"
+            )
+            .forEach(
+              b =>
+                b.classList.remove(
+                  "active"
+                )
+            );
+
+          button.classList.add(
+            "active"
+          );
+
+          refreshUserList();
+        }
+      );
     });
 
-    loadStatuses();
+  $("emojiBtn")
+    .addEventListener(
+      "click",
+      () => {
 
-    toast("Status la poste.");
-  };
+        const input =
+          $("messageInput");
 
+        input.value += " 😊";
 
-$("newPhotoStatus").onclick =
-  () => {
+        input.focus();
+      }
+    );
+
+  $("fileBtn")
+    .addEventListener(
+      "click",
+      () => {
+
+        $("fileInput")
+          .click();
+      }
+    );
+
+  $("fileInput")
+    .addEventListener(
+      "change",
+      async () => {
+
+        const file =
+          $("fileInput")
+            .files[0];
+
+        if (!file) return;
+
+        await sendMedia(
+          file
+        );
+
+        $("fileInput")
+          .value = "";
+      }
+    );
+
+  $("voiceCallBtn")
+    .addEventListener(
+      "click",
+      () =>
+        startCall("voice")
+    );
+
+  $("videoCallBtn")
+    .addEventListener(
+      "click",
+      () =>
+        startCall("video")
+    );
+
+  $("hangBtn")
+    .addEventListener(
+      "click",
+      endCall
+    );
+}
+
+async function sendMedia(file) {
+
+  if (!activeUser) {
 
     toast(
-      "Photo Status ap vini nan pwochen etap Storage la."
+      "Chwazi yon kontak dabò."
     );
-  };
 
-
-/* =========================================================
-   CALL / WEBRTC
-========================================================= */
-
-async function loadTurn(){
-
-  try{
-
-    const response =
-      await fetch("/config");
-
-    if(response.ok){
-
-      const data =
-        await response.json();
-
-      if(Array.isArray(data.iceServers)){
-
-        iceServers =
-          data.iceServers;
-      }
-    }
-
-  }catch(error){
-
-    console.warn(
-      "TURN config unavailable",
-      error
-    );
-  }
-}
-
-
-function showCallOverlay(){
-
-  $("callOverlay").style.display =
-    "flex";
-
-  $("callName").textContent =
-    selectedUser?.display_name ||
-    "Contact";
-
-  $("callAvatar").innerHTML =
-    selectedUser?.avatar_url
-      ? `<img class="call-avatar" src="${escapeHtml(selectedUser.avatar_url)}">`
-      : escapeHtml(
-          selectedUser?.display_name
-            ?.charAt(0)
-            .toUpperCase() ||
-          "Z"
-        );
-}
-
-
-async function createPeer(){
-
-  peerConnection =
-    new RTCPeerConnection({
-      iceServers
-    });
-
-
-  peerConnection.onicecandidate =
-    event => {
-
-      if(
-        event.candidate &&
-        socket?.connected
-      ){
-
-        socket.emit(
-          "ice-candidate",
-          {
-            callId:currentCallId,
-            to:selectedUser?.id,
-            candidate:event.candidate
-          }
-        );
-      }
-    };
-
-
-  peerConnection.ontrack =
-    event => {
-
-      if(event.streams?.[0]){
-
-        $("remoteVideo").srcObject =
-          event.streams[0];
-
-        $("remoteVideo").style.display =
-          currentCallType === "video"
-            ? "block"
-            : "none";
-      }
-    };
-
-
-  peerConnection.onconnectionstatechange =
-    () => {
-
-      if(
-        peerConnection &&
-        ["failed","closed","disconnected"]
-          .includes(
-            peerConnection.connectionState
-          )
-      ){
-
-        closeCall();
-      }
-    };
-
-
-  if(
-    localStream
-  ){
-
-    localStream
-      .getTracks()
-      .forEach(track => {
-
-        peerConnection.addTrack(
-          track,
-          localStream
-        );
-      });
-  }
-}
-
-
-async function startCall(type){
-
-  if(!selectedUser){
-
-    toast("Chwazi yon moun anvan.");
     return;
   }
 
-  currentCallType = type;
+  if (
+    !socket ||
+    !socket.connected
+  ) {
 
-  currentCallId =
-    crypto.randomUUID
-      ? crypto.randomUUID()
-      : String(Date.now());
+    toast(
+      "Media bezwen koneksyon entènèt."
+    );
 
-  showCallOverlay();
+    return;
+  }
 
-  $("callState").textContent =
+  if (
+    file.size >
+    12 * 1024 * 1024
+  ) {
+
+    toast(
+      "Fichye a twò gwo. Maksimòm 12MB."
+    );
+
+    return;
+  }
+
+  const data =
+    await readFileAsDataURL(
+      file
+    );
+
+  let kind = "voice";
+
+  if (
+    file.type.startsWith(
+      "video/"
+    )
+  ) {
+
+    kind = "video";
+
+  } else if (
+    file.type.startsWith(
+      "audio/"
+    )
+  ) {
+
+    kind = "voice";
+
+  } else {
+
+    // Pou kounye a
+    // trete lòt media
+    // kòm video.
+    kind = "video";
+  }
+
+  socket.emit(
+    "media-message",
+    {
+      to:
+        activeUser,
+
+      kind,
+
+      data
+    }
+  );
+}
+
+async function getIceServers() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/config"
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error();
+    }
+
+    return await response.json();
+
+  } catch {
+
+    return {
+      iceServers: [
+        {
+          urls:
+            "stun:stun.l.google.com:19302"
+        }
+      ]
+    };
+  }
+}
+
+async function startCall(
+  type
+) {
+
+  if (!activeUser) {
+
+    toast(
+      "Chwazi moun ou vle rele."
+    );
+
+    return;
+  }
+
+  if (
+    !socket ||
+    !socket.connected
+  ) {
+
+    toast(
+      "Ou bezwen koneksyon entènèt pou rele."
+    );
+
+    return;
+  }
+
+  callTarget =
+    activeUser;
+
+  callType =
+    type;
+
+  $("callName")
+    .textContent =
+    profiles[
+      activeUser
+    ]?.displayName ||
+    activeUser;
+
+  $("callType")
+    .textContent =
     type === "video"
-      ? "Video call ap rele..."
-      : "Voice call ap rele...";
+      ? "Apèl videyo"
+      : "Apèl vwa";
 
+  $("callAvatar")
+    .innerHTML =
+    avatarHTML(
+      profiles[
+        activeUser
+      ]
+    );
 
-  try{
+  $("callScreen")
+    .classList.add(
+      "show"
+    );
+
+  try {
+
+    const constraints =
+      type === "video"
+
+        ? {
+            audio: true,
+            video: true
+          }
+
+        : {
+            audio: true,
+            video: false
+          };
 
     localStream =
       await navigator.mediaDevices
-        .getUserMedia({
+        .getUserMedia(
+          constraints
+        );
 
-          audio:true,
+    const config =
+      await getIceServers();
 
-          video:
-            type === "video"
-        });
+    peerConnection =
+      new RTCPeerConnection(
+        config
+      );
 
-    if(type === "video"){
+    localStream
+      .getTracks()
+      .forEach(
+        track =>
+          peerConnection
+            .addTrack(
+              track,
+              localStream
+            )
+      );
 
-      $("localVideo").srcObject =
-        localStream;
+    peerConnection.onicecandidate =
+      event => {
 
-      $("localVideo").style.display =
-        "block";
-    }
+        if (
+          event.candidate
+        ) {
 
+          socket.emit(
+            "ice-candidate",
+            {
+              to:
+                callTarget,
 
-    await createPeer();
+              candidate:
+                event.candidate
+            }
+          );
+        }
+      };
 
     const offer =
-      await peerConnection.createOffer();
+      await peerConnection
+        .createOffer();
 
-    await peerConnection.setLocalDescription(
-      offer
+    await peerConnection
+      .setLocalDescription(
+        offer
+      );
+
+    socket.emit(
+      "call-offer",
+      {
+        to:
+          callTarget,
+
+        offer,
+
+        type
+      }
     );
 
+  } catch (error) {
 
-    if(socket?.connected){
-
-      socket.emit(
-        "call-offer",
-        {
-
-          callId:
-            currentCallId,
-
-          to:
-            selectedUser.id,
-
-          from:
-            me.id,
-
-          caller:
-            me.id,
-
-          callerName:
-            me.display_name,
-
-          type,
-
-          offer
-        }
-      );
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    toast(
-      "ZIQVONA pa jwenn aksè kamera/mikwo a."
+    console.error(
+      error
     );
 
     closeCall();
+
+    toast(
+      "ZIQVONA pa jwenn mikwo/kamera a."
+    );
   }
 }
 
+async function receiveCallOffer(
+  data
+) {
 
-async function receiveCallOffer(data){
+  if (!data?.from)
+    return;
 
-  currentCallId =
-    data.callId ||
-    data.id ||
-    crypto.randomUUID();
-
-  currentCallType =
-    data.type ||
-    "voice";
-
-  incomingCall = true;
-
-  selectedUser =
-    selectedUser ||
-    normalizeUser({
-      id:data.from || data.caller,
-      username:data.callerName,
-      display_name:data.callerName
-    });
-
-  showCallOverlay();
-
-  $("callState").textContent =
-    "Apèl entrant...";
-
-  $("acceptCallBtn")
-    .classList.remove("hidden");
-
-  $("rejectCallBtn")
-    .classList.remove("hidden");
-
-  $("endCallBtn")
-    .classList.add("hidden");
-
-  window.__incomingOffer =
+  pendingIncomingCall =
     data;
-}
 
+  const accept =
+    confirm(
+      `${
+        profiles[
+          data.from
+        ]?.displayName ||
+        data.from
+      } ap rele ou. Aksepte?`
+    );
 
-$("acceptCallBtn").onclick =
-  async () => {
+  if (!accept) {
 
-    const data =
-      window.__incomingOffer;
-
-    if(!data) return;
-
-    try{
-
-      localStream =
-        await navigator.mediaDevices
-          .getUserMedia({
-
-            audio:true,
-
-            video:
-              currentCallType === "video"
-          });
-
-      if(currentCallType === "video"){
-
-        $("localVideo").srcObject =
-          localStream;
-
-        $("localVideo").style.display =
-          "block";
+    socket.emit(
+      "call-reject",
+      {
+        to:
+          data.from
       }
+    );
 
-      await createPeer();
+    return;
+  }
 
-      await peerConnection.setRemoteDescription(
+  callTarget =
+    data.from;
+
+  callType =
+    data.type === "video"
+      ? "video"
+      : "voice";
+
+  $("callName")
+    .textContent =
+    profiles[
+      callTarget
+    ]?.displayName ||
+    callTarget;
+
+  $("callType")
+    .textContent =
+    callType === "video"
+      ? "Apèl videyo"
+      : "Apèl vwa";
+
+  $("callAvatar")
+    .innerHTML =
+    avatarHTML(
+      profiles[
+        callTarget
+      ]
+    );
+
+  $("callScreen")
+    .classList.add(
+      "show"
+    );
+
+  try {
+
+    const constraints =
+      callType === "video"
+
+        ? {
+            audio: true,
+            video: true
+          }
+
+        : {
+            audio: true,
+            video: false
+          };
+
+    localStream =
+      await navigator.mediaDevices
+        .getUserMedia(
+          constraints
+        );
+
+    const config =
+      await getIceServers();
+
+    peerConnection =
+      new RTCPeerConnection(
+        config
+      );
+
+    localStream
+      .getTracks()
+      .forEach(
+        track =>
+          peerConnection
+            .addTrack(
+              track,
+              localStream
+            )
+      );
+
+    peerConnection.onicecandidate =
+      event => {
+
+        if (
+          event.candidate
+        ) {
+
+          socket.emit(
+            "ice-candidate",
+            {
+              to:
+                callTarget,
+
+              candidate:
+                event.candidate
+            }
+          );
+        }
+      };
+
+    await peerConnection
+      .setRemoteDescription(
         new RTCSessionDescription(
           data.offer
         )
       );
 
-      const answer =
-        await peerConnection.createAnswer();
+    const answer =
+      await peerConnection
+        .createAnswer();
 
-      await peerConnection.setLocalDescription(
+    await peerConnection
+      .setLocalDescription(
         answer
       );
 
+    socket.emit(
+      "call-answer",
+      {
+        to:
+          callTarget,
 
-      if(socket?.connected){
-
-        socket.emit(
-          "call-answer",
-          {
-
-            callId:
-              currentCallId,
-
-            to:
-              data.from ||
-              data.caller,
-
-            answer
-          }
-        );
+        answer
       }
+    );
 
+  } catch (error) {
 
-      $("acceptCallBtn")
-        .classList.add("hidden");
-
-      $("rejectCallBtn")
-        .classList.add("hidden");
-
-      $("endCallBtn")
-        .classList.remove("hidden");
-
-      $("callState").textContent =
-        "Apèl konekte.";
-
-    }catch(error){
-
-      console.error(error);
-
-      toast(
-        "Pa kapab aktive mikwo/kamera."
-      );
-
-      closeCall();
-    }
-  };
-
-
-$("rejectCallBtn").onclick =
-  () => {
-
-    if(socket?.connected){
-
-      socket.emit(
-        "call-reject",
-        {
-          callId:currentCallId,
-          to:selectedUser?.id
-        }
-      );
-    }
+    console.error(
+      error
+    );
 
     closeCall();
-  };
 
+    toast(
+      "Kamera oswa mikwo pa disponib."
+    );
+  }
+}
 
-$("endCallBtn").onclick =
-  () => {
+function endCall() {
 
-    if(socket?.connected){
+  if (
+    socket &&
+    socket.connected &&
+    callTarget
+  ) {
 
-      socket.emit(
-        "call-end",
-        {
-          callId:currentCallId,
-          to:selectedUser?.id
-        }
-      );
-    }
+    socket.emit(
+      "call-end",
+      {
+        to:
+          callTarget
+      }
+    );
+  }
 
-    closeCall();
-  };
+  closeCall();
+}
 
+function closeCall() {
 
-function closeCall(){
-
-  if(localStream){
+  if (localStream) {
 
     localStream
       .getTracks()
-      .forEach(track =>
-        track.stop()
+      .forEach(
+        track =>
+          track.stop()
       );
 
     localStream = null;
   }
 
-  if(peerConnection){
+  if (peerConnection) {
 
-    try{
+    try {
       peerConnection.close();
-    }catch(_){}
+    } catch {}
 
     peerConnection = null;
   }
 
-  $("remoteVideo").srcObject = null;
-  $("localVideo").srcObject = null;
+  $("callScreen")
+    .classList.remove(
+      "show"
+    );
 
-  $("remoteVideo").style.display =
-    "none";
+  callTarget = null;
 
-  $("localVideo").style.display =
-    "none";
-
-  $("callOverlay").style.display =
-    "none";
-
-  $("acceptCallBtn")
-    .classList.add("hidden");
-
-  $("rejectCallBtn")
-    .classList.add("hidden");
-
-  $("endCallBtn")
-    .classList.remove("hidden");
-
-  currentCallId = null;
-  currentCallType = null;
-  incomingCall = false;
-  window.__incomingOffer = null;
+  pendingIncomingCall =
+    null;
 }
 
+window.addEventListener(
+  "online",
+  () => {
 
-$("voiceCallBtn").onclick =
-  () => startCall("voice");
+    setNetworkState();
 
-$("videoCallBtn").onclick =
-  () => startCall("video");
+    flushQueue();
 
+    if (
+      socket &&
+      !socket.connected
+    ) {
 
-/* =========================================================
-   PHOTO
-========================================================= */
-
-$("photoBtn").onclick = () => {
-
-  $("photoInput").click();
-};
-
-
-$("photoInput").onchange = () => {
-
-  const file =
-    $("photoInput").files[0];
-
-  if(!file) return;
-
-  if(file.size > 6 * 1024 * 1024){
-
-    toast("Foto a twò gwo. Maksimòm 6MB.");
-    return;
+      socket.connect();
+    }
   }
+);
 
-  const reader =
-    new FileReader();
+window.addEventListener(
+  "offline",
+  () => {
 
-  reader.onload = () => {
-
-    const image =
-      document.createElement("img");
-
-    image.src =
-      reader.result;
-
-    image.style.maxWidth =
-      "220px";
-
-    image.style.borderRadius =
-      "12px";
-
-    const wrap =
-      document.createElement("div");
-
-    wrap.className =
-      "message mine";
-
-    wrap.appendChild(image);
-
-    $("messages").appendChild(wrap);
-
-    $("messages").scrollTop =
-      $("messages").scrollHeight;
+    setNetworkState();
 
     toast(
-      "Foto pare pou voye."
+      "Ou offline. Mesaj yo ap rete sou aparèy la."
     );
-  };
-
-  reader.readAsDataURL(file);
-};
-
-
-/* =========================================================
-   EMOJI
-========================================================= */
-
-$("emojiBtn").onclick = () => {
-
-  const emojis =
-    "😀 😃 😄 😁 😂 🤣 😊 😍 🥰 😎 😘 ❤️ 💚 💙 💜 🤍 🔥 🎉 👍 👏 🙏 😂 😭 😡 😮";
-
-  const choice =
-    prompt(
-      "Chwazi emoji:\n\n" +
-      emojis
-    );
-
-  if(choice){
-
-    $("messageInput").value +=
-      choice.trim();
-
-    $("messageInput").focus();
   }
-};
+);
 
+window.addEventListener(
+  "load",
+  () => {
 
-/* =========================================================
-   LOGOUT
-========================================================= */
+    messageQueue =
+      loadJSON(
+        STORAGE.QUEUE,
+        []
+      );
 
-$("logoutBtn").onclick =
-  async () => {
+    chats =
+      loadJSON(
+        "ziqvona_chats",
+        {}
+      );
 
-    try{
+    profiles =
+      loadJSON(
+        STORAGE.PROFILES,
+        {}
+      );
 
-      if(socket){
+    setNetworkState();
 
-        socket.disconnect();
-        socket = null;
-      }
+    setupLogin();
 
-      closeCall();
+    setupProfile();
 
-      await supabaseClient.auth.signOut();
+    setupEvents();
 
-    }catch(error){
+    refreshUserList();
 
-      console.error(error);
+    // Service Worker
+    if (
+      "serviceWorker" in
+      navigator
+    ) {
+
+      navigator.serviceWorker
+        .register(
+          "/sw.js"
+        )
+        .catch(
+          error =>
+            console.warn(
+              "SW error:",
+              error
+            )
+        );
     }
+  }
+);
 
-    session = null;
-    me = null;
-    selectedUser = null;
-
-    $("appPage")
-      .classList.add("hidden");
-
-    $("authPage")
-      .classList.remove("hidden");
-
-    $("otpBox")
-      .classList.add("hidden");
-
-    $("loginBox")
-      .classList.remove("hidden");
-
-    $("emailInput").value = "";
-    $("phoneInput").value = "";
-    $("otpInput").value = "";
-
-    toast("Ou dekonekte.");
-  };
-
-
-/* =========================================================
-   START
-========================================================= */
-
-boot();
-
+})();
 </script>
 
 </body>
