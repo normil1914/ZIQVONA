@@ -1390,6 +1390,22 @@ function renderMessages() {
 
     } else if (
       message.kind ===
+      "image"
+    ) {
+
+      bubble.innerHTML = `
+        <img
+          src="${message.data}"
+          alt="Foto voye nan chat la"
+          style="display:block;max-width:280px;width:100%;height:auto;border-radius:12px"
+        >
+        <div class="messageTime">
+          ${formatTime(message.time)}
+        </div>
+      `;
+
+    } else if (
+      message.kind ===
       "video"
     ) {
 
@@ -2507,30 +2523,17 @@ async function sendMedia(file) {
       file
     );
 
-  let kind = "voice";
+  let kind;
 
-  if (
-    file.type.startsWith(
-      "video/"
-    )
-  ) {
-
+  if (file.type.startsWith("image/")) {
+    kind = "image";
+  } else if (file.type.startsWith("video/")) {
     kind = "video";
-
-  } else if (
-    file.type.startsWith(
-      "audio/"
-    )
-  ) {
-
+  } else if (file.type.startsWith("audio/")) {
     kind = "voice";
-
   } else {
-
-    // Pou kounye a
-    // trete lòt media
-    // kòm video.
-    kind = "video";
+    toast("Kalite fichye sa a pa sipòte.");
+    return;
   }
 
   socket.emit(
