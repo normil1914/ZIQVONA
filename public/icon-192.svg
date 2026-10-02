@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#10bfa3"/>
+  <circle cx="96" cy="96" r="66" fill="#07977f"/>
+  <path d="M55 70c0-9 7-16 16-16h50c9 0 16 7 16 16v43c0 9-7 16-16 16H92l-23 18v-18h-7c-4 0-7-3-7-7V70z" fill="#ffffff"/>
+  <text x="96" y="106"
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="34"
+        font-weight="700"
+        fill="#07977f">Z</text>
+</svg>
