@@ -1,0 +1,30 @@
+{
+  "name": "ZIQVONA — Better vibes • One family",
+  "short_name": "ZIQVONA",
+  "description": "ZIQVONA — yon aplikasyon chat ak kominikasyon an tan reyèl.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#10bfa3",
+  "lang": "ht",
+  "categories": [
+    "social",
+    "communication"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
