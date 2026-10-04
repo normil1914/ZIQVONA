@@ -534,20 +534,148 @@ button {
 
 @media(max-width:800px) {
 
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  .app {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
   .sidebar {
     width: 100%;
+    min-width: 0;
+    height: 100%;
   }
 
   .main {
     display: none;
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    min-height: 0;
   }
 
   .sidebar.chat-open {
     display: none;
   }
 
+  .sidebar.chat-open + .main {
+    display: flex;
+  }
+
+  .chatHeader {
+    min-height: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .chatHeader .avatar {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .chatActions {
+    gap: 3px;
+  }
+
+  .chatActions .iconBtn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+  }
+
+  .messages {
+    min-height: 0;
+    padding: 12px 10px 10px;
+    gap: 7px;
+  }
+
+  .message {
+    max-width: 86%;
+  }
+
+  .composer {
+    width: 100%;
+    min-height: 65px;
+    flex: 0 0 auto;
+    padding: 8px 8px;
+    gap: 5px;
+    align-items: flex-end;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .composer .iconBtn {
+    width: 40px;
+    height: 42px;
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .composer textarea {
+    min-width: 0;
+    width: 100%;
+    min-height: 42px;
+    max-height: 100px;
+    padding: 10px;
+    resize: none;
+  }
+
+  .voiceBtn,
+  .sendBtn {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0;
+  }
+
+  .voiceRecorder {
+    min-width: 0;
+    width: 100%;
+    gap: 5px;
+  }
+
+  .voiceRecorder audio {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .voiceRecorder button {
+    flex: 0 0 auto;
+    padding: 0 8px;
+  }
+
   .networkBar {
-    left: 0;
+    display: none;
+  }
+
+  .callMedia {
+    width: 94vw;
+  }
+
+  .callLocal {
+    width: 110px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .modal {
+    padding: 12px;
+  }
+
+  .card {
+    max-height: 92dvh;
+    overflow-y: auto;
   }
 
 }
