@@ -70,14 +70,14 @@ button,input,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:f
 <script>
 (()=>{"use strict";
 const URL="https://hkirnyqousvmphpwqfga.supabase.co";
-const KEY="sb_publishable_DEo3KVe4-8hiiO445ahWMg_Xv_LInWa";
+const KEY="sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
 const $=id=>document.getElementById(id);
 const STORE={me:"ziqvona_me",chats:"ziqvona_chats",profiles:"ziqvona_profiles"};
-let sb,session,me,selected,profiles=JSON.parse(localStorage.getItem(STORE.profiles)||"{}"),chats=JSON.parse(localStorage.getItem(STORE.chats)||"{}"),socket,recorder,chunks=[],stream,peer,target,callType;
+let sb,session,me,selected,lastSessionId="",profiles=JSON.parse(localStorage.getItem(STORE.profiles)||"{}"),chats=JSON.parse(localStorage.getItem(STORE.chats)||"{}"),socket,recorder,chunks=[],stream,peer,target,callType;
 
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function friendly(e){let m=String(e?.message||e||""),l=m.toLowerCase();if(l.includes("invalid login credentials"))return"Email oswa password la pa bon.";if(l.includes("email not confirmed"))return"Email la poko konfime. Verifye email ou.";if(l.includes("user already registered"))return"Email sa deja gen yon kont.";if(l.includes("invalid api key")||l.includes("apikey"))return"Kle Supabase la pa bon.";if(l.includes("failed to fetch")||l.includes("networkerror")||l.includes("fetch"))return"ZIQVONA pa rive kontakte Supabase. Verifye entènèt la.";return m||"Yon erè rive."}
+function friendly(e){let m=String(e?.message||e||""),l=m.toLowerCase();if(l.includes("invalid login credentials"))return"Email oswa password la pa bon.";if(l.includes("email not confirmed"))return"Email la poko konfime. Verifye email ou.";if(l.includes("user already registered"))return"Email sa deja gen yon kont.";if(l.includes("invalid api key")||l.includes("apikey"))return"Kle Supabase la pa bon. Nou mete publishable key ZIQVONA a; si erè a toujou parèt, key la dwe verifye nan Supabase Settings → API.";if(l.includes("sms provider")||l.includes("phone provider")||l.includes("twilio"))return"Phone OTP poko aktive: mete yon SMS provider nan Supabase Authentication → Phone.";if(l.includes("failed to fetch")||l.includes("networkerror")||l.includes("fetch"))return"ZIQVONA pa rive kontakte Supabase. Verifye entènèt la.";return m||"Yon erè rive."}
 function avatar(el,src,name){el.innerHTML=src?'<img src="'+esc(src)+'">':esc((name||"Z")[0].toUpperCase())}
 function net(t,ok=false){$("network").textContent=t;$("network").style.background=ok?"#087f6c":"#173d38"}
 
@@ -86,12 +86,14 @@ async function init(){
   if(!window.supabase?.createClient)throw Error("Supabase SDK pa chaje.");
   sb=window.supabase.createClient(URL,KEY,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
   const r=await sb.auth.getSession();if(r.error)throw r.error;net("Supabase: connected",true);await sessionReady(r.data.session);
-  sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_OUT"){session=null;me=null;$("authModal").classList.add("show")}else if(s)sessionReady(s)});
+  sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_OUT"){session=null;me=null;lastSessionId="";$("authModal").classList.add("show")}else if(s)sessionReady(s)});
  }catch(e){console.error(e);net("Supabase: error");$("authError").textContent=friendly(e)}
 }
 async function sessionReady(s){
  session=s;if(!s)return;
- me={id:s.user.id,email:s.user.email||"",username:s.user.user_metadata?.username||s.user.email?.split("@")[0]||"user",display_name:s.user.user_metadata?.display_name||"ZIQVONA User",status:s.user.user_metadata?.status||"Online",avatar:localStorage.getItem("ziqvona_avatar")||""};
+ if(lastSessionId===s.user.id && socket?.connected)return;
+ lastSessionId=s.user.id;
+ me={id:s.user.id,email:s.user.email||"",phone:s.user.phone||"",username:s.user.user_metadata?.username||s.user.email?.split("@")[0]||"user",display_name:s.user.user_metadata?.display_name||"ZIQVONA User",status:s.user.user_metadata?.status||"Online",avatar:localStorage.getItem("ziqvona_avatar")||""};
  save(STORE.me,me);$("authModal").classList.remove("show");renderMe();connect();
 }
 let authChannel="email";
