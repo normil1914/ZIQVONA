@@ -7,8 +7,14 @@
 
 <title>ZIQVONA</title>
 
-<meta name="theme-color"
-      content="#10bfa3">
+<meta name="theme-color" content="#10bfa3">
+
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#10bfa3">
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 * {
@@ -92,7 +98,7 @@ button {
   padding: 14px 18px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
   background: #f8fbfa;
 }
 
@@ -145,6 +151,10 @@ button {
 
 .iconBtn:hover {
   background: #eaf8f5;
+}
+
+.logoutBtn:hover {
+  background: #fff0f0;
 }
 
 .search {
@@ -285,12 +295,7 @@ button {
   border-radius: 15px;
   background: white;
   box-shadow:
-    0 2px 10px rgba(
-      0,
-      0,
-      0,
-      .03
-    );
+    0 2px 10px rgba(0,0,0,.03);
 }
 
 .message.mine {
@@ -340,8 +345,77 @@ button {
   border-color: #10bfa3;
 }
 
+.voiceBtn {
+  width: 46px;
+  height: 45px;
+  border: 0;
+  border-radius: 14px;
+  background: #eef7f5;
+  color: #075e54;
+  font-size: 21px;
+  cursor: pointer;
+  flex: 0 0 auto;
+  touch-action: none;
+}
 
-.voiceBtn{width:46px;height:45px;border:0;border-radius:14px;background:#eef7f5;color:#075e54;font-size:21px;cursor:pointer;flex:0 0 auto;touch-action:none}.voiceBtn.recording{background:#10bfa3;color:#fff;animation:ziqvonaPulse 1s infinite}.voiceRecorder{display:none;align-items:center;gap:7px;flex:1;min-width:0}.voiceRecorder.show{display:flex}.voiceRecorder audio{flex:1;min-width:90px;height:40px}.voiceTimer{min-width:38px;font-size:13px;font-weight:700;color:#075e54}.voiceRecorder button{height:40px;border:0;border-radius:11px;padding:0 10px;cursor:pointer}.voiceCancel{background:#f2f4f4;color:#54656f}.voiceSend{background:#10bfa3;color:#fff}@keyframes ziqvonaPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.voiceBtn.recording {
+  background: #10bfa3;
+  color: #fff;
+  animation: ziqvonaPulse 1s infinite;
+}
+
+.voiceRecorder {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+}
+
+.voiceRecorder.show {
+  display: flex;
+}
+
+.voiceRecorder audio {
+  flex: 1;
+  min-width: 90px;
+  height: 40px;
+}
+
+.voiceTimer {
+  min-width: 38px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #075e54;
+}
+
+.voiceRecorder button {
+  height: 40px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+.voiceCancel {
+  background: #f2f4f4;
+  color: #54656f;
+}
+
+.voiceSend {
+  background: #10bfa3;
+  color: #fff;
+}
+
+@keyframes ziqvonaPulse {
+  0%,100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
 .sendBtn {
   width: 48px;
   height: 45px;
@@ -373,15 +447,115 @@ button {
   color: #8c641d;
 }
 
+/* =========================
+   AUTH
+========================= */
+
+.authModal {
+  z-index: 500;
+}
+
+.authCard {
+  width: min(450px, 100%);
+  background: white;
+  border-radius: 24px;
+  padding: 27px;
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.22);
+}
+
+.authLogo {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 15px;
+  border-radius: 20px;
+  background: #10bfa3;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 29px;
+  font-weight: 900;
+}
+
+.authCard h2 {
+  margin: 0 0 7px;
+  font-size: 25px;
+}
+
+.authCard > p {
+  color: #7c8987;
+  line-height: 1.5;
+  margin-top: 0;
+}
+
+.authField {
+  margin: 14px 0;
+}
+
+.authField label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.authField input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 13px;
+  border: 1px solid #dfe9e6;
+  border-radius: 13px;
+  outline: none;
+}
+
+.authField input:focus {
+  border-color: #10bfa3;
+  box-shadow: 0 0 0 3px rgba(16,191,163,.10);
+}
+
+.authPrimary {
+  width: 100%;
+  min-height: 47px;
+  border: 0;
+  border-radius: 13px;
+  padding: 12px;
+  margin-top: 8px;
+  background: #10bfa3;
+  color: white;
+  font-weight: 800;
+}
+
+.authPrimary:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.authSwitch {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #078f7a;
+  font-weight: 700;
+  padding: 14px 5px 3px;
+}
+
+.authError {
+  min-height: 20px;
+  margin-top: 10px;
+  color: #c43f3f;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* =========================
+   MODALS
+========================= */
+
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(
-    0,
-    0,
-    0,
-    .48
-  );
+  background: rgba(0,0,0,.48);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -395,12 +569,7 @@ button {
   border-radius: 22px;
   padding: 25px;
   box-shadow:
-    0 20px 70px rgba(
-      0,
-      0,
-      0,
-      .18
-    );
+    0 20px 70px rgba(0,0,0,.18);
 }
 
 .card h2 {
@@ -425,6 +594,7 @@ button {
 
 .field input {
   width: 100%;
+  min-height: 44px;
   padding: 12px;
   border: 1px solid #dfe9e6;
   border-radius: 12px;
@@ -449,6 +619,10 @@ button {
   background: #edf3f1;
 }
 
+/* =========================
+   CALL
+========================= */
+
 .callScreen {
   display: none;
   position: fixed;
@@ -472,6 +646,7 @@ button {
   display: flex;
   justify-content: center;
 }
+
 .callMedia video {
   width: 100%;
   max-height: 58vh;
@@ -479,21 +654,39 @@ button {
   background: #000;
   object-fit: contain;
 }
+
 .callLocal {
   position: absolute;
   right: 14px;
   bottom: 14px;
   width: 150px;
 }
+
 .callLocal video {
   width: 100%;
   max-height: 180px;
   border: 2px solid rgba(255,255,255,.85);
 }
-.callMedia.voice #remoteVideo { display: none; }
-.callMedia.voice #localVideo { display: none; }
-.callMedia.voice #remoteAudio { width: 1px; height: 1px; opacity: 0; position: absolute; }
-.callMedia.video #remoteAudio { display: none; }
+
+.callMedia.voice #remoteVideo {
+  display: none;
+}
+
+.callMedia.voice #localVideo {
+  display: none;
+}
+
+.callMedia.voice #remoteAudio {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+}
+
+.callMedia.video #remoteAudio {
+  display: none;
+}
+
 .callAvatar {
   width: 110px;
   height: 110px;
@@ -527,7 +720,9 @@ button {
   padding: 11px 16px;
   border-radius: 12px;
   display: none;
-  z-index: 200;
+  z-index: 600;
+  max-width: 90vw;
+  text-align: center;
 }
 
 .toast.show {
@@ -675,15 +870,22 @@ button {
     padding: 12px;
   }
 
-  .card {
+  .card,
+  .authCard {
     max-height: 92dvh;
     overflow-y: auto;
   }
 
+  .authCard {
+    padding: 22px;
+    border-radius: 20px;
+  }
+
+  .authCard h2 {
+    font-size: 22px;
+  }
 }
 </style>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#10bfa3">
 </head>
 
 <body>
@@ -727,8 +929,19 @@ button {
 
       <button
         class="iconBtn"
-        id="profileBtn">
+        id="profileBtn"
+        type="button"
+        title="Profile">
         ⚙️
+      </button>
+
+      <button
+        class="iconBtn logoutBtn"
+        id="logoutBtn"
+        type="button"
+        title="Dekonekte"
+        aria-label="Dekonekte">
+        🚪
       </button>
 
     </div>
@@ -797,13 +1010,15 @@ button {
 
         <button
           class="iconBtn"
-          id="voiceCallBtn">
+          id="voiceCallBtn"
+          type="button">
           📞
         </button>
 
         <button
           class="iconBtn"
-          id="videoCallBtn">
+          id="videoCallBtn"
+          type="button">
           🎥
         </button>
 
@@ -825,13 +1040,15 @@ button {
 
       <button
         class="iconBtn"
-        id="emojiBtn">
+        id="emojiBtn"
+        type="button">
         😊
       </button>
 
       <button
         class="iconBtn"
-        id="fileBtn">
+        id="fileBtn"
+        type="button">
         📎
       </button>
 
@@ -849,16 +1066,42 @@ button {
         🎤
       </button>
 
-      <div class="voiceRecorder" id="voiceRecorder">
-        <span class="voiceTimer" id="voiceTimer">0:00</span>
-        <audio id="voicePreview" controls preload="metadata"></audio>
-        <button class="voiceCancel" id="voiceCancel" type="button">🗑️</button>
-        <button class="voiceSend" id="voiceSend" type="button">➤</button>
+      <div
+        class="voiceRecorder"
+        id="voiceRecorder">
+
+        <span
+          class="voiceTimer"
+          id="voiceTimer">
+          0:00
+        </span>
+
+        <audio
+          id="voicePreview"
+          controls
+          preload="metadata">
+        </audio>
+
+        <button
+          class="voiceCancel"
+          id="voiceCancel"
+          type="button">
+          🗑️
+        </button>
+
+        <button
+          class="voiceSend"
+          id="voiceSend"
+          type="button">
+          ➤
+        </button>
+
       </div>
 
       <button
         class="sendBtn"
-        id="sendBtn">
+        id="sendBtn"
+        type="button">
         ➤
       </button>
 
@@ -874,43 +1117,98 @@ button {
   hidden
   accept="image/*,video/*,audio/*">
 
+<!-- =========================
+     REAL SUPABASE LOGIN
+========================= -->
+
 <div
-  class="modal"
+  class="modal authModal"
   id="loginModal">
 
   <form
-    class="card"
+    class="authCard"
     id="loginForm">
 
-    <div
-      class="logo"
-      style="margin-bottom:14px">
+    <div class="authLogo">
       Z
     </div>
 
-    <h2>
+    <h2 id="authTitle">
       Byenveni sou ZIQVONA
     </h2>
 
-    <p>
-      Kreye non ou pou antre nan Room Page la.
+    <p id="authSubtitle">
+      Konekte pou antre nan fanmi ZIQVONA.
     </p>
 
-    <div class="field">
+    <div
+      class="authField hidden"
+      id="usernameField">
+
+      <label>
+        Username
+      </label>
+
+      <input
+        id="loginUsername"
+        type="text"
+        maxlength="30"
+        autocomplete="username"
+        placeholder="Egzanp: wickny">
+
+    </div>
+
+    <div
+      class="authField hidden"
+      id="displayNameField">
 
       <label>
         Non ou
       </label>
 
       <input
-        id="loginName"
-        required
-        maxlength="40"
-        placeholder="Egzanp: Carl">
+        id="loginDisplayName"
+        type="text"
+        maxlength="60"
+        autocomplete="name"
+        placeholder="Egzanp: Wickny">
 
     </div>
 
-    <div class="field">
+    <div class="authField">
+
+      <label>
+        Email
+      </label>
+
+      <input
+        id="loginEmail"
+        type="email"
+        required
+        autocomplete="email"
+        placeholder="email@example.com">
+
+    </div>
+
+    <div class="authField">
+
+      <label>
+        Password
+      </label>
+
+      <input
+        id="loginPassword"
+        type="password"
+        required
+        minlength="6"
+        autocomplete="current-password"
+        placeholder="••••••••">
+
+    </div>
+
+    <div
+      class="authField hidden"
+      id="statusField">
 
       <label>
         Status
@@ -918,35 +1216,42 @@ button {
 
       <input
         id="loginStatus"
+        type="text"
         maxlength="80"
         placeholder="Disponib">
 
     </div>
 
-    <div class="field">
-
-      <label>
-        Foto profil (opsyonèl)
-      </label>
-
-      <input
-        id="loginPhoto"
-        type="file"
-        accept="image/*">
-
-    </div>
-
     <button
-      class="primary"
+      class="authPrimary"
+      id="authSubmit"
       type="submit">
 
-      Konekte sou ZIQVONA
+      Konekte
 
     </button>
+
+    <button
+      class="authSwitch"
+      id="authSwitch"
+      type="button">
+
+      Ou poko gen kont? Kreye youn
+
+    </button>
+
+    <div
+      class="authError"
+      id="authError">
+    </div>
 
   </form>
 
 </div>
+
+<!-- =========================
+     PROFILE
+========================= -->
 
 <div
   class="modal hidden"
@@ -1022,6 +1327,10 @@ button {
 
 </div>
 
+<!-- =========================
+     NEW CHAT
+========================= -->
+
 <div
   class="modal hidden"
   id="newChatModal">
@@ -1086,6 +1395,10 @@ button {
 
 </div>
 
+<!-- =========================
+     CALL SCREEN
+========================= -->
+
 <div
   class="callScreen"
   id="callScreen">
@@ -1104,19 +1417,48 @@ button {
     Apèl vwa
   </div>
 
-  <div id="callState" style="opacity:.8;margin-top:8px;font-size:14px">Koneksyon...</div>
+  <div
+    id="callState"
+    style="
+      opacity:.8;
+      margin-top:8px;
+      font-size:14px
+    ">
+    Koneksyon...
+  </div>
 
-  <div id="callMedia" class="callMedia voice">
-    <video id="remoteVideo" autoplay playsinline></video>
-    <audio id="remoteAudio" autoplay></audio>
+  <div
+    id="callMedia"
+    class="callMedia voice">
+
+    <video
+      id="remoteVideo"
+      autoplay
+      playsinline>
+    </video>
+
+    <audio
+      id="remoteAudio"
+      autoplay>
+    </audio>
+
     <div class="callLocal">
-      <video id="localVideo" autoplay muted playsinline></video>
+
+      <video
+        id="localVideo"
+        autoplay
+        muted
+        playsinline>
+      </video>
+
     </div>
+
   </div>
 
   <button
     class="hang"
-    id="hangBtn">
+    id="hangBtn"
+    type="button">
     ☎
   </button>
 
@@ -1148,11 +1490,33 @@ button {
 
 "use strict";
 
-/*
-  ZIQVONA OFFLINE-FIRST CLIENT
-*/
+/* =====================================================
+   ZIQVONA
+   SUPABASE AUTH + SOCKET.IO + CHAT + MEDIA + WEBRTC
+===================================================== */
+
+/* =====================================================
+   SUPABASE CONFIG
+===================================================== */
+
+const SUPABASE_URL =
+  "https://hkirnyqousvmphpwqfga.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+/* =====================================================
+   STORAGE
+===================================================== */
 
 const STORAGE = {
+
   USER:
     "ziqvona_user",
 
@@ -1164,7 +1528,12 @@ const STORAGE = {
 
   PROFILES:
     "ziqvona_profiles"
+
 };
+
+/* =====================================================
+   GLOBALS
+===================================================== */
 
 let socket = null;
 
@@ -1189,7 +1558,14 @@ let peerConnection = null;
 let callTarget = null;
 
 let callType = "voice";
+
 let pendingIceCandidates = [];
+
+let authMode = "login";
+
+/* =====================================================
+   HELPERS
+===================================================== */
 
 function $(id) {
   return document.getElementById(id);
@@ -1199,16 +1575,30 @@ function toast(message) {
 
   const el = $("toast");
 
+  if (!el) return;
+
   el.textContent = message;
 
   el.classList.add("show");
 
-  setTimeout(() => {
-    el.classList.remove("show");
-  }, 2600);
+  clearTimeout(
+    window._ziqvonaToast
+  );
+
+  window._ziqvonaToast =
+    setTimeout(() => {
+
+      el.classList.remove(
+        "show"
+      );
+
+    }, 3000);
 }
 
-function loadJSON(key, fallback) {
+function loadJSON(
+  key,
+  fallback
+) {
 
   try {
 
@@ -1225,12 +1615,25 @@ function loadJSON(key, fallback) {
   }
 }
 
-function saveJSON(key, value) {
+function saveJSON(
+  key,
+  value
+) {
 
-  localStorage.setItem(
-    key,
-    JSON.stringify(value)
-  );
+  try {
+
+    localStorage.setItem(
+      key,
+      JSON.stringify(value)
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "localStorage error:",
+      error
+    );
+  }
 }
 
 function clientId() {
@@ -1239,6 +1642,35 @@ function clientId() {
     .toString(36)
     .slice(2)}`;
 }
+
+function escapeHTML(value) {
+
+  return String(value ?? "")
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+}
+
+/* =====================================================
+   NETWORK
+===================================================== */
 
 function setNetworkState() {
 
@@ -1251,6 +1683,8 @@ function setNetworkState() {
   const text =
     $("networkText");
 
+  if (!bar || !text) return;
+
   bar.classList.toggle(
     "online",
     online
@@ -1261,10 +1695,17 @@ function setNetworkState() {
     !online
   );
 
-  text.textContent = online
-    ? "Online — ZIQVONA konekte"
-    : "Offline — mesaj yo ap tann koneksyon";
+  text.textContent =
+    online
+
+      ? "Online — ZIQVONA konekte"
+
+      : "Offline — mesaj yo ap tann koneksyon";
 }
+
+/* =====================================================
+   AVATAR
+===================================================== */
 
 function avatarHTML(profile) {
 
@@ -1275,7 +1716,7 @@ function avatarHTML(profile) {
 
     return `
       <img
-        src="${profile.avatar}"
+        src="${escapeHTML(profile.avatar)}"
         alt="">
     `;
   }
@@ -1285,21 +1726,29 @@ function avatarHTML(profile) {
     profile?.username ||
     "Z";
 
-  return (
-    name.charAt(0)
+  return escapeHTML(
+    name
+      .charAt(0)
       .toUpperCase()
   );
 }
+
+/* =====================================================
+   PROFILE UI
+===================================================== */
 
 function updateMyProfileUI() {
 
   if (!me) return;
 
   $("myName").textContent =
-    me.displayName || me.username;
+    me.displayName ||
+    me.username ||
+    "ZIQVONA";
 
   $("myStatus").textContent =
-    me.status || "Disponib";
+    me.status ||
+    "Disponib";
 
   $("myAvatar").innerHTML =
     avatarHTML(me);
@@ -1324,9 +1773,14 @@ function updateChatHeader() {
   const profile =
     profiles[activeUser] ||
     {
-      username: activeUser,
-      displayName: activeUser,
-      status: "Disponib"
+      username:
+        activeUser,
+
+      displayName:
+        activeUser,
+
+      status:
+        "Disponib"
     };
 
   $("chatName").textContent =
@@ -1334,13 +1788,19 @@ function updateChatHeader() {
     activeUser;
 
   $("chatStatus").textContent =
-    onlineUsers.includes(activeUser)
+    onlineUsers.includes(
+      activeUser
+    )
       ? "● Online"
       : "Offline";
 
   $("chatAvatar").innerHTML =
     avatarHTML(profile);
 }
+
+/* =====================================================
+   USER LIST
+===================================================== */
 
 function renderUsers(list) {
 
@@ -1365,73 +1825,70 @@ function renderUsers(list) {
     return;
   }
 
-  list.forEach(profile => {
+  list.forEach(
+    profile => {
 
-    const item =
-      document.createElement("div");
+      const item =
+        document.createElement(
+          "div"
+        );
 
-    item.className =
-      "userItem" +
-      (
-        activeUser ===
-        profile.username
-          ? " active"
-          : ""
+      item.className =
+        "userItem" +
+        (
+          activeUser ===
+          profile.username
+            ? " active"
+            : ""
+        );
+
+      item.innerHTML = `
+
+        <div class="avatar">
+          ${avatarHTML(profile)}
+        </div>
+
+        <div class="userText">
+
+          <strong>
+            ${escapeHTML(
+              profile.displayName ||
+              profile.username
+            )}
+          </strong>
+
+          <span>
+            ${escapeHTML(
+              profile.status ||
+              "Disponib"
+            )}
+          </span>
+
+        </div>
+
+        ${
+          onlineUsers.includes(
+            profile.username
+          )
+            ? `<div class="onlineDot"></div>`
+            : ""
+        }
+
+      `;
+
+      item.addEventListener(
+        "click",
+        () =>
+          openChat(
+            profile.username
+          )
       );
 
-    item.innerHTML = `
-
-      <div class="avatar">
-        ${avatarHTML(profile)}
-      </div>
-
-      <div class="userText">
-
-        <strong>
-          ${escapeHTML(
-            profile.displayName ||
-            profile.username
-          )}
-        </strong>
-
-        <span>
-          ${escapeHTML(
-            profile.status ||
-            "Disponib"
-          )}
-        </span>
-
-      </div>
-
-      ${
-        onlineUsers.includes(
-          profile.username
-        )
-          ? `<div class="onlineDot"></div>`
-          : ""
-      }
-
-    `;
-
-    item.addEventListener(
-      "click",
-      () => openChat(
-        profile.username
-      )
-    );
-
-    container.appendChild(item);
-  });
-}
-
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+      container.appendChild(
+        item
+      );
+    }
+  );
 }
 
 function refreshUserList() {
@@ -1452,26 +1909,31 @@ function refreshUserList() {
 
   if (query) {
 
-    list = list.filter(profile =>
+    list =
+      list.filter(
+        profile =>
 
-      profile.username
-        .toLowerCase()
-        .includes(query)
+          profile.username
+            .toLowerCase()
+            .includes(query)
 
-      ||
+          ||
 
-      (
-        profile.displayName ||
-        ""
-      )
-        .toLowerCase()
-        .includes(query)
-
-    );
+          (
+            profile.displayName ||
+            ""
+          )
+            .toLowerCase()
+            .includes(query)
+      );
   }
 
   renderUsers(list);
 }
+
+/* =====================================================
+   CHAT
+===================================================== */
 
 function renderMessages() {
 
@@ -1506,108 +1968,123 @@ function renderMessages() {
     return;
   }
 
-  list.forEach(message => {
+  list.forEach(
+    message => {
 
-    const mine =
-      message.from ===
-      me.username;
+      const mine =
+        message.from ===
+        me.username;
 
-    const bubble =
-      document.createElement("div");
+      const bubble =
+        document.createElement(
+          "div"
+        );
 
-    bubble.className =
-      "message " +
-      (
-        mine
-          ? "mine"
-          : "theirs"
+      bubble.className =
+        "message " +
+        (
+          mine
+            ? "mine"
+            : "theirs"
+        );
+
+      if (
+        message.kind ===
+        "text"
+      ) {
+
+        bubble.innerHTML = `
+
+          <div class="messageText">
+            ${escapeHTML(
+              message.text
+            )}
+          </div>
+
+          <div class="messageTime">
+            ${formatTime(
+              message.time
+            )}
+          </div>
+
+        `;
+
+      } else if (
+        message.kind ===
+        "voice"
+      ) {
+
+        bubble.innerHTML = `
+
+          <audio
+            controls
+            src="${escapeHTML(message.data)}">
+          </audio>
+
+          <div class="messageTime">
+            ${formatTime(
+              message.time
+            )}
+          </div>
+
+        `;
+
+      } else if (
+        message.kind ===
+        "image"
+      ) {
+
+        bubble.innerHTML = `
+
+          <img
+            src="${escapeHTML(message.data)}"
+            alt="Foto"
+            style="
+              display:block;
+              max-width:280px;
+              width:100%;
+              height:auto;
+              border-radius:12px
+            ">
+
+          <div class="messageTime">
+            ${formatTime(
+              message.time
+            )}
+          </div>
+
+        `;
+
+      } else if (
+        message.kind ===
+        "video"
+      ) {
+
+        bubble.innerHTML = `
+
+          <video
+            controls
+            style="
+              max-width:280px;
+              border-radius:12px
+            "
+            src="${escapeHTML(message.data)}">
+          </video>
+
+          <div class="messageTime">
+            ${formatTime(
+              message.time
+            )}
+          </div>
+
+        `;
+      }
+
+      container.appendChild(
+        bubble
       );
-
-    if (
-      message.kind ===
-      "text"
-    ) {
-
-      bubble.innerHTML = `
-
-        <div class="messageText">
-          ${escapeHTML(
-            message.text
-          )}
-        </div>
-
-        <div class="messageTime">
-          ${formatTime(
-            message.time
-          )}
-        </div>
-
-      `;
-
-    } else if (
-      message.kind ===
-      "voice"
-    ) {
-
-      bubble.innerHTML = `
-
-        <audio
-          controls
-          src="${message.data}">
-        </audio>
-
-        <div class="messageTime">
-          ${formatTime(
-            message.time
-          )}
-        </div>
-      `;
-
-    } else if (
-      message.kind ===
-      "image"
-    ) {
-
-      bubble.innerHTML = `
-        <img
-          src="${message.data}"
-          alt="Foto voye nan chat la"
-          style="display:block;max-width:280px;width:100%;height:auto;border-radius:12px"
-        >
-        <div class="messageTime">
-          ${formatTime(message.time)}
-        </div>
-      `;
-
-    } else if (
-      message.kind ===
-      "video"
-    ) {
-
-      bubble.innerHTML = `
-
-        <video
-          controls
-          style="
-            max-width:280px;
-            border-radius:12px
-          "
-          src="${message.data}">
-        </video>
-
-        <div class="messageTime">
-          ${formatTime(
-            message.time
-          )}
-        </div>
-
-      `;
     }
-
-    container.appendChild(
-      bubble
-    );
-  });
+  );
 
   container.scrollTop =
     container.scrollHeight;
@@ -1621,8 +2098,11 @@ function formatTime(time) {
       .toLocaleTimeString(
         [],
         {
-          hour: "2-digit",
-          minute: "2-digit"
+          hour:
+            "2-digit",
+
+          minute:
+            "2-digit"
         }
       );
 
@@ -1632,14 +2112,18 @@ function formatTime(time) {
   }
 }
 
-function addMessage(message) {
+function addMessage(
+  message
+) {
 
   if (!message) return;
 
   const other =
     message.from ===
     me?.username
+
       ? message.to
+
       : message.from;
 
   if (!other) return;
@@ -1653,7 +2137,8 @@ function addMessage(message) {
       m =>
         m.id &&
         message.id &&
-        m.id === message.id
+        m.id ===
+          message.id
     );
 
   if (!exists) {
@@ -1668,12 +2153,15 @@ function addMessage(message) {
     ) {
 
       chats[other] =
-        chats[other].slice(-500);
+        chats[other].slice(
+          -500
+        );
     }
   }
 
   if (
-    activeUser === other
+    activeUser ===
+    other
   ) {
 
     renderMessages();
@@ -1684,6 +2172,10 @@ function addMessage(message) {
     chats
   );
 }
+
+/* =====================================================
+   OFFLINE QUEUE
+===================================================== */
 
 function removeQueuedMessage(
   clientIdValue
@@ -1720,19 +2212,21 @@ function queueMessage(
     text,
 
     createdAt:
-      new Date().toISOString()
+      new Date()
+        .toISOString()
   };
 
-  messageQueue.push(item);
+  messageQueue.push(
+    item
+  );
 
   saveJSON(
     STORAGE.QUEUE,
     messageQueue
   );
 
-  // Montre li imedyatman
-  // nan chat la kòm pending.
   addMessage({
+
     id:
       "local-" +
       item.clientId,
@@ -1740,7 +2234,8 @@ function queueMessage(
     clientId:
       item.clientId,
 
-    kind: "text",
+    kind:
+      "text",
 
     from:
       me.username,
@@ -1752,7 +2247,8 @@ function queueMessage(
     time:
       item.createdAt,
 
-    pending: true
+    pending:
+      true
   });
 }
 
@@ -1770,25 +2266,33 @@ function flushQueue() {
   const queue =
     [...messageQueue];
 
-  queue.forEach(item => {
+  queue.forEach(
+    item => {
 
-    socket.emit(
-      "private-message",
-      {
-        to:
-          item.to,
+      socket.emit(
+        "private-message",
+        {
+          to:
+            item.to,
 
-        text:
-          item.text,
+          text:
+            item.text,
 
-        clientId:
-          item.clientId
-      }
-    );
-  });
+          clientId:
+            item.clientId
+        }
+      );
+    }
+  );
 }
 
+/* =====================================================
+   SOCKET.IO
+===================================================== */
+
 function connectSocket() {
+
+  if (!me) return;
 
   if (socket) {
 
@@ -1804,13 +2308,17 @@ function connectSocket() {
         "polling"
       ],
 
-      reconnection: true,
+      reconnection:
+        true,
 
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts:
+        Infinity,
 
-      reconnectionDelay: 1000,
+      reconnectionDelay:
+        1000,
 
-      reconnectionDelayMax: 5000
+      reconnectionDelayMax:
+        5000
     });
 
   socket.on(
@@ -1824,6 +2332,7 @@ function connectSocket() {
       socket.emit(
         "register",
         {
+
           username:
             me.username,
 
@@ -1834,7 +2343,13 @@ function connectSocket() {
             me.status,
 
           avatar:
-            me.avatar || ""
+            me.avatar || "",
+
+          supabaseUserId:
+            me.id || null,
+
+          email:
+            me.email || ""
         }
       );
     }
@@ -1861,17 +2376,25 @@ function connectSocket() {
     data => {
 
       me =
-        data.me || me;
+        data.me ||
+        me;
 
       profiles =
-        data.profiles || profiles;
+        data.profiles ||
+        profiles;
 
       onlineUsers =
-        data.online || [];
+        data.online ||
+        [];
 
-      localStorage.setItem(
+      saveJSON(
         STORAGE.USER,
-        JSON.stringify(me)
+        me
+      );
+
+      saveJSON(
+        STORAGE.PROFILES,
+        profiles
       );
 
       updateMyProfileUI();
@@ -1889,10 +2412,17 @@ function connectSocket() {
     data => {
 
       onlineUsers =
-        data.online || [];
+        data.online ||
+        [];
 
       profiles =
-        data.profiles || profiles;
+        data.profiles ||
+        profiles;
+
+      saveJSON(
+        STORAGE.PROFILES,
+        profiles
+      );
 
       refreshUserList();
 
@@ -1904,12 +2434,10 @@ function connectSocket() {
     "private-message",
     message => {
 
-      addMessage(message);
+      addMessage(
+        message
+      );
 
-      // IMPORTANT:
-      // Queue lokal la retire sèlman
-      // apre server la voye echo
-      // ki gen menm clientId.
       if (
         message.from ===
           me?.username &&
@@ -1931,7 +2459,8 @@ function connectSocket() {
         return;
 
       chats[data.with] =
-        data.messages || [];
+        data.messages ||
+        [];
 
       saveJSON(
         "ziqvona_chats",
@@ -1965,15 +2494,23 @@ function connectSocket() {
           me.username
       ) {
 
-        me = profile;
+        me = {
+          ...me,
+          ...profile
+        };
 
-        localStorage.setItem(
+        saveJSON(
           STORAGE.USER,
-          JSON.stringify(me)
+          me
         );
 
         updateMyProfileUI();
       }
+
+      saveJSON(
+        STORAGE.PROFILES,
+        profiles
+      );
 
       refreshUserList();
 
@@ -2043,9 +2580,9 @@ function connectSocket() {
     }
   );
 
-  // =========================
-  // CALL EVENTS
-  // =========================
+  /* =========================
+     CALL EVENTS
+  ========================= */
 
   socket.on(
     "call-offer",
@@ -2082,19 +2619,36 @@ function connectSocket() {
     "ice-candidate",
     async data => {
 
-      if (!data?.candidate) return;
+      if (!data?.candidate)
+        return;
 
-      if (!peerConnection || !peerConnection.remoteDescription) {
-        pendingIceCandidates.push(data.candidate);
+      if (
+        !peerConnection ||
+        !peerConnection.remoteDescription
+      ) {
+
+        pendingIceCandidates.push(
+          data.candidate
+        );
+
         return;
       }
 
       try {
-        await peerConnection.addIceCandidate(
-          new RTCIceCandidate(data.candidate)
-        );
+
+        await peerConnection
+          .addIceCandidate(
+            new RTCIceCandidate(
+              data.candidate
+            )
+          );
+
       } catch (error) {
-        console.warn("ICE candidate error:", error);
+
+        console.warn(
+          "ICE candidate error:",
+          error
+        );
       }
     }
   );
@@ -2133,6 +2687,10 @@ function connectSocket() {
   );
 }
 
+/* =====================================================
+   CHAT OPEN
+===================================================== */
+
 async function openChat(
   username
 ) {
@@ -2158,7 +2716,6 @@ async function openChat(
     );
   }
 
-  // Sou telefòn
   $("sidebar")
     .classList.add(
       "chat-open"
@@ -2179,6 +2736,7 @@ function sendCurrentMessage() {
   ) {
 
     if (!activeUser) {
+
       toast(
         "Chwazi yon kontak dabò."
       );
@@ -2189,7 +2747,6 @@ function sendCurrentMessage() {
 
   input.value = "";
 
-  // ONLINE:
   if (
     navigator.onLine &&
     socket &&
@@ -2199,6 +2756,7 @@ function sendCurrentMessage() {
     socket.emit(
       "private-message",
       {
+
         to:
           activeUser,
 
@@ -2212,7 +2770,6 @@ function sendCurrentMessage() {
     return;
   }
 
-  // OFFLINE:
   queueMessage(
     activeUser,
     text
@@ -2223,95 +2780,721 @@ function sendCurrentMessage() {
   );
 }
 
-function setupLogin() {
+/* =====================================================
+   SUPABASE AUTH UI
+===================================================== */
 
-  const saved =
-    loadJSON(
-      STORAGE.USER,
-      null
+function setAuthMode(
+  mode
+) {
+
+  authMode =
+    mode === "signup"
+      ? "signup"
+      : "login";
+
+  const signup =
+    authMode ===
+    "signup";
+
+  $("authTitle")
+    .textContent =
+    signup
+
+      ? "Kreye kont ZIQVONA"
+
+      : "Byenveni sou ZIQVONA";
+
+  $("authSubtitle")
+    .textContent =
+    signup
+
+      ? "Kreye kont ou pou antre nan fanmi ZIQVONA."
+
+      : "Konekte pou antre nan fanmi ZIQVONA.";
+
+  $("authSubmit")
+    .textContent =
+    signup
+
+      ? "Kreye kont"
+
+      : "Konekte";
+
+  $("authSwitch")
+    .textContent =
+    signup
+
+      ? "Ou deja gen kont? Konekte"
+
+      : "Ou poko gen kont? Kreye youn";
+
+  $("usernameField")
+    .classList.toggle(
+      "hidden",
+      !signup
     );
 
-  if (saved) {
+  $("displayNameField")
+    .classList.toggle(
+      "hidden",
+      !signup
+    );
 
-    me = saved;
+  $("statusField")
+    .classList.toggle(
+      "hidden",
+      !signup
+    );
 
-    updateMyProfileUI();
+  $("loginPassword")
+    .autocomplete =
+    signup
+      ? "new-password"
+      : "current-password";
 
-    $("loginModal")
-      .classList.add(
-        "hidden"
-      );
+  $("authError")
+    .textContent =
+    "";
+}
 
-    connectSocket();
+function showAuthModal() {
 
-  } else {
+  $("loginModal")
+    .classList.remove(
+      "hidden"
+    );
+}
 
-    $("loginModal")
-      .classList.remove(
-        "hidden"
-      );
+function hideAuthModal() {
+
+  $("loginModal")
+    .classList.add(
+      "hidden"
+    );
+}
+
+function showAuthError(
+  message
+) {
+
+  $("authError")
+    .textContent =
+    message || "";
+}
+
+/* =====================================================
+   LOAD AUTH USER
+===================================================== */
+
+async function loadAuthenticatedUser(
+  session
+) {
+
+  if (
+    !session ||
+    !session.user
+  ) {
+
+    me = null;
+
+    if (socket) {
+
+      try {
+        socket.disconnect();
+      } catch {}
+    }
+
+    showAuthModal();
+
+    return;
   }
+
+  const user =
+    session.user;
+
+  const metadata =
+    user.user_metadata ||
+    {};
+
+  const fallbackUsername =
+    (
+      user.email ||
+      "user"
+    )
+      .split("@")[0]
+      .replace(
+        /[^a-zA-Z0-9_]/g,
+        ""
+      )
+      .slice(
+        0,
+        25
+      ) ||
+    "user";
+
+  const username =
+    metadata.username ||
+    fallbackUsername ||
+    (
+      "user_" +
+      user.id.slice(
+        0,
+        8
+      )
+    );
+
+  const displayName =
+    metadata.display_name ||
+    metadata.full_name ||
+    username;
+
+  const status =
+    metadata.status ||
+    "Disponib";
+
+  const avatar =
+    metadata.avatar ||
+    "";
+
+  me = {
+
+    id:
+      user.id,
+
+    email:
+      user.email ||
+      "",
+
+    username,
+
+    displayName,
+
+    status,
+
+    avatar
+  };
+
+  saveJSON(
+    STORAGE.USER,
+    me
+  );
+
+  hideAuthModal();
+
+  updateMyProfileUI();
+
+  connectSocket();
+}
+
+/* =====================================================
+   LOGIN / SIGNUP
+===================================================== */
+
+async function handleAuthSubmit(
+  event
+) {
+
+  event.preventDefault();
+
+  showAuthError("");
+
+  const email =
+    $("loginEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+  const password =
+    $("loginPassword")
+      .value;
+
+  if (!email) {
+
+    showAuthError(
+      "Tanpri antre email ou."
+    );
+
+    return;
+  }
+
+  if (!password) {
+
+    showAuthError(
+      "Tanpri antre password ou."
+    );
+
+    return;
+  }
+
+  if (
+    password.length <
+    6
+  ) {
+
+    showAuthError(
+      "Password la dwe gen omwen 6 karaktè."
+    );
+
+    return;
+  }
+
+  const button =
+    $("authSubmit");
+
+  button.disabled =
+    true;
+
+  button.textContent =
+    authMode === "signup"
+      ? "Kreyasyon..."
+      : "Koneksyon...";
+
+  try {
+
+    if (
+      authMode ===
+      "signup"
+    ) {
+
+      const username =
+        $("loginUsername")
+          .value
+          .trim()
+          .toLowerCase();
+
+      const displayName =
+        $("loginDisplayName")
+          .value
+          .trim() ||
+        username;
+
+      const status =
+        $("loginStatus")
+          .value
+          .trim() ||
+        "Disponib";
+
+      if (!username) {
+
+        throw new Error(
+          "Tanpri chwazi yon username."
+        );
+      }
+
+      if (
+        username.length <
+        3
+      ) {
+
+        throw new Error(
+          "Username la dwe gen omwen 3 karaktè."
+        );
+      }
+
+      if (
+        !/^[a-zA-Z0-9_]+$/.test(
+          username
+        )
+      ) {
+
+        throw new Error(
+          "Username la dwe itilize sèlman lèt, chif ak underscore."
+        );
+      }
+
+      const result =
+        await supabaseClient.auth.signUp(
+          {
+            email,
+
+            password,
+
+            options: {
+
+              data: {
+
+                username,
+
+                display_name:
+                  displayName,
+
+                status
+
+              }
+            }
+          }
+        );
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+      }
+
+      if (
+        result.data.session
+      ) {
+
+        await loadAuthenticatedUser(
+          result.data.session
+        );
+
+        toast(
+          "Kont ZIQVONA ou kreye avèk siksè."
+        );
+
+      } else {
+
+        showAuthError(
+          "Kont lan kreye. Verifye email ou anvan ou konekte."
+        );
+
+        $("loginPassword")
+          .value = "";
+      }
+
+    } else {
+
+      const result =
+        await supabaseClient.auth.signInWithPassword(
+          {
+            email,
+
+            password
+          }
+        );
+
+      if (
+        result.error
+      ) {
+
+        throw result.error;
+      }
+
+      await loadAuthenticatedUser(
+        result.data.session
+      );
+
+      toast(
+        "Byenveni sou ZIQVONA."
+      );
+    }
+
+  } catch (error) {
+
+    console.error(
+      "ZIQVONA AUTH ERROR:",
+      error
+    );
+
+    let message =
+      error?.message ||
+      "Login echwe.";
+
+    if (
+      message
+        .toLowerCase()
+        .includes(
+          "invalid login credentials"
+        )
+    ) {
+
+      message =
+        "Email oswa password la pa bon.";
+
+    } else if (
+      message
+        .toLowerCase()
+        .includes(
+          "email not confirmed"
+        )
+    ) {
+
+      message =
+        "Verifye email ou anvan ou konekte.";
+
+    } else if (
+      message
+        .toLowerCase()
+        .includes(
+          "user already registered"
+        )
+    ) {
+
+      message =
+        "Email sa deja gen yon kont.";
+
+    }
+
+    showAuthError(
+      message
+    );
+
+  } finally {
+
+    button.disabled =
+      false;
+
+    button.textContent =
+      authMode === "signup"
+        ? "Kreye kont"
+        : "Konekte";
+  }
+}
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logoutZiqvona() {
+
+  const confirmed =
+    window.confirm(
+      "Èske ou vle dekonekte sou ZIQVONA?"
+    );
+
+  if (!confirmed)
+    return;
+
+  try {
+
+    if (
+      socket
+    ) {
+
+      try {
+        socket.disconnect();
+      } catch {}
+
+      socket = null;
+    }
+
+    if (
+      peerConnection
+    ) {
+
+      try {
+        peerConnection.close();
+      } catch {}
+
+      peerConnection = null;
+    }
+
+    if (
+      localStream
+    ) {
+
+      localStream
+        .getTracks()
+        .forEach(
+          track =>
+            track.stop()
+        );
+
+      localStream = null;
+    }
+
+    await supabaseClient.auth.signOut();
+
+    me = null;
+
+    activeUser = null;
+
+    onlineUsers = [];
+
+    profiles = {};
+
+    saveJSON(
+      STORAGE.PROFILES,
+      {}
+    );
+
+    try {
+
+      localStorage.removeItem(
+        STORAGE.USER
+      );
+
+    } catch {}
+
+    $("myName")
+      .textContent =
+      "ZIQVONA";
+
+    $("myStatus")
+      .textContent =
+      "Disponib";
+
+    $("myAvatar")
+      .innerHTML =
+      "Z";
+
+    $("userList")
+      .innerHTML =
+      "";
+
+    $("messages")
+      .innerHTML = `
+        <div class="empty">
+          Konekte pou itilize ZIQVONA.
+        </div>
+      `;
+
+    $("chatName")
+      .textContent =
+      "Chwazi yon moun";
+
+    $("chatStatus")
+      .textContent =
+      "ZIQVONA";
+
+    $("chatAvatar")
+      .innerHTML =
+      "Z";
+
+    $("loginEmail")
+      .value = "";
+
+    $("loginPassword")
+      .value = "";
+
+    $("loginUsername")
+      .value = "";
+
+    $("loginDisplayName")
+      .value = "";
+
+    $("loginStatus")
+      .value = "";
+
+    setAuthMode(
+      "login"
+    );
+
+    showAuthModal();
+
+    toast(
+      "Ou dekonekte sou ZIQVONA."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Logout error:",
+      error
+    );
+
+    toast(
+      "Nou pa kapab dekonekte kounye a."
+    );
+  }
+}
+
+/* =====================================================
+   AUTH SETUP
+===================================================== */
+
+function setupAuth() {
 
   $("loginForm")
     .addEventListener(
       "submit",
-      async event => {
+      handleAuthSubmit
+    );
 
-        event.preventDefault();
+  $("authSwitch")
+    .addEventListener(
+      "click",
+      () => {
 
-        const username =
-          $("loginName")
-            .value
-            .trim();
-
-        const status =
-          $("loginStatus")
-            .value
-            .trim() ||
-          "Disponib";
-
-        const file =
-          $("loginPhoto")
-            .files[0];
-
-        let avatar = "";
-
-        if (file) {
-
-          avatar =
-            await readFileAsDataURL(
-              file
-            );
-        }
-
-        me = {
-
-          username,
-
-          displayName:
-            username,
-
-          status,
-
-          avatar
-        };
-
-        saveJSON(
-          STORAGE.USER,
-          me
+        setAuthMode(
+          authMode ===
+          "login"
+            ? "signup"
+            : "login"
         );
+      }
+    );
 
-        $("loginModal")
-          .classList.add(
-            "hidden"
+  $("logoutBtn")
+    .addEventListener(
+      "click",
+      logoutZiqvona
+    );
+
+  /*
+    Supabase ap verifye session lan
+    otomatikman.
+  */
+
+  supabaseClient.auth
+    .onAuthStateChange(
+      (_event, session) => {
+
+        /*
+          Nou mete sa nan setTimeout
+          pou evite bloke auth callback la.
+        */
+
+        setTimeout(
+          () => {
+
+            loadAuthenticatedUser(
+              session
+            );
+
+          },
+          0
+        );
+      }
+    );
+
+  supabaseClient.auth
+    .getSession()
+    .then(
+      ({ data }) => {
+
+        if (
+          data &&
+          data.session
+        ) {
+
+          loadAuthenticatedUser(
+            data.session
           );
 
-        updateMyProfileUI();
+        } else {
 
-        connectSocket();
+          setAuthMode(
+            "login"
+          );
+
+          showAuthModal();
+        }
+      }
+    )
+    .catch(
+      error => {
+
+        console.error(
+          "Supabase session error:",
+          error
+        );
+
+        setAuthMode(
+          "login"
+        );
+
+        showAuthModal();
       }
     );
 }
+
+/* =====================================================
+   FILE READER
+===================================================== */
 
 function readFileAsDataURL(
   file
@@ -2338,6 +3521,10 @@ function readFileAsDataURL(
     }
   );
 }
+
+/* =====================================================
+   PROFILE
+===================================================== */
 
 function setupProfile() {
 
@@ -2384,6 +3571,8 @@ function setupProfile() {
 
         event.preventDefault();
 
+        if (!me) return;
+
         const displayName =
           $("profileName")
             .value
@@ -2399,7 +3588,8 @@ function setupProfile() {
             .files[0];
 
         let avatar =
-          me.avatar || "";
+          me.avatar ||
+          "";
 
         if (file) {
 
@@ -2425,7 +3615,10 @@ function setupProfile() {
           avatar
         };
 
-        me = profile;
+        me = {
+          ...me,
+          ...profile
+        };
 
         saveJSON(
           STORAGE.USER,
@@ -2433,6 +3626,42 @@ function setupProfile() {
         );
 
         updateMyProfileUI();
+
+        /*
+          Mete nouvo metadata nan
+          Supabase Auth tou.
+        */
+
+        try {
+
+          await supabaseClient.auth
+            .updateUser(
+              {
+                data: {
+
+                  username:
+                    me.username,
+
+                  display_name:
+                    me.displayName,
+
+                  status:
+                    me.status,
+
+                  avatar:
+                    me.avatar ||
+                    ""
+                }
+              }
+            );
+
+        } catch (error) {
+
+          console.warn(
+            "Supabase profile metadata update:",
+            error
+          );
+        }
 
         if (
           socket &&
@@ -2442,6 +3671,7 @@ function setupProfile() {
           socket.emit(
             "update-profile",
             {
+
               displayName:
                 profile.displayName,
 
@@ -2465,6 +3695,10 @@ function setupProfile() {
       }
     );
 }
+
+/* =====================================================
+   GENERAL EVENTS
+===================================================== */
 
 function setupEvents() {
 
@@ -2519,13 +3753,19 @@ function setupEvents() {
             setTimeout(
               () => {
 
-                socket.emit(
-                  "stop-typing",
-                  {
-                    to:
-                      activeUser
-                  }
-                );
+                if (
+                  socket &&
+                  socket.connected
+                ) {
+
+                  socket.emit(
+                    "stop-typing",
+                    {
+                      to:
+                        activeUser
+                    }
+                  );
+                }
 
               },
               900
@@ -2567,31 +3807,33 @@ function setupEvents() {
     .querySelectorAll(
       ".filter"
     )
-    .forEach(button => {
+    .forEach(
+      button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          document
-            .querySelectorAll(
-              ".filter"
-            )
-            .forEach(
-              b =>
-                b.classList.remove(
-                  "active"
-                )
+            document
+              .querySelectorAll(
+                ".filter"
+              )
+              .forEach(
+                b =>
+                  b.classList.remove(
+                    "active"
+                  )
+              );
+
+            button.classList.add(
+              "active"
             );
 
-          button.classList.add(
-            "active"
-          );
-
-          refreshUserList();
-        }
-      );
-    });
+            refreshUserList();
+          }
+        );
+      }
+    );
 
   $("emojiBtn")
     .addEventListener(
@@ -2601,7 +3843,8 @@ function setupEvents() {
         const input =
           $("messageInput");
 
-        input.value += " 😊";
+        input.value +=
+          " 😊";
 
         input.focus();
       }
@@ -2641,14 +3884,18 @@ function setupEvents() {
     .addEventListener(
       "click",
       () =>
-        startCall("voice")
+        startCall(
+          "voice"
+        )
     );
 
   $("videoCallBtn")
     .addEventListener(
       "click",
       () =>
-        startCall("video")
+        startCall(
+          "video"
+        )
     );
 
   $("hangBtn")
@@ -2658,41 +3905,527 @@ function setupEvents() {
     );
 }
 
-/* ZIQVONA VOICE MESSAGE */
-let voiceRecorder=null,voiceStream=null,voiceChunks=[],voiceBlob=null,voiceDuration=0,voiceTimerInterval=null,voiceStartedAt=0,voiceHolding=false;
-function voiceTime(sec){sec=Math.max(0,Math.floor(sec));return Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0")}
-function resetVoice(){try{if(voiceRecorder&&voiceRecorder.state!=="inactive")voiceRecorder.stop()}catch{};if(voiceStream)voiceStream.getTracks().forEach(t=>t.stop());voiceRecorder=null;voiceStream=null;voiceChunks=[];voiceBlob=null;voiceDuration=0;voiceHolding=false;clearInterval(voiceTimerInterval);voiceTimerInterval=null;const p=$("voicePreview");if(p){p.pause();p.removeAttribute("src");p.load()}$("voiceTimer").textContent="0:00";$("voiceRecorder").classList.remove("show");$("messageInput").style.display="";$("sendBtn").style.display="";$("voiceBtn").classList.remove("recording");$("voiceBtn").textContent="🎤"}
-async function beginVoice(){
- if(!activeUser){toast("Chwazi yon kontak dabò.");return}
- if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){toast("Navigatè sa a pa sipòte voice message.");return}
- try{
-  voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
-  let mime="";for(const t of ["audio/webm;codecs=opus","audio/webm","audio/mp4"]){if(MediaRecorder.isTypeSupported(t)){mime=t;break}}
-  voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);voiceChunks=[];voiceStartedAt=Date.now();voiceDuration=0;
-  voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data)};
-  voiceRecorder.onstop=()=>{voiceDuration=Math.max(1,Math.round((Date.now()-voiceStartedAt)/1000));voiceBlob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||mime||"audio/webm"});const p=$("voicePreview");p.src=URL.createObjectURL(voiceBlob);p.load();clearInterval(voiceTimerInterval);$("voiceBtn").classList.remove("recording");$("voiceBtn").textContent="🎤"};
-  voiceRecorder.start();voiceHolding=true;$("voiceBtn").classList.add("recording");$("voiceBtn").textContent="⏹️";$("messageInput").style.display="none";$("sendBtn").style.display="none";$("voiceRecorder").classList.add("show");
-  voiceTimerInterval=setInterval(()=>{$("voiceTimer").textContent=voiceTime((Date.now()-voiceStartedAt)/1000)},250);
- }catch(e){if(voiceStream)voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null;toast("Pèmèt mikwo a pou anrejistre voice message.")}
-}
-function endVoice(){if(!voiceRecorder||voiceRecorder.state==="inactive")return;voiceHolding=false;voiceRecorder.stop();if(voiceStream)voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null;clearInterval(voiceTimerInterval)}
-async function sendVoice(){
- if(!voiceBlob||!voiceBlob.size){toast("Anrejistre yon voice message dabò.");return}
- if(!socket||!socket.connected){toast("ZIQVONA pa konekte kounye a.");return}
- if(voiceBlob.size>12*1024*1024){toast("Voice message la twò gwo. Maksimòm 12MB.");return}
- const file=new File([voiceBlob],"ziqvona-voice."+(voiceBlob.type.includes("mp4")?"m4a":"webm"),{type:voiceBlob.type||"audio/webm"});
- const data=await readFileAsDataURL(file);
- socket.emit("media-message",{to:activeUser,kind:"voice",data,duration:voiceDuration});toast("Voice message la ap voye…");resetVoice();
-}
-function setupVoiceMessage(){
- const b=$("voiceBtn");
- b.addEventListener("pointerdown",e=>{e.preventDefault();beginVoice()});
- b.addEventListener("pointerup",e=>{e.preventDefault();endVoice()});
- b.addEventListener("pointercancel",endVoice);b.addEventListener("pointerleave",()=>{if(voiceHolding)endVoice()});
- $("voiceCancel").addEventListener("click",resetVoice);$("voiceSend").addEventListener("click",sendVoice);
+/* =====================================================
+   VOICE MESSAGE
+===================================================== */
+
+let voiceRecorder = null;
+
+let voiceStream = null;
+
+let voiceChunks = [];
+
+let voiceBlob = null;
+
+let voiceDuration = 0;
+
+let voiceTimerInterval = null;
+
+let voiceStartedAt = 0;
+
+let voiceHolding = false;
+
+function voiceTime(sec) {
+
+  sec =
+    Math.max(
+      0,
+      Math.floor(sec)
+    );
+
+  return (
+    Math.floor(
+      sec / 60
+    ) +
+    ":" +
+    String(
+      sec % 60
+    ).padStart(
+      2,
+      "0"
+    )
+  );
 }
 
-async function sendMedia(file) {
+function resetVoice() {
+
+  try {
+
+    if (
+      voiceRecorder &&
+      voiceRecorder.state !==
+        "inactive"
+    ) {
+
+      voiceRecorder.stop();
+    }
+
+  } catch {}
+
+  if (voiceStream) {
+
+    voiceStream
+      .getTracks()
+      .forEach(
+        t =>
+          t.stop()
+      );
+  }
+
+  voiceRecorder = null;
+
+  voiceStream = null;
+
+  voiceChunks = [];
+
+  voiceBlob = null;
+
+  voiceDuration = 0;
+
+  voiceHolding = false;
+
+  clearInterval(
+    voiceTimerInterval
+  );
+
+  voiceTimerInterval =
+    null;
+
+  const preview =
+    $("voicePreview");
+
+  if (preview) {
+
+    preview.pause();
+
+    preview.removeAttribute(
+      "src"
+    );
+
+    preview.load();
+  }
+
+  $("voiceTimer")
+    .textContent =
+    "0:00";
+
+  $("voiceRecorder")
+    .classList.remove(
+      "show"
+    );
+
+  $("messageInput")
+    .style.display =
+    "";
+
+  $("sendBtn")
+    .style.display =
+    "";
+
+  $("voiceBtn")
+    .classList.remove(
+      "recording"
+    );
+
+  $("voiceBtn")
+    .textContent =
+    "🎤";
+}
+
+async function beginVoice() {
+
+  if (!activeUser) {
+
+    toast(
+      "Chwazi yon kontak dabò."
+    );
+
+    return;
+  }
+
+  if (
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices
+      .getUserMedia ||
+    !window.MediaRecorder
+  ) {
+
+    toast(
+      "Navigatè sa a pa sipòte voice message."
+    );
+
+    return;
+  }
+
+  try {
+
+    voiceStream =
+      await navigator.mediaDevices
+        .getUserMedia({
+          audio:
+            true
+        });
+
+    let mime = "";
+
+    for (
+      const type of [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4"
+      ]
+    ) {
+
+      if (
+        MediaRecorder
+          .isTypeSupported(
+            type
+          )
+      ) {
+
+        mime =
+          type;
+
+        break;
+      }
+    }
+
+    voiceRecorder =
+      mime
+
+        ? new MediaRecorder(
+            voiceStream,
+            {
+              mimeType:
+                mime
+            }
+          )
+
+        : new MediaRecorder(
+            voiceStream
+          );
+
+    voiceChunks = [];
+
+    voiceStartedAt =
+      Date.now();
+
+    voiceDuration = 0;
+
+    voiceRecorder
+      .ondataavailable =
+      event => {
+
+        if (
+          event.data &&
+          event.data.size
+        ) {
+
+          voiceChunks.push(
+            event.data
+          );
+        }
+      };
+
+    voiceRecorder
+      .onstop =
+      () => {
+
+        voiceDuration =
+          Math.max(
+            1,
+            Math.round(
+              (
+                Date.now() -
+                voiceStartedAt
+              ) / 1000
+            )
+          );
+
+        voiceBlob =
+          new Blob(
+            voiceChunks,
+            {
+              type:
+                voiceRecorder
+                  .mimeType ||
+                mime ||
+                "audio/webm"
+            }
+          );
+
+        const preview =
+          $("voicePreview");
+
+        preview.src =
+          URL.createObjectURL(
+            voiceBlob
+          );
+
+        preview.load();
+
+        clearInterval(
+          voiceTimerInterval
+        );
+
+        $("voiceBtn")
+          .classList.remove(
+            "recording"
+          );
+
+        $("voiceBtn")
+          .textContent =
+          "🎤";
+      };
+
+    voiceRecorder.start();
+
+    voiceHolding =
+      true;
+
+    $("voiceBtn")
+      .classList.add(
+        "recording"
+      );
+
+    $("voiceBtn")
+      .textContent =
+      "⏹️";
+
+    $("messageInput")
+      .style.display =
+      "none";
+
+    $("sendBtn")
+      .style.display =
+      "none";
+
+    $("voiceRecorder")
+      .classList.add(
+        "show"
+      );
+
+    voiceTimerInterval =
+      setInterval(
+        () => {
+
+          $("voiceTimer")
+            .textContent =
+            voiceTime(
+              (
+                Date.now() -
+                voiceStartedAt
+              ) / 1000
+            );
+
+        },
+        250
+      );
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    if (voiceStream) {
+
+      voiceStream
+        .getTracks()
+        .forEach(
+          t =>
+            t.stop()
+        );
+    }
+
+    voiceStream =
+      null;
+
+    toast(
+      "Pèmèt mikwo a pou anrejistre voice message."
+    );
+  }
+}
+
+function endVoice() {
+
+  if (
+    !voiceRecorder ||
+    voiceRecorder.state ===
+      "inactive"
+  ) {
+
+    return;
+  }
+
+  voiceHolding =
+    false;
+
+  voiceRecorder.stop();
+
+  if (voiceStream) {
+
+    voiceStream
+      .getTracks()
+      .forEach(
+        t =>
+          t.stop()
+      );
+
+    voiceStream =
+      null;
+  }
+
+  clearInterval(
+    voiceTimerInterval
+  );
+}
+
+async function sendVoice() {
+
+  if (
+    !voiceBlob ||
+    !voiceBlob.size
+  ) {
+
+    toast(
+      "Anrejistre yon voice message dabò."
+    );
+
+    return;
+  }
+
+  if (
+    !socket ||
+    !socket.connected
+  ) {
+
+    toast(
+      "ZIQVONA pa konekte kounye a."
+    );
+
+    return;
+  }
+
+  if (
+    voiceBlob.size >
+    12 * 1024 * 1024
+  ) {
+
+    toast(
+      "Voice message la twò gwo. Maksimòm 12MB."
+    );
+
+    return;
+  }
+
+  const file =
+    new File(
+      [voiceBlob],
+      "ziqvona-voice." +
+        (
+          voiceBlob.type.includes(
+            "mp4"
+          )
+            ? "m4a"
+            : "webm"
+        ),
+      {
+        type:
+          voiceBlob.type ||
+          "audio/webm"
+      }
+    );
+
+  const data =
+    await readFileAsDataURL(
+      file
+    );
+
+  socket.emit(
+    "media-message",
+    {
+
+      to:
+        activeUser,
+
+      kind:
+        "voice",
+
+      data,
+
+      duration:
+        voiceDuration
+    }
+  );
+
+  toast(
+    "Voice message la ap voye…"
+  );
+
+  resetVoice();
+}
+
+function setupVoiceMessage() {
+
+  const button =
+    $("voiceBtn");
+
+  button.addEventListener(
+    "pointerdown",
+    event => {
+
+      event.preventDefault();
+
+      beginVoice();
+    }
+  );
+
+  button.addEventListener(
+    "pointerup",
+    event => {
+
+      event.preventDefault();
+
+      endVoice();
+    }
+  );
+
+  button.addEventListener(
+    "pointercancel",
+    endVoice
+  );
+
+  button.addEventListener(
+    "pointerleave",
+    () => {
+
+      if (voiceHolding) {
+        endVoice();
+      }
+    }
+  );
+
+  $("voiceCancel")
+    .addEventListener(
+      "click",
+      resetVoice
+    );
+
+  $("voiceSend")
+    .addEventListener(
+      "click",
+      sendVoice
+    );
+}
+
+/* =====================================================
+   MEDIA
+===================================================== */
+
+async function sendMedia(
+  file
+) {
 
   if (!activeUser) {
 
@@ -2715,14 +4448,27 @@ async function sendMedia(file) {
     return;
   }
 
-  if (!/^image\/(jpeg|png|webp|gif)$|^video\//.test(file.type) && !file.type.startsWith("audio/")) {
-    toast("Kalite fichye sa a pa sipòte.");
+  if (
+    !/^image\/(jpeg|png|webp|gif)$|^video\//.test(
+      file.type
+    ) &&
+    !file.type.startsWith(
+      "audio/"
+    )
+  ) {
+
+    toast(
+      "Kalite fichye sa a pa sipòte."
+    );
+
     return;
   }
 
   if (
     file.size >
-    12 * 1024 * 1024
+    12 *
+    1024 *
+    1024
   ) {
 
     toast(
@@ -2739,20 +4485,46 @@ async function sendMedia(file) {
 
   let kind;
 
-  if (file.type.startsWith("image/")) {
-    kind = "image";
-  } else if (file.type.startsWith("video/")) {
-    kind = "video";
-  } else if (file.type.startsWith("audio/")) {
-    kind = "voice";
+  if (
+    file.type.startsWith(
+      "image/"
+    )
+  ) {
+
+    kind =
+      "image";
+
+  } else if (
+    file.type.startsWith(
+      "video/"
+    )
+  ) {
+
+    kind =
+      "video";
+
+  } else if (
+    file.type.startsWith(
+      "audio/"
+    )
+  ) {
+
+    kind =
+      "voice";
+
   } else {
-    toast("Kalite fichye sa a pa sipòte.");
+
+    toast(
+      "Kalite fichye sa a pa sipòte."
+    );
+
     return;
   }
 
   socket.emit(
     "media-message",
     {
+
       to:
         activeUser,
 
@@ -2761,7 +4533,15 @@ async function sendMedia(file) {
       data
     }
   );
+
+  toast(
+    "Fichye a ap voye..."
+  );
 }
+
+/* =====================================================
+   WEBRTC
+===================================================== */
 
 async function getIceServers() {
 
@@ -2784,88 +4564,239 @@ async function getIceServers() {
   } catch {
 
     return {
+
       iceServers: [
+
         {
           urls:
             "stun:stun.l.google.com:19302"
         }
+
       ]
     };
   }
 }
 
 function attachPeerMedia() {
-  if (!peerConnection) return;
 
-  peerConnection.ontrack = event => {
-    const stream = event.streams && event.streams[0];
-    if (!stream) return;
+  if (!peerConnection)
+    return;
 
-    const remoteVideo = $("remoteVideo");
-    const remoteAudio = $("remoteAudio");
+  peerConnection.ontrack =
+    event => {
 
-    if (callType === "video") {
-      if (remoteVideo) {
-        remoteVideo.srcObject = stream;
-        remoteVideo.muted = false;
-        remoteVideo.autoplay = true;
-        remoteVideo.playsInline = true;
-        remoteVideo.play().catch(() => {});
+      const stream =
+        event.streams &&
+        event.streams[0];
+
+      if (!stream)
+        return;
+
+      const remoteVideo =
+        $("remoteVideo");
+
+      const remoteAudio =
+        $("remoteAudio");
+
+      if (
+        callType ===
+        "video"
+      ) {
+
+        if (
+          remoteVideo
+        ) {
+
+          remoteVideo.srcObject =
+            stream;
+
+          remoteVideo.muted =
+            false;
+
+          remoteVideo.autoplay =
+            true;
+
+          remoteVideo.playsInline =
+            true;
+
+          remoteVideo
+            .play()
+            .catch(
+              () => {}
+            );
+        }
+
+      } else {
+
+        if (
+          remoteAudio
+        ) {
+
+          remoteAudio.srcObject =
+            stream;
+
+          remoteAudio.autoplay =
+            true;
+
+          remoteAudio.muted =
+            false;
+
+          remoteAudio
+            .play()
+            .catch(
+              () => {}
+            );
+        }
       }
-    } else {
-      if (remoteAudio) {
-        remoteAudio.srcObject = stream;
-        remoteAudio.autoplay = true;
-        remoteAudio.muted = false;
-        remoteAudio.play().catch(() => {});
+
+      $("callState")
+        .textContent =
+        "Konekte";
+    };
+
+  peerConnection
+    .onconnectionstatechange =
+    () => {
+
+      const state =
+        peerConnection
+          ?.connectionState;
+
+      if (
+        state ===
+        "connected"
+      ) {
+
+        $("callState")
+          .textContent =
+          "Konekte";
+
+      } else if (
+        state ===
+        "connecting"
+      ) {
+
+        $("callState")
+          .textContent =
+          "Koneksyon...";
+
+      } else if (
+        state ===
+        "failed"
+      ) {
+
+        $("callState")
+          .textContent =
+          "Koneksyon an echwe";
+
+        toast(
+          "WebRTC pa rive konekte. Verifye TURN."
+        );
+
+      } else if (
+        state ===
+        "disconnected"
+      ) {
+
+        $("callState")
+          .textContent =
+          "Koneksyon an koupe...";
       }
-    }
+    };
 
-    $("callState").textContent = "Konekte";
-  };
+  const localVideo =
+    $("localVideo");
 
-  peerConnection.onconnectionstatechange = () => {
-    const state = peerConnection?.connectionState;
-    if (state === "connected") $("callState").textContent = "Konekte";
-    else if (state === "connecting") $("callState").textContent = "Koneksyon...";
-    else if (state === "failed") {
-      $("callState").textContent = "Koneksyon an echwe";
-      toast("WebRTC pa rive konekte. Verifye TURN.");
-    } else if (state === "disconnected") $("callState").textContent = "Koneksyon an koupe...";
-  };
+  if (
+    localVideo &&
+    localStream &&
+    callType ===
+      "video"
+  ) {
 
-  const localVideo = $("localVideo");
-  if (localVideo && localStream && callType === "video") {
-    localVideo.srcObject = localStream;
-    localVideo.muted = true;
-    localVideo.autoplay = true;
-    localVideo.playsInline = true;
-    localVideo.play().catch(() => {});
+    localVideo.srcObject =
+      localStream;
+
+    localVideo.muted =
+      true;
+
+    localVideo.autoplay =
+      true;
+
+    localVideo.playsInline =
+      true;
+
+    localVideo
+      .play()
+      .catch(
+        () => {}
+      );
   }
 }
 
 async function flushPendingIceCandidates() {
-  if (!peerConnection || !peerConnection.remoteDescription) return;
 
-  const pending = [...pendingIceCandidates];
-  pendingIceCandidates = [];
+  if (
+    !peerConnection ||
+    !peerConnection.remoteDescription
+  ) {
 
-  for (const candidate of pending) {
+    return;
+  }
+
+  const pending =
+    [
+      ...pendingIceCandidates
+    ];
+
+  pendingIceCandidates =
+    [];
+
+  for (
+    const candidate of pending
+  ) {
+
     try {
-      await peerConnection.addIceCandidate(
-        new RTCIceCandidate(candidate)
-      );
+
+      await peerConnection
+        .addIceCandidate(
+          new RTCIceCandidate(
+            candidate
+          )
+        );
+
     } catch (error) {
-      console.warn("Queued ICE candidate error:", error);
+
+      console.warn(
+        "Queued ICE candidate error:",
+        error
+      );
     }
   }
 }
 
-function prepareCallMedia(type) {
-  const wrap = $("callMedia");
-  wrap.classList.toggle("voice", type !== "video");
-  wrap.classList.toggle("video", type === "video");
-  $("callState").textContent = "Koneksyon...";
+function prepareCallMedia(
+  type
+) {
+
+  const wrap =
+    $("callMedia");
+
+  wrap.classList.toggle(
+    "voice",
+    type !==
+      "video"
+  );
+
+  wrap.classList.toggle(
+    "video",
+    type ===
+      "video"
+  );
+
+  $("callState")
+    .textContent =
+    "Koneksyon...";
 }
 
 async function startCall(
@@ -2899,9 +4830,12 @@ async function startCall(
   callType =
     type;
 
-  pendingIceCandidates = [];
+  pendingIceCandidates =
+    [];
 
-  prepareCallMedia(type);
+  prepareCallMedia(
+    type
+  );
 
   $("callName")
     .textContent =
@@ -2912,7 +4846,8 @@ async function startCall(
 
   $("callType")
     .textContent =
-    type === "video"
+    type ===
+    "video"
       ? "Apèl videyo"
       : "Apèl vwa";
 
@@ -2932,20 +4867,28 @@ async function startCall(
   try {
 
     const constraints =
-      type === "video"
+      type ===
+      "video"
 
         ? {
-            audio: true,
-            video: true
+            audio:
+              true,
+
+            video:
+              true
           }
 
         : {
-            audio: true,
-            video: false
+            audio:
+              true,
+
+            video:
+              false
           };
 
     localStream =
-      await navigator.mediaDevices
+      await navigator
+        .mediaDevices
         .getUserMedia(
           constraints
         );
@@ -2971,7 +4914,8 @@ async function startCall(
 
     attachPeerMedia();
 
-    peerConnection.onicecandidate =
+    peerConnection
+      .onicecandidate =
       event => {
 
         if (
@@ -2981,6 +4925,7 @@ async function startCall(
           socket.emit(
             "ice-candidate",
             {
+
               to:
                 callTarget,
 
@@ -3003,6 +4948,7 @@ async function startCall(
     socket.emit(
       "call-offer",
       {
+
         to:
           callTarget,
 
@@ -3037,7 +4983,7 @@ async function receiveCallOffer(
     data;
 
   const accept =
-    confirm(
+    window.confirm(
       `${
         profiles[
           data.from
@@ -3051,6 +4997,7 @@ async function receiveCallOffer(
     socket.emit(
       "call-reject",
       {
+
         to:
           data.from
       }
@@ -3063,11 +5010,14 @@ async function receiveCallOffer(
     data.from;
 
   callType =
-    data.type === "video"
+    data.type ===
+    "video"
       ? "video"
       : "voice";
 
-  prepareCallMedia(callType);
+  prepareCallMedia(
+    callType
+  );
 
   $("callName")
     .textContent =
@@ -3078,7 +5028,8 @@ async function receiveCallOffer(
 
   $("callType")
     .textContent =
-    callType === "video"
+    callType ===
+    "video"
       ? "Apèl videyo"
       : "Apèl vwa";
 
@@ -3098,20 +5049,28 @@ async function receiveCallOffer(
   try {
 
     const constraints =
-      callType === "video"
+      callType ===
+      "video"
 
         ? {
-            audio: true,
-            video: true
+            audio:
+              true,
+
+            video:
+              true
           }
 
         : {
-            audio: true,
-            video: false
+            audio:
+              true,
+
+            video:
+              false
           };
 
     localStream =
-      await navigator.mediaDevices
+      await navigator
+        .mediaDevices
         .getUserMedia(
           constraints
         );
@@ -3137,7 +5096,8 @@ async function receiveCallOffer(
 
     attachPeerMedia();
 
-    peerConnection.onicecandidate =
+    peerConnection
+      .onicecandidate =
       event => {
 
         if (
@@ -3147,6 +5107,7 @@ async function receiveCallOffer(
           socket.emit(
             "ice-candidate",
             {
+
               to:
                 callTarget,
 
@@ -3178,6 +5139,7 @@ async function receiveCallOffer(
     socket.emit(
       "call-answer",
       {
+
         to:
           callTarget,
 
@@ -3210,6 +5172,7 @@ function endCall() {
     socket.emit(
       "call-end",
       {
+
         to:
           callTarget
       }
@@ -3230,43 +5193,96 @@ function closeCall() {
           track.stop()
       );
 
-    localStream = null;
+    localStream =
+      null;
   }
 
   if (peerConnection) {
 
     try {
+
       peerConnection.close();
+
     } catch {}
 
-    peerConnection = null;
+    peerConnection =
+      null;
   }
 
-  const remoteVideo = $("remoteVideo");
-  const localVideo = $("localVideo");
-  const remoteAudio = $("remoteAudio");
-  if (remoteVideo) remoteVideo.srcObject = null;
-  if (localVideo) localVideo.srcObject = null;
-  if (remoteAudio) remoteAudio.srcObject = null;
+  const remoteVideo =
+    $("remoteVideo");
+
+  const localVideo =
+    $("localVideo");
+
+  const remoteAudio =
+    $("remoteAudio");
+
+  if (remoteVideo)
+    remoteVideo.srcObject =
+      null;
+
+  if (localVideo)
+    localVideo.srcObject =
+      null;
+
+  if (remoteAudio)
+    remoteAudio.srcObject =
+      null;
 
   $("callScreen")
     .classList.remove(
       "show"
     );
 
-  callTarget = null;
-  pendingIceCandidates = [];
+  callTarget =
+    null;
+
+  pendingIceCandidates =
+    [];
 
   pendingIncomingCall =
     null;
 }
 
-$("callScreen").addEventListener("click", () => {
-  const remoteAudio = $("remoteAudio");
-  const remoteVideo = $("remoteVideo");
-  if (remoteAudio?.srcObject) remoteAudio.play().catch(() => {});
-  if (remoteVideo?.srcObject) remoteVideo.play().catch(() => {});
-});
+$("callScreen")
+  .addEventListener(
+    "click",
+    () => {
+
+      const remoteAudio =
+        $("remoteAudio");
+
+      const remoteVideo =
+        $("remoteVideo");
+
+      if (
+        remoteAudio?.srcObject
+      ) {
+
+        remoteAudio
+          .play()
+          .catch(
+            () => {}
+          );
+      }
+
+      if (
+        remoteVideo?.srcObject
+      ) {
+
+        remoteVideo
+          .play()
+          .catch(
+            () => {}
+          );
+      }
+    }
+  );
+
+/* =====================================================
+   ONLINE / OFFLINE
+===================================================== */
 
 window.addEventListener(
   "online",
@@ -3278,7 +5294,8 @@ window.addEventListener(
 
     if (
       socket &&
-      !socket.connected
+      !socket.connected &&
+      me
     ) {
 
       socket.connect();
@@ -3297,6 +5314,10 @@ window.addEventListener(
     );
   }
 );
+
+/* =====================================================
+   START ZIQVONA
+===================================================== */
 
 window.addEventListener(
   "load",
@@ -3322,7 +5343,11 @@ window.addEventListener(
 
     setNetworkState();
 
-    setupLogin();
+    /*
+      AUTH se premye bagay.
+    */
+
+    setupAuth();
 
     setupProfile();
 
@@ -3332,7 +5357,10 @@ window.addEventListener(
 
     refreshUserList();
 
-    // Service Worker
+    /*
+      Service Worker
+    */
+
     if (
       "serviceWorker" in
       navigator
@@ -3350,6 +5378,7 @@ window.addEventListener(
             )
         );
     }
+
   }
 );
 
