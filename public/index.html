@@ -45,9 +45,19 @@ button,input,textarea{font:inherit}button{cursor:pointer;border:0}.app{display:f
 <div class="network" id="network">Supabase: checking...</div>
 
 <div class="modal show" id="authModal"><div class="card">
-<div class="brand"><div class="logo">Z</div>ZIQVONA</div><h2 id="authTitle">Welcome back</h2><div class="sub" id="authSub">Log in to continue to ZIQVONA.</div>
-<form id="authForm"><div class="field" id="usernameField" style="display:none"><label>Username</label><input id="username" autocomplete="username"></div><div class="field"><label>Email</label><input id="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input id="password" type="password" required minlength="6"></div><div class="err" id="authError"></div><button class="primary" id="authSubmit">Log in</button></form>
-<button class="link" id="toggleAuth">Create an account</button>
+<div class="brand"><div class="logo">Z</div>ZIQVONA</div>
+<h2 id="authTitle">Welcome to ZIQVONA</h2>
+<div class="sub" id="authSub">Antre email oswa nimewo telefòn ou. Nou pral voye yon kòd verifikasyon.</div>
+<div class="filters" style="padding:0 0 12px"><button class="filter active" id="emailMode" type="button">Email</button><button class="filter" id="phoneMode" type="button">Phone</button></div>
+<form id="authForm">
+<div class="field" id="emailField"><label>Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+<div class="field" id="phoneField" style="display:none"><label>Phone number</label><input id="phone" type="tel" autocomplete="tel" placeholder="+1 555 123 4567"></div>
+<div class="err" id="authError"></div>
+<button class="primary" id="authSubmit" type="submit">Voye kòd verifikasyon</button>
+</form>
+<div class="field" id="otpField" style="display:none;margin-top:14px"><label>6-digit verification code</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>
+<button class="primary" id="verifyOtp" type="button" style="display:none">Verifye kòd</button>
+<button class="link" id="resendOtp" type="button" style="display:none">Voye yon lòt kòd</button>
 </div></div>
 
 <div class="modal" id="profileModal"><div class="card"><button class="close" data-close="profileModal">×</button><h2>My profile</h2><div class="sub">Modifye enfòmasyon pwofil ou.</div><div class="field"><label>Username</label><input id="pUsername"></div><div class="field"><label>Display name</label><input id="pDisplay"></div><div class="field"><label>Status</label><input id="pStatus"></div><div class="field"><label>Profile photo</label><input id="pAvatar" type="file" accept="image/*"></div><div class="err" id="profileError"></div><button class="primary" id="saveProfile">Save profile</button></div></div>
@@ -84,14 +94,65 @@ async function sessionReady(s){
  me={id:s.user.id,email:s.user.email||"",username:s.user.user_metadata?.username||s.user.email?.split("@")[0]||"user",display_name:s.user.user_metadata?.display_name||"ZIQVONA User",status:s.user.user_metadata?.status||"Online",avatar:localStorage.getItem("ziqvona_avatar")||""};
  save(STORE.me,me);$("authModal").classList.remove("show");renderMe();connect();
 }
-async function auth(){
- const signup=$("usernameField").style.display!=="none",email=$("email").value.trim(),password=$("password").value;
- $("authError").className="err";$("authError").textContent="";$("authSubmit").disabled=true;
- try{
-  if(signup){const u=$("username").value.trim();if(!u)throw Error("Username obligatwa.");const r=await sb.auth.signUp({email,password,options:{data:{username:u,display_name:u,status:"Online"}}});if(r.error)throw r.error;if(r.data.session)await sessionReady(r.data.session);else{$("authError").className="err ok";$("authError").textContent="Kont lan kreye. Verifye email ou si konfimasyon aktive."}}
-  else{const r=await sb.auth.signInWithPassword({email,password});if(r.error)throw r.error;if(!r.data.session)throw Error("Login pa kreye session.");await sessionReady(r.data.session)}
- }catch(e){$("authError").textContent=friendly(e)}finally{$("authSubmit").disabled=false;$("authSubmit").textContent=signup?"Create account":"Log in"}
+let authChannel="email";
+let otpPending=false;
+let otpDestination="";
+
+function setAuthMode(mode){
+ authChannel=mode;
+ $("emailMode").classList.toggle("active",mode==="email");
+ $("phoneMode").classList.toggle("active",mode==="phone");
+ $("emailField").style.display=mode==="email"?"block":"none";
+ $("phoneField").style.display=mode==="phone"?"block":"none";
+ $("authError").textContent="";
 }
+
+async function sendOtp(){
+ const email=$("email").value.trim();
+ const phone=$("phone").value.trim();
+ $("authError").className="err";
+ $("authError").textContent="";
+ $("authSubmit").disabled=true;
+ try{
+  let r;
+  if(authChannel==="email"){
+   if(!email) throw Error("Antre yon email valab.");
+   r=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+   otpDestination=email;
+  }else{
+   if(!phone||!/^\+[1-9]\d{7,14}$/.test(phone)) throw Error("Nimewo telefòn nan dwe gen kòd peyi a, egzanp +18095551234.");
+   r=await sb.auth.signInWithOtp({phone,options:{shouldCreateUser:true}});
+   otpDestination=phone;
+  }
+  if(r.error)throw r.error;
+  otpPending=true;
+  $("otpField").style.display="block";
+  $("verifyOtp").style.display="block";
+  $("resendOtp").style.display="block";
+  $("authSubmit").textContent="Voye kòd ankò";
+  $("authError").className="err ok";
+  $("authError").textContent="Kòd verifikasyon an voye. Tcheke "+(authChannel==="email"?"email ou.":"SMS ou.");
+ }catch(e){$("authError").textContent=friendly(e)}
+ finally{$("authSubmit").disabled=false}
+}
+
+async function verifyCode(){
+ const token=$("otp").value.trim();
+ if(!/^\d{6}$/.test(token)){ $("authError").textContent="Antre 6 chif kòd la."; return; }
+ $("verifyOtp").disabled=true;
+ try{
+  const data=authChannel==="email"
+   ? await sb.auth.verifyOtp({email:otpDestination,token,type:"email"})
+   : await sb.auth.verifyOtp({phone:otpDestination,token,type:"sms"});
+  if(data.error)throw data.error;
+  if(!data.data?.session) throw Error("Kòd la verifye, men session ZIQVONA a pa kreye.");
+  await sessionReady(data.data.session);
+ }catch(e){$("authError").textContent=friendly(e)}
+ finally{$("verifyOtp").disabled=false}
+}
+
+async function auth(){return otpPending?verifyCode():sendOtp()}
+
 function renderMe(){$("myName").textContent=me.display_name;$("myStatus").textContent=me.status;avatar($("myAvatar"),me.avatar,me.display_name)}
 function add(p){if(!p?.username||p.username===me?.username)return;profiles[p.username]={...profiles[p.username],...p};save(STORE.profiles,profiles)}
 function renderPeople(){let q=$("search").value.toLowerCase();let a=Object.values(profiles).filter(p=>(p.displayName||p.username||"").toLowerCase().includes(q));$("people").innerHTML=a.length?a.map(p=>'<div class="person '+(selected?.username===p.username?"active":"")+'" data-u="'+esc(p.username)+'"><div class="avatar">'+(p.avatar?'<img src="'+esc(p.avatar)+'">':esc((p.displayName||p.username)[0].toUpperCase()))+'</div><div class="info"><b>'+esc(p.displayName||p.username)+'</b><span>'+esc(p.status||"Online")+'</span></div></div>').join(""):'<div class="empty">Pa gen lòt itilizatè ki parèt kounye a.</div>';document.querySelectorAll(".person").forEach(x=>x.onclick=()=>open(x.dataset.u))}
@@ -125,8 +186,11 @@ function endCall(){if(peer){peer.close();peer=null}if(stream){stream.getTracks()
 async function saveProfile(){try{let u=$("pUsername").value.trim().replace(/^@/,""),d=$("pDisplay").value.trim()||u,s=$("pStatus").value.trim()||"Online";if(!u)throw Error("Username obligatwa.");let r=await sb.auth.updateUser({data:{username:u,display_name:d,status:s}});if(r.error)throw r.error;me={...me,username:u,display_name:d,status:s};save(STORE.me,me);renderMe();socket?.emit("register",{username:u,displayName:d,status:s,avatar:me.avatar||"",supabaseUserId:me.id,email:me.email});$("profileModal").classList.remove("show")}catch(e){$("profileError").textContent=friendly(e)}}
 function searchResults(a){$("newResults").innerHTML=a.length?a.map(u=>'<button class="primary" style="margin-top:7px;text-align:left" data-user="'+esc(u.username)+'">'+esc(u.displayName||u.username)+"</button>").join(""):"Pa jwenn itilizatè sa.";document.querySelectorAll("[data-user]").forEach(b=>b.onclick=()=>{$("newModal").classList.remove("show");add({username:b.dataset.user,displayName:b.textContent,status:"Online"});open(b.dataset.user)})}
 
-$("toggleAuth").onclick=()=>{let on=$("usernameField").style.display==="none";$("usernameField").style.display=on?"block":"none";$("authTitle").textContent=on?"Create your ZIQVONA account":"Welcome back";$("authSub").textContent=on?"Create a free account.":"Log in to continue to ZIQVONA.";$("authSubmit").textContent=on?"Create account":"Log in";$("toggleAuth").textContent=on?"I already have an account":"Create an account";$("authError").textContent=""};
-$("authForm").onsubmit=e=>{e.preventDefault();auth()};$("logoutBtn").onclick=async()=>{if(socket)socket.disconnect();await sb.auth.signOut()};$("search").oninput=renderPeople;$("send").onclick=send;$("text").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("emoji").onclick=()=>{$("text").value+=" 😊";$("text").focus()};$("fileBtn").onclick=()=>$("file").click();$("file").onchange=e=>{if(e.target.files[0])media(e.target.files[0]);e.target.value=""};$("voice").onpointerdown=voiceStart;$("voice").onpointerup=voiceStop;$("voice").onpointerleave=voiceStop;$("audioCall").onclick=()=>startCall("audio");$("videoCall").onclick=()=>startCall("video");$("hangup").onclick=endCall;$("mute").onclick=()=>{let t=stream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("mute").textContent=t.enabled?"🎙":"🔇"}};$("backBtn").onclick=()=>{$("app").classList.remove("chatmode");selected=null;$("backBtn").style.display="none"};
+$("emailMode").onclick=()=>setAuthMode("email");$("phoneMode").onclick=()=>setAuthMode("phone");
+$("authForm").onsubmit=e=>{e.preventDefault();sendOtp()};
+$("verifyOtp").onclick=verifyCode;
+$("resendOtp").onclick=sendOtp;
+$("otp").oninput=()=>{if($("otp").value.length===6)verifyCode()};$("logoutBtn").onclick=async()=>{if(socket)socket.disconnect();await sb.auth.signOut()};$("search").oninput=renderPeople;$("send").onclick=send;$("text").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("emoji").onclick=()=>{$("text").value+=" 😊";$("text").focus()};$("fileBtn").onclick=()=>$("file").click();$("file").onchange=e=>{if(e.target.files[0])media(e.target.files[0]);e.target.value=""};$("voice").onpointerdown=voiceStart;$("voice").onpointerup=voiceStop;$("voice").onpointerleave=voiceStop;$("audioCall").onclick=()=>startCall("audio");$("videoCall").onclick=()=>startCall("video");$("hangup").onclick=endCall;$("mute").onclick=()=>{let t=stream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("mute").textContent=t.enabled?"🎙":"🔇"}};$("backBtn").onclick=()=>{$("app").classList.remove("chatmode");selected=null;$("backBtn").style.display="none"};
 $("profileBtn").onclick=()=>{$("pUsername").value=me?.username||"";$("pDisplay").value=me?.display_name||"";$("pStatus").value=me?.status||"Online";$("profileModal").classList.add("show")};$("saveProfile").onclick=saveProfile;
 $("pAvatar").onchange=e=>{let f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024)return $("profileError").textContent="Foto a dwe pi piti pase 2MB.";let r=new FileReader();r.onload=()=>{me.avatar=r.result;localStorage.setItem("ziqvona_avatar",r.result);renderMe()};r.readAsDataURL(f)};
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove("show"));$("newBtn").onclick=()=>$("newModal").classList.add("show");$("findUser").onclick=()=>{let q=$("newUsername").value.trim().replace(/^@/,"");if(socket?.connected)socket.emit("search-users",{query:q})};
