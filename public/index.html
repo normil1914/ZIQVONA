@@ -492,6 +492,8 @@ button {
 }
 .callMedia.voice #remoteVideo { display: none; }
 .callMedia.voice #localVideo { display: none; }
+.callMedia.voice #remoteAudio { width: 1px; height: 1px; opacity: 0; position: absolute; }
+.callMedia.video #remoteAudio { display: none; }
 .callAvatar {
   width: 110px;
   height: 110px;
@@ -1187,6 +1189,7 @@ let peerConnection = null;
 let callTarget = null;
 
 let callType = "voice";
+let pendingIceCandidates = [];
 
 function $(id) {
   return document.getElementById(id);
@@ -2069,6 +2072,8 @@ function connectSocket() {
               data.answer
             )
           );
+
+        await flushPendingIceCandidates();
       }
     }
   );
@@ -2077,21 +2082,19 @@ function connectSocket() {
     "ice-candidate",
     async data => {
 
-      if (
-        peerConnection &&
-        data?.candidate
-      ) {
+      if (!data?.candidate) return;
 
-        try {
+      if (!peerConnection || !peerConnection.remoteDescription) {
+        pendingIceCandidates.push(data.candidate);
+        return;
+      }
 
-          await peerConnection
-            .addIceCandidate(
-              new RTCIceCandidate(
-                data.candidate
-              )
-            );
-
-        } catch {}
+      try {
+        await peerConnection.addIceCandidate(
+          new RTCIceCandidate(data.candidate)
+        );
+      } catch (error) {
+        console.warn("ICE candidate error:", error);
       }
     }
   );
@@ -2793,17 +2796,34 @@ async function getIceServers() {
 
 function attachPeerMedia() {
   if (!peerConnection) return;
+
   peerConnection.ontrack = event => {
     const stream = event.streams && event.streams[0];
     if (!stream) return;
+
     const remoteVideo = $("remoteVideo");
     const remoteAudio = $("remoteAudio");
-    if (remoteVideo) remoteVideo.srcObject = stream;
-    if (remoteAudio) remoteAudio.srcObject = stream;
-    remoteVideo?.play?.().catch(() => {});
-    remoteAudio?.play?.().catch(() => {});
+
+    if (callType === "video") {
+      if (remoteVideo) {
+        remoteVideo.srcObject = stream;
+        remoteVideo.muted = false;
+        remoteVideo.autoplay = true;
+        remoteVideo.playsInline = true;
+        remoteVideo.play().catch(() => {});
+      }
+    } else {
+      if (remoteAudio) {
+        remoteAudio.srcObject = stream;
+        remoteAudio.autoplay = true;
+        remoteAudio.muted = false;
+        remoteAudio.play().catch(() => {});
+      }
+    }
+
     $("callState").textContent = "Konekte";
   };
+
   peerConnection.onconnectionstatechange = () => {
     const state = peerConnection?.connectionState;
     if (state === "connected") $("callState").textContent = "Konekte";
@@ -2813,6 +2833,32 @@ function attachPeerMedia() {
       toast("WebRTC pa rive konekte. Verifye TURN.");
     } else if (state === "disconnected") $("callState").textContent = "Koneksyon an koupe...";
   };
+
+  const localVideo = $("localVideo");
+  if (localVideo && localStream && callType === "video") {
+    localVideo.srcObject = localStream;
+    localVideo.muted = true;
+    localVideo.autoplay = true;
+    localVideo.playsInline = true;
+    localVideo.play().catch(() => {});
+  }
+}
+
+async function flushPendingIceCandidates() {
+  if (!peerConnection || !peerConnection.remoteDescription) return;
+
+  const pending = [...pendingIceCandidates];
+  pendingIceCandidates = [];
+
+  for (const candidate of pending) {
+    try {
+      await peerConnection.addIceCandidate(
+        new RTCIceCandidate(candidate)
+      );
+    } catch (error) {
+      console.warn("Queued ICE candidate error:", error);
+    }
+  }
 }
 
 function prepareCallMedia(type) {
@@ -2852,6 +2898,8 @@ async function startCall(
 
   callType =
     type;
+
+  pendingIceCandidates = [];
 
   prepareCallMedia(type);
 
@@ -2910,8 +2958,6 @@ async function startCall(
         config
       );
 
-    attachPeerMedia();
-
     localStream
       .getTracks()
       .forEach(
@@ -2922,6 +2968,8 @@ async function startCall(
               localStream
             )
       );
+
+    attachPeerMedia();
 
     peerConnection.onicecandidate =
       event => {
@@ -3076,8 +3124,6 @@ async function receiveCallOffer(
         config
       );
 
-    attachPeerMedia();
-
     localStream
       .getTracks()
       .forEach(
@@ -3088,6 +3134,8 @@ async function receiveCallOffer(
               localStream
             )
       );
+
+    attachPeerMedia();
 
     peerConnection.onicecandidate =
       event => {
@@ -3115,6 +3163,8 @@ async function receiveCallOffer(
           data.offer
         )
       );
+
+    await flushPendingIceCandidates();
 
     const answer =
       await peerConnection
@@ -3205,10 +3255,18 @@ function closeCall() {
     );
 
   callTarget = null;
+  pendingIceCandidates = [];
 
   pendingIncomingCall =
     null;
 }
+
+$("callScreen").addEventListener("click", () => {
+  const remoteAudio = $("remoteAudio");
+  const remoteVideo = $("remoteVideo");
+  if (remoteAudio?.srcObject) remoteAudio.play().catch(() => {});
+  if (remoteVideo?.srcObject) remoteVideo.play().catch(() => {});
+});
 
 window.addEventListener(
   "online",
