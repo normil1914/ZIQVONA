@@ -110,48 +110,35 @@ function setAuthMode(mode){
 }
 
 async function sendOtp(){
- const email=$("email").value.trim();
  const phone=$("phone").value.trim();
- $("authError").className="err";
- $("authError").textContent="";
- $("authSubmit").disabled=true;
+ $("authError").className="err"; $("authError").textContent=""; $("authSubmit").disabled=true;
  try{
-  let r;
-  if(authChannel==="email"){
-   if(!email) throw Error("Antre yon email valab.");
-   r=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
-   otpDestination=email;
-  }else{
-   if(!phone||!/^\+[1-9]\d{7,14}$/.test(phone)) throw Error("Nimewo telefòn nan dwe gen kòd peyi a, egzanp +18095551234.");
-   r=await sb.auth.signInWithOtp({phone,options:{shouldCreateUser:true}});
-   otpDestination=phone;
-  }
-  if(r.error)throw r.error;
-  otpPending=true;
-  $("otpField").style.display="block";
-  $("verifyOtp").style.display="block";
-  $("resendOtp").style.display="block";
+  if(authChannel!=="phone") throw Error("Pou tès sa a, chwazi Phone.");
+  if(phone!=="+18005550123") throw Error("Pou tès $0 la, itilize nimewo +18005550123.");
+  otpDestination=phone; otpPending=true;
+  $("otpField").style.display="block"; $("verifyOtp").style.display="block"; $("resendOtp").style.display="block";
   $("authSubmit").textContent="Voye kòd ankò";
   $("authError").className="err ok";
-  $("authError").textContent="Kòd verifikasyon an voye. Tcheke "+(authChannel==="email"?"email ou.":"SMS ou.");
- }catch(e){$("authError").textContent=friendly(e)}
- finally{$("authSubmit").disabled=false}
+  $("authError").textContent="Mòd tès ZIQVONA: itilize kòd 123456.";
+ }catch(e){$("authError").textContent=friendly(e)} finally{$("authSubmit").disabled=false}
 }
+
 
 async function verifyCode(){
  const token=$("otp").value.trim();
  if(!/^\d{6}$/.test(token)){ $("authError").textContent="Antre 6 chif kòd la."; return; }
  $("verifyOtp").disabled=true;
  try{
-  const data=authChannel==="email"
-   ? await sb.auth.verifyOtp({email:otpDestination,token,type:"email"})
-   : await sb.auth.verifyOtp({phone:otpDestination,token,type:"sms"});
-  if(data.error)throw data.error;
-  if(!data.data?.session) throw Error("Kòd la verifye, men session ZIQVONA a pa kreye.");
-  await sessionReady(data.data.session);
- }catch(e){$("authError").textContent=friendly(e)}
- finally{$("verifyOtp").disabled=false}
+  if(authChannel!=="phone" || otpDestination!=="+18005550123" || token!=="123456") throw Error("Nimewo oswa kòd tès la pa bon.");
+  // TEST MODE: no Twilio/Supabase SMS is used. This creates a local test session.
+  const testId="test-phone-18005550123";
+  session={user:{id:testId,phone:otpDestination,user_metadata:{username:"testphone",display_name:"ZIQVONA Test",status:"Online"}}};
+  me={id:testId,email:"",phone:otpDestination,username:"testphone",display_name:"ZIQVONA Test",status:"Online",avatar:""};
+  save(STORE.me,me); lastSessionId=testId; $("authModal").classList.remove("show"); renderMe(); connect();
+  $("authError").textContent="";
+ }catch(e){$("authError").textContent=friendly(e)} finally{$("verifyOtp").disabled=false}
 }
+
 
 async function auth(){return otpPending?verifyCode():sendOtp()}
 
