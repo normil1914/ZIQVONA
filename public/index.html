@@ -77,7 +77,7 @@ let sb,session,me,selected,lastSessionId="",profiles=JSON.parse(localStorage.get
 
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function friendly(e){let m=String(e?.message||e||""),l=m.toLowerCase();if(l.includes("invalid login credentials"))return"Email oswa password la pa bon.";if(l.includes("email not confirmed"))return"Email la poko konfime. Verifye email ou.";if(l.includes("user already registered"))return"Email sa deja gen yon kont.";if(l.includes("invalid api key")||l.includes("apikey"))return"Kle Supabase la pa bon. Nou mete publishable key ZIQVONA a; si erè a toujou parèt, key la dwe verifye nan Supabase Settings → API.";if(l.includes("sms provider")||l.includes("phone provider")||l.includes("twilio"))return"Phone OTP poko aktive: mete yon SMS provider nan Supabase Authentication → Phone.";if(l.includes("failed to fetch")||l.includes("networkerror")||l.includes("fetch"))return"ZIQVONA pa rive kontakte Supabase. Verifye entènèt la.";return m||"Yon erè rive."}
+function friendly(e){let m=String(e?.message||e||""),l=m.toLowerCase();if(l.includes("invalid login credentials"))return"Email oswa password la pa bon.";if(l.includes("email not confirmed"))return"Email la poko konfime. Verifye email ou.";if(l.includes("user already registered"))return"Email sa deja gen yon kont.";if(l.includes("invalid api key")||l.includes("apikey"))return"Kle Supabase la pa bon. Nou mete publishable key ZIQVONA a; si erè a toujou parèt, key la dwe verifye nan Supabase Settings → API.";if(l.includes("sms provider")||l.includes("phone provider")||l.includes("twilio"))return"Phone OTP poko aktive: mete yon SMS provider nan Supabase Authentication → Phone.";if(l.includes("rate limit"))return"Supabase limite kantite kòd yo. Tann kèk minit epi eseye ankò.";if(l.includes("failed to fetch")||l.includes("networkerror")||l.includes("fetch"))return"ZIQVONA pa rive kontakte Supabase. Verifye entènèt la.";return m||"Yon erè rive."}
 function avatar(el,src,name){el.innerHTML=src?'<img src="'+esc(src)+'">':esc((name||"Z")[0].toUpperCase())}
 function net(t,ok=false){$("network").textContent=t;$("network").style.background=ok?"#087f6c":"#173d38"}
 
@@ -101,46 +101,93 @@ let otpPending=false;
 let otpDestination="";
 
 function setAuthMode(mode){
- authChannel=mode;
- $("emailMode").classList.toggle("active",mode==="email");
- $("phoneMode").classList.toggle("active",mode==="phone");
- $("emailField").style.display=mode==="email"?"block":"none";
- $("phoneField").style.display=mode==="phone"?"block":"none";
- $("authError").textContent="";
+  authChannel=mode;
+  $("emailMode").classList.toggle("active",mode==="email");
+  $("phoneMode").classList.toggle("active",mode==="phone");
+  $("emailField").style.display=mode==="email"?"block":"none";
+  $("phoneField").style.display=mode==="phone"?"block":"none";
+  $("otpField").style.display="none";
+  $("verifyOtp").style.display="none";
+  $("resendOtp").style.display="none";
+  $("authSubmit").textContent="Voye kòd verifikasyon";
+  $("authError").textContent="";
+  otpPending=false;
 }
 
 async function sendOtp(){
- const phone=$("phone").value.trim();
- $("authError").className="err"; $("authError").textContent=""; $("authSubmit").disabled=true;
- try{
-  if(authChannel!=="phone") throw Error("Pou tès sa a, chwazi Phone.");
-  if(phone!=="+18005550123") throw Error("Pou tès $0 la, itilize nimewo +18005550123.");
-  otpDestination=phone; otpPending=true;
-  $("otpField").style.display="block"; $("verifyOtp").style.display="block"; $("resendOtp").style.display="block";
-  $("authSubmit").textContent="Voye kòd ankò";
-  $("authError").className="err ok";
-  $("authError").textContent="Mòd tès ZIQVONA: itilize kòd 123456.";
- }catch(e){$("authError").textContent=friendly(e)} finally{$("authSubmit").disabled=false}
+  $("authError").className="err";
+  $("authError").textContent="";
+  $("authSubmit").disabled=true;
+  try{
+    if(!sb) throw Error("Supabase poko konekte.");
+    let r;
+    if(authChannel==="email"){
+      const email=$("email").value.trim().toLowerCase();
+      if(!email) throw Error("Antre yon email.");
+      r=await sb.auth.signInWithOtp({
+        email,
+        options:{shouldCreateUser:true}
+      });
+      if(r.error) throw r.error;
+      otpDestination=email;
+      $("authError").className="err ok";
+      $("authError").textContent="Nou voye yon kòd verifikasyon 6 chif nan email ou.";
+    }else{
+      const phone=$("phone").value.trim();
+      if(!/^\\+[1-9]\\d{7,14}$/.test(phone)) throw Error("Mete nimewo a ak kòd peyi a, egzanp +18005550123.");
+      r=await sb.auth.signInWithOtp({
+        phone,
+        options:{shouldCreateUser:true}
+      });
+      if(r.error) throw r.error;
+      otpDestination=phone;
+      $("authError").className="err ok";
+      $("authError").textContent="Nou voye yon kòd verifikasyon 6 chif nan telefòn ou.";
+    }
+    otpPending=true;
+    $("otpField").style.display="block";
+    $("verifyOtp").style.display="block";
+    $("resendOtp").style.display="block";
+    $("authSubmit").textContent="Voye kòd ankò";
+    $("otp").focus();
+  }catch(e){
+    console.error(e);
+    $("authError").textContent=friendly(e);
+  }finally{
+    $("authSubmit").disabled=false;
+  }
 }
-
 
 async function verifyCode(){
- const token=$("otp").value.trim();
- if(!/^\d{6}$/.test(token)){ $("authError").textContent="Antre 6 chif kòd la."; return; }
- $("verifyOtp").disabled=true;
- try{
-  if(authChannel!=="phone" || otpDestination!=="+18005550123" || token!=="123456") throw Error("Nimewo oswa kòd tès la pa bon.");
-  // TEST MODE: no Twilio/Supabase SMS is used. This creates a local test session.
-  const testId="test-phone-18005550123";
-  session={user:{id:testId,phone:otpDestination,user_metadata:{username:"testphone",display_name:"ZIQVONA Test",status:"Online"}}};
-  me={id:testId,email:"",phone:otpDestination,username:"testphone",display_name:"ZIQVONA Test",status:"Online",avatar:""};
-  save(STORE.me,me); lastSessionId=testId; $("authModal").classList.remove("show"); renderMe(); connect();
-  $("authError").textContent="";
- }catch(e){$("authError").textContent=friendly(e)} finally{$("verifyOtp").disabled=false}
+  const token=$("otp").value.trim();
+  if(!/^\\d{6}$/.test(token)){
+    $("authError").textContent="Antre 6 chif kòd la.";
+    return;
+  }
+  $("verifyOtp").disabled=true;
+  try{
+    let r;
+    if(authChannel==="email"){
+      r=await sb.auth.verifyOtp({email:otpDestination,token,type:"email"});
+    }else{
+      r=await sb.auth.verifyOtp({phone:otpDestination,token,type:"sms"});
+    }
+    if(r.error) throw r.error;
+    if(r.data?.session) await sessionReady(r.data.session);
+    otpPending=false;
+    $("otp").value="";
+    $("authError").textContent="";
+  }catch(e){
+    console.error(e);
+    $("authError").textContent=friendly(e);
+  }finally{
+    $("verifyOtp").disabled=false;
+  }
 }
 
-
-async function auth(){return otpPending?verifyCode():sendOtp()}
+async function auth(){
+  return otpPending?verifyCode():sendOtp();
+}
 
 function renderMe(){$("myName").textContent=me.display_name;$("myStatus").textContent=me.status;avatar($("myAvatar"),me.avatar,me.display_name)}
 function add(p){if(!p?.username||p.username===me?.username)return;profiles[p.username]={...profiles[p.username],...p};save(STORE.profiles,profiles)}
@@ -176,10 +223,18 @@ async function saveProfile(){try{let u=$("pUsername").value.trim().replace(/^@/,
 function searchResults(a){$("newResults").innerHTML=a.length?a.map(u=>'<button class="primary" style="margin-top:7px;text-align:left" data-user="'+esc(u.username)+'">'+esc(u.displayName||u.username)+"</button>").join(""):"Pa jwenn itilizatè sa.";document.querySelectorAll("[data-user]").forEach(b=>b.onclick=()=>{$("newModal").classList.remove("show");add({username:b.dataset.user,displayName:b.textContent,status:"Online"});open(b.dataset.user)})}
 
 $("emailMode").onclick=()=>setAuthMode("email");$("phoneMode").onclick=()=>setAuthMode("phone");
-$("authForm").onsubmit=e=>{e.preventDefault();sendOtp()};
+$("authForm").onsubmit=e=>{e.preventDefault();auth()};
 $("verifyOtp").onclick=verifyCode;
 $("resendOtp").onclick=sendOtp;
-$("otp").oninput=()=>{if($("otp").value.length===6)verifyCode()};$("logoutBtn").onclick=async()=>{if(socket)socket.disconnect();await sb.auth.signOut()};$("search").oninput=renderPeople;$("send").onclick=send;$("text").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("emoji").onclick=()=>{$("text").value+=" 😊";$("text").focus()};$("fileBtn").onclick=()=>$("file").click();$("file").onchange=e=>{if(e.target.files[0])media(e.target.files[0]);e.target.value=""};$("voice").onpointerdown=voiceStart;$("voice").onpointerup=voiceStop;$("voice").onpointerleave=voiceStop;$("audioCall").onclick=()=>startCall("audio");$("videoCall").onclick=()=>startCall("video");$("hangup").onclick=endCall;$("mute").onclick=()=>{let t=stream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("mute").textContent=t.enabled?"🎙":"🔇"}};$("backBtn").onclick=()=>{$("app").classList.remove("chatmode");selected=null;$("backBtn").style.display="none"};
+$("otp").oninput=()=>{if($("otp").value.length===6)verifyCode()};$("logoutBtn").onclick=async()=>{
+  try{if(socket)socket.disconnect();}catch(e){}
+  try{if(sb)await sb.auth.signOut();}catch(e){console.warn(e)}
+  session=null;me=null;lastSessionId="";
+  localStorage.removeItem(STORE.me);
+  $("authModal").classList.add("show");
+  setAuthMode("email");
+  $("otp").value="";
+};$("search").oninput=renderPeople;$("send").onclick=send;$("text").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};$("emoji").onclick=()=>{$("text").value+=" 😊";$("text").focus()};$("fileBtn").onclick=()=>$("file").click();$("file").onchange=e=>{if(e.target.files[0])media(e.target.files[0]);e.target.value=""};$("voice").onpointerdown=voiceStart;$("voice").onpointerup=voiceStop;$("voice").onpointerleave=voiceStop;$("audioCall").onclick=()=>startCall("audio");$("videoCall").onclick=()=>startCall("video");$("hangup").onclick=endCall;$("mute").onclick=()=>{let t=stream?.getAudioTracks()[0];if(t){t.enabled=!t.enabled;$("mute").textContent=t.enabled?"🎙":"🔇"}};$("backBtn").onclick=()=>{$("app").classList.remove("chatmode");selected=null;$("backBtn").style.display="none"};
 $("profileBtn").onclick=()=>{$("pUsername").value=me?.username||"";$("pDisplay").value=me?.display_name||"";$("pStatus").value=me?.status||"Online";$("profileModal").classList.add("show")};$("saveProfile").onclick=saveProfile;
 $("pAvatar").onchange=e=>{let f=e.target.files[0];if(!f)return;if(f.size>2*1024*1024)return $("profileError").textContent="Foto a dwe pi piti pase 2MB.";let r=new FileReader();r.onload=()=>{me.avatar=r.result;localStorage.setItem("ziqvona_avatar",r.result);renderMe()};r.readAsDataURL(f)};
 document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove("show"));$("newBtn").onclick=()=>$("newModal").classList.add("show");$("findUser").onclick=()=>{let q=$("newUsername").value.trim().replace(/^@/,"");if(socket?.connected)socket.emit("search-users",{query:q})};
