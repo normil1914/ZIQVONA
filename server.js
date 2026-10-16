@@ -8,43 +8,41 @@ const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const server = http.createServer(app);
-
 const PORT = process.env.PORT || 10000;
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+const SUPABASE_URL = (
+  process.env.SUPABASE_URL ||
+  "https://hkirnyqousvmphpwqfga.supabase.co"
+).trim();
+
+const SUPABASE_KEY = (
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  ""
+).trim();
+
+if (!SUPABASE_KEY) {
   throw new Error(
-    "ZIQVONA bezwen SUPABASE_URL ak SUPABASE_ANON_KEY nan anviwònman sèvè a."
+    "Mete SUPABASE_ANON_KEY oswa SUPABASE_PUBLISHABLE_KEY nan Render."
   );
 }
 
-const authClient = createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
-    }
+const authClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
   }
-);
+});
 
-// Sèvi ak kle sa a sèlman sou sèvè a.
-// Pa janm mete SUPABASE_SERVICE_ROLE_KEY nan index.html.
-const adminClient = SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        }
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const adminClient = SERVICE_KEY
+  ? createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
       }
-    )
+    })
   : null;
 
 const io = new Server(server, {
@@ -52,26 +50,21 @@ const io = new Server(server, {
     origin: true,
     methods: ["GET", "POST"]
   },
-  maxHttpBufferSize: 15 * 1024 * 1024,
+  maxHttpBufferSize: 12 * 1024 * 1024,
   pingInterval: 25000,
-  pingTimeout: 20000,
-  transports: ["websocket", "polling"]
+  pingTimeout: 20000
 });
 
 const MAX_USERS = 10000;
 const MAX_TEXT = 4000;
-const MAX_MEDIA = 10 * 1024 * 1024;
-const MAX_STATUS = 120;
-const MAX_AVATAR = 2 * 1024 * 1024;
-const MAX_EVENTS_PER_MINUTE = 120;
+const MAX_MEDIA = 8 * 1024 * 1024;
 
-const users = new Map();       // socket ID -> authenticated user
-const byName = new Map();     // username -> socket ID
-const profiles = new Map();   // username -> public profile
-const messages = [];          // temporary memory only
-const eventWindows = new Map();
-const ipConnections = new Map();
-const groupRooms = new Map();
+const users = new Map();
+const byName = new Map();
+const profiles = new Map();
+const messages = [];
+const limits = new Map();
+const calls = new Map();
 
 app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "public")));
@@ -82,8 +75,7 @@ app.get("/health", (req, res) => {
     app: "ZIQVONA",
     onlineUsers: users.size,
     maxUsers: MAX_USERS,
-    uptime: Math.round(process.uptime()),
-    timestamp: new Date().toISOString()
+    uptime: Math.round(process.uptime())
   });
 });
 
@@ -93,17 +85,11 @@ app.get("/config", (req, res) => {
     { urls: "stun:stun1.l.google.com:19302" }
   ];
 
-  const turnUrls = process.env.TURN_URL ||
-    process.env.TURN_HOST || "";
-
-  if (turnUrls) {
+  if (process.env.TURN_URL) {
     iceServers.push({
-      urls: turnUrls.split(",").map(v => v.trim()).filter(Boolean),
+      urls: process.env.TURN_URL.split(",").map(x => x.trim()),
       username: process.env.TURN_USERNAME || "",
-      credential:
-        process.env.TURN_CREDENTIAL ||
-        process.env.TURN_PASSWORD ||
-        ""
+      credential: process.env.TURN_CREDENTIAL || ""
     });
   }
 
@@ -121,7 +107,6 @@ function clean(value, max = 1000) {
 
 function publicProfile(username) {
   const p = profiles.get(username) || {};
-
   return {
     username,
     displayName: p.displayName || username,
@@ -148,35 +133,32 @@ function sendToUser(username, event, data) {
 
 function rateLimited(socket) {
   const now = Date.now();
-  let window = eventWindows.get(socket.id);
+  let entry = limits.get(socket.id);
 
-  if (!window || now - window.start >= 60000) {
-    window = { start: now, count: 0 };
+  if (!entry || now - entry.start >= 60000) {
+    entry = { start: now, count: 0 };
   }
 
-  window.count++;
-  eventWindows.set(socket.id, window);
-  return window.count > MAX_EVENTS_PER_MINUTE;
+  entry.count++;
+  limits.set(socket.id, entry);
+  return entry.count > 120;
 }
 
-function errorTo(socket, event, message) {
+function reportError(socket, event, message) {
   socket.emit(event, { message });
 }
 
 function privateHistory(a, b) {
-  return messages
-    .filter(m =>
-      (m.from === a && m.to === b) ||
-      (m.from === b && m.to === a)
-    )
-    .slice(-200);
+  return messages.filter(m =>
+    (m.from === a && m.to === b) ||
+    (m.from === b && m.to === a)
+  ).slice(-200);
 }
 
-function broadcastPresence() {
+function presence() {
   io.emit("presence", { online: [...byName.keys()] });
 }
 
-// Verify the Supabase access token before allowing a socket connection.
 io.use(async (socket, next) => {
   try {
     if (users.size >= MAX_USERS) {
@@ -184,7 +166,6 @@ io.use(async (socket, next) => {
     }
 
     const token = socket.handshake.auth?.accessToken;
-
     if (typeof token !== "string" || !token) {
       return next(new Error("Konekte ak Supabase anvan ou antre."));
     }
@@ -192,32 +173,30 @@ io.use(async (socket, next) => {
     const { data, error } = await authClient.auth.getUser(token);
 
     if (error || !data?.user?.id) {
-      return next(new Error("Koneksyon an pa valab. Rekonekte."));
+      return next(new Error("Sesyon an pa valab. Rekonekte."));
     }
 
-    const authUser = data.user;
+    const user = data.user;
     let profile = null;
 
-    // If available, read the user's profile using the server-only key.
     if (adminClient) {
-      const { data: row, error: profileError } =
-        await adminClient
-          .from("profiles")
-          .select("id,username,display_name,status,avatar")
-          .eq("id", authUser.id)
-          .maybeSingle();
+      const result = await adminClient
+        .from("profiles")
+        .select("id,username,display_name,status,avatar")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      if (!profileError && row) profile = row;
+      if (!result.error) profile = result.data;
     }
 
-    const metadata = authUser.user_metadata || {};
+    const meta = user.user_metadata || {};
     const username = clean(
       profile?.username ||
-      metadata.username ||
-      metadata.user_name ||
-      authUser.email ||
-      authUser.phone ||
-      authUser.id,
+      meta.username ||
+      meta.user_name ||
+      user.email ||
+      user.phone ||
+      user.id,
       80
     );
 
@@ -225,54 +204,46 @@ io.use(async (socket, next) => {
       return next(new Error("Kont sa a pa gen idantite valab."));
     }
 
-    socket.data.authUserId = authUser.id;
+    socket.data.authUserId = user.id;
     socket.data.username = username;
     socket.data.profileRow = profile;
-    socket.data.metadata = metadata;
+    socket.data.metadata = meta;
 
     next();
-  } catch (err) {
-    console.error("Socket authentication failed:", err.message);
-    next(new Error("Nou pa ka verifye kont lan kounye a."));
+  } catch (error) {
+    console.error("Authentication error:", error.message);
+    next(new Error("Nou pa kapab verifye kont lan kounye a."));
   }
 });
 
 io.on("connection", socket => {
   const username = socket.data.username;
   const authUserId = socket.data.authUserId;
+  const oldSocketId = byName.get(username);
 
-  // Do not allow a second active socket to impersonate this username.
-  const previousSocketId = byName.get(username);
-  if (previousSocketId && previousSocketId !== socket.id) {
-    const previousSocket = io.sockets.sockets.get(previousSocketId);
-    if (previousSocket) {
-      previousSocket.emit("force-disconnect", {
+  if (oldSocketId && oldSocketId !== socket.id) {
+    const oldSocket = io.sockets.sockets.get(oldSocketId);
+    if (oldSocket) {
+      oldSocket.emit("force-disconnect", {
         message: "Kont sa a konekte sou yon lòt aparèy."
       });
-      previousSocket.disconnect(true);
+      oldSocket.disconnect(true);
     }
   }
 
   const row = socket.data.profileRow || {};
-  const metadata = socket.data.metadata || {};
+  const meta = socket.data.metadata || {};
 
-  const profile = {
+  profiles.set(username, {
     displayName: clean(
-      row.display_name ||
-      metadata.display_name ||
-      metadata.full_name ||
-      username,
-      50
+      row.display_name || meta.display_name ||
+      meta.full_name || username, 50
     ),
-    status: clean(row.status || "Disponib", MAX_STATUS),
-    avatar: clean(row.avatar || "", MAX_AVATAR)
-  };
-
-  profiles.set(username, profile);
-  users.set(socket.id, {
-    id: authUserId,
-    username
+    status: clean(row.status || meta.status || "Disponib", 120),
+    avatar: clean(row.avatar || "", 3000000)
   });
+
+  users.set(socket.id, { id: authUserId, username });
   byName.set(username, socket.id);
 
   socket.emit("registered", {
@@ -281,10 +252,9 @@ io.on("connection", socket => {
     online: [...byName.keys()]
   });
 
-  broadcastPresence();
+  presence();
 
   socket.on("register", () => {
-    // Identity is determined by the verified token, never by client input.
     socket.emit("registered", {
       me: publicProfile(username),
       profiles: allProfiles(),
@@ -294,17 +264,16 @@ io.on("connection", socket => {
 
   socket.on("update-profile", async raw => {
     if (rateLimited(socket)) {
-      return errorTo(socket, "error-message", "Twòp demann. Tann yon ti moman.");
+      return reportError(socket, "error-message", "Twòp demann.");
     }
 
     const old = profiles.get(username) || {};
     const next = {
       displayName: clean(raw?.displayName ?? old.displayName, 50),
-      status: clean(raw?.status ?? old.status, MAX_STATUS),
-      avatar: clean(raw?.avatar ?? old.avatar, MAX_AVATAR)
+      status: clean(raw?.status ?? old.status, 120),
+      avatar: clean(raw?.avatar ?? old.avatar, 3000000)
     };
 
-    // Persist the profile when the server-only key is configured.
     if (adminClient) {
       const { error } = await adminClient
         .from("profiles")
@@ -316,21 +285,21 @@ io.on("connection", socket => {
         .eq("id", authUserId);
 
       if (error) {
-        console.error("Profile update failed:", error.message);
-        return errorTo(socket, "error-message", "Nou pa kapab sove pwofil la kounye a.");
+        return reportError(
+          socket, "error-message", "Nou pa kapab sove pwofil la."
+        );
       }
     }
 
     profiles.set(username, next);
     socket.emit("profile-updated", publicProfile(username));
-    broadcastPresence();
+    presence();
   });
 
   socket.on("search-users", raw => {
     if (rateLimited(socket)) return;
 
     const query = clean(raw?.query, 50).toLowerCase();
-
     const results = [...profiles.keys()]
       .filter(name => name !== username)
       .map(publicProfile)
@@ -358,7 +327,7 @@ io.on("connection", socket => {
 
   socket.on("private-message", raw => {
     if (rateLimited(socket)) {
-      return errorTo(socket, "message-error", "Twòp mesaj. Tann yon ti moman.");
+      return reportError(socket, "message-error", "Twòp mesaj. Tann yon ti moman.");
     }
 
     const to = clean(raw?.to, 80);
@@ -367,7 +336,7 @@ io.on("connection", socket => {
     if (!to || to === username || !text) return;
 
     if (!byName.has(to)) {
-      return errorTo(socket, "message-error", "Kontak la pa online kounye a.");
+      return reportError(socket, "message-error", "Kontak la pa online.");
     }
 
     const message = {
@@ -388,7 +357,7 @@ io.on("connection", socket => {
 
   socket.on("media-message", raw => {
     if (rateLimited(socket)) {
-      return errorTo(socket, "message-error", "Twòp medya. Tann yon ti moman.");
+      return reportError(socket, "message-error", "Twòp demann medya.");
     }
 
     const to = clean(raw?.to, 80);
@@ -398,15 +367,15 @@ io.on("connection", socket => {
     const data = typeof raw?.data === "string" ? raw.data : "";
 
     if (!to || to === username || !kind || !data) {
-      return errorTo(socket, "message-error", "Medya a pa valab.");
+      return reportError(socket, "message-error", "Medya a pa valab.");
     }
 
     if (!byName.has(to)) {
-      return errorTo(socket, "message-error", "Kontak la pa online.");
+      return reportError(socket, "message-error", "Kontak la pa online.");
     }
 
     if (Buffer.byteLength(data, "utf8") > MAX_MEDIA) {
-      return errorTo(socket, "message-error", "Fichye a twò gwo.");
+      return reportError(socket, "message-error", "Fichye a twò gwo.");
     }
 
     const message = {
@@ -429,15 +398,13 @@ io.on("connection", socket => {
   for (const event of ["typing", "stop-typing"]) {
     socket.on(event, raw => {
       if (rateLimited(socket)) return;
-
       const to = clean(raw?.to, 80);
-      if (!to || to === username) return;
-
-      sendToUser(to, event, { from: username });
+      if (to && to !== username) {
+        sendToUser(to, event, { from: username });
+      }
     });
   }
 
-  // Relay WebRTC signals only to the intended online recipient.
   for (const event of [
     "call-offer",
     "call-answer",
@@ -451,142 +418,21 @@ io.on("connection", socket => {
       const to = clean(raw?.to, 80);
       if (!to || to === username || !byName.has(to)) {
         if (event === "call-offer") {
-          errorTo(socket, "call-error", "Kontak la pa online kounye a.");
+          reportError(socket, "call-error", "Kontak la pa online.");
         }
         return;
       }
 
-      sendToUser(to, event, {
-        ...raw,
-        from: username,
-        to
-      });
+      sendToUser(to, event, { ...raw, from: username, to });
     });
   }
 
-  socket.on("group-call-create", raw => {
-    if (rateLimited(socket)) return;
-
-    const requested = Array.isArray(raw?.members)
-      ? raw.members.map(v => clean(v, 80)).filter(Boolean)
-      : [];
-
-    const members = [...new Set([username, ...requested])].slice(0, 20);
-    const roomId = randomUUID();
-
-    groupRooms.set(roomId, {
-      owner: username,
-      members: new Set(members),
-      sockets: new Set([socket.id])
-    });
-
-    socket.join(`group:${roomId}`);
-
-    for (const member of members) {
-      if (member !== username && byName.has(member)) {
-        sendToUser(member, "group-call-invite", {
-          roomId,
-          from: username,
-          members
-        });
-      }
-    }
-
-    socket.emit("group-call-created", { roomId, members });
-  });
-
-  socket.on("group-call-join", raw => {
-    if (rateLimited(socket)) return;
-
-    const roomId = clean(raw?.roomId, 100);
-    const room = groupRooms.get(roomId);
-
-    if (!room || !room.members.has(username)) {
-      return errorTo(socket, "call-error", "Ou pa gen otorizasyon pou antre nan apèl sa a.");
-    }
-
-    room.sockets.add(socket.id);
-    socket.join(`group:${roomId}`);
-
-    socket.to(`group:${roomId}`).emit("group-peer-joined", {
-      roomId,
-      username
-    });
-
-    const peers = [];
-    for (const id of room.sockets) {
-      if (id === socket.id) continue;
-      const peer = users.get(id);
-      if (peer) peers.push(peer.username);
-    }
-
-    socket.emit("group-peers", { roomId, peers });
-  });
-
-  socket.on("group-signal", raw => {
-    if (rateLimited(socket)) return;
-
-    const roomId = clean(raw?.roomId, 100);
-    const to = clean(raw?.to, 80);
-    const room = groupRooms.get(roomId);
-    const targetSocket = byName.get(to);
-
-    if (
-      !room ||
-      !room.members.has(username) ||
-      !room.members.has(to) ||
-      !room.sockets.has(socket.id) ||
-      !targetSocket ||
-      !room.sockets.has(targetSocket)
-    ) {
-      return;
-    }
-
-    sendToUser(to, "group-signal", {
-      ...raw,
-      from: username,
-      to,
-      roomId
-    });
-  });
-
-  socket.on("group-call-leave", raw => {
-    const roomId = clean(raw?.roomId, 100);
-    const room = groupRooms.get(roomId);
-    if (!room) return;
-
-    room.sockets.delete(socket.id);
-    socket.leave(`group:${roomId}`);
-
-    socket.to(`group:${roomId}`).emit("group-peer-left", {
-      roomId,
-      username
-    });
-
-    if (room.sockets.size === 0) {
-      groupRooms.delete(roomId);
-    }
-  });
-
   socket.on("disconnect", () => {
-    eventWindows.delete(socket.id);
+    limits.delete(socket.id);
 
-    const ip = socket.data.ip;
-    if (ip) {
-      const count = Math.max(0, (ipConnections.get(ip) || 1) - 1);
-      if (count) ipConnections.set(ip, count);
-      else ipConnections.delete(ip);
-    }
-
-    for (const [roomId, room] of groupRooms) {
-      if (room.sockets.has(socket.id)) {
-        room.sockets.delete(socket.id);
-        io.to(`group:${roomId}`).emit("group-peer-left", {
-          roomId,
-          username
-        });
-        if (room.sockets.size === 0) groupRooms.delete(roomId);
-      }
+    for (const [roomId, call] of calls) {
+      call.sockets.delete(socket.id);
+      if (!call.sockets.size) calls.delete(roomId);
     }
 
     if (byName.get(username) === socket.id) {
@@ -594,21 +440,8 @@ io.on("connection", socket => {
     }
 
     users.delete(socket.id);
-    broadcastPresence();
+    presence();
   });
-});
-
-io.use((socket, next) => {
-  const ip = socket.handshake.address || "unknown";
-  const count = ipConnections.get(ip) || 0;
-
-  if (count >= 40) {
-    return next(new Error("Twòp koneksyon soti nan menm rezo a."));
-  }
-
-  ipConnections.set(ip, count + 1);
-  socket.data.ip = ip;
-  next();
 });
 
 server.listen(PORT, "0.0.0.0", () => {
