@@ -1,2871 +1,1919 @@
-<!doctype html>
 
+<!doctype html>
 <html lang="ht">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10bfa3">
-<title>ZIQVONA — Better vibes • One family</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-:root{
-  --g:#10bfa3;
-  --g2:#07977f;
-  --bg:#eef7f5;
-  --line:#dce9e6;
-  --muted:#71817e;
-  --danger:#d9363e;
-}
-*{box-sizing:border-box}
-html,body{
-  margin:0;
-  width:100%;
-  height:100%;
-  font-family:Arial,sans-serif;
-  background:var(--bg);
-  color:#18302d;
-}
-button,input,textarea{font:inherit}
-button{cursor:pointer;border:0}
-
-.app{
-  display:flex;
-  height:100vh;
-  overflow:hidden;
-}
-
-.sidebar{
-  width:360px;
-  background:#fff;
-  border-right:1px solid var(--line);
-  display:flex;
-  flex-direction:column;
-}
-
-.top{
-  height:70px;
-  padding:12px 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom:1px solid var(--line);
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  font-weight:900;
-  color:var(--g2);
-  font-size:21px;
-}
-
-.logo{
-  width:42px;
-  height:42px;
-  border-radius:13px;
-  background:linear-gradient(145deg,var(--g),var(--g2));
-  color:white;
-  display:grid;
-  place-items:center;
-  font-weight:900;
-}
-
-.actions{
-  display:flex;
-  gap:7px;
-}
-
-.ib{
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  background:#edf8f5;
-  color:var(--g2);
-  font-size:18px;
-}
-
-.profile{
-  padding:12px 16px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.avatar{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:#d9f4ee;
-  color:var(--g2);
-  display:grid;
-  place-items:center;
-  font-weight:800;
-  overflow:hidden;
-  flex:none;
-}
-
-.avatar img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.info{
-  min-width:0;
-  flex:1;
-}
-
-.info b{
-  display:block;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.info span{
-  font-size:12px;
-  color:var(--muted);
-}
-
-.search{
-  padding:11px 14px;
-}
-
-.search input{
-  width:100%;
-  padding:11px 13px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  outline:none;
-  background:#f7fbfa;
-}
-
-.filters{
-  display:flex;
-  gap:7px;
-  padding:0 14px 10px;
-}
-
-.filter{
-  padding:8px 13px;
-  border-radius:10px;
-  background:#f1f6f5;
-  color:#526461;
-  font-size:13px;
-}
-
-.filter.active{
-  background:var(--g);
-  color:#fff;
-}
-
-.people{
-  overflow:auto;
-  flex:1;
-}
-
-.person{
-  padding:11px 14px;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  border-bottom:1px solid #f0f4f3;
-}
-
-.person.active,
-.person:hover{
-  background:#e8f8f4;
-}
-
-.empty{
-  padding:35px 20px;
-  text-align:center;
-  color:var(--muted);
-  font-size:14px;
-}
-
-.chat{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  min-width:0;
-  background:#e9f2ef;
-}
-
-.head{
-  height:70px;
-  background:#fff;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  padding:10px 18px;
-  gap:10px;
-}
-
-.headinfo{
-  flex:1;
-  min-width:0;
-}
-
-.headinfo b{
-  display:block;
-}
-
-.headinfo span{
-  font-size:12px;
-  color:var(--muted);
-}
-
-.headactions{
-  display:flex;
-  gap:8px;
-}
-
-.messages{
-  flex:1;
-  overflow:auto;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-
-.msg{
-  max-width:72%;
-  padding:9px 11px;
-  border-radius:14px;
-  background:#fff;
-  align-self:flex-start;
-  overflow-wrap:anywhere;
-}
-
-.msg.mine{
-  background:#d5f6ed;
-  align-self:flex-end;
-}
-
-.msg small{
-  display:block;
-  text-align:right;
-  color:#78908c;
-  font-size:10px;
-  margin-top:3px;
-}
-
-.msg img,
-.msg video{
-  max-width:100%;
-  border-radius:11px;
-}
-
-.voice{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.typing{
-  height:20px;
-  padding:0 20px;
-  color:var(--muted);
-  font-size:12px;
-}
-
-.composer{
-  background:#fff;
-  border-top:1px solid var(--line);
-  padding:10px;
-  display:flex;
-  gap:7px;
-  align-items:end;
-}
-
-.composer textarea{
-  flex:1;
-  resize:none;
-  max-height:120px;
-  border:1px solid var(--line);
-  border-radius:13px;
-  padding:11px;
-  outline:none;
-}
-
-.composer button{
-  width:42px;
-  height:42px;
-  border-radius:12px;
-  background:#edf8f5;
-  color:var(--g2);
-}
-
-.composer .send{
-  background:var(--g);
-  color:#fff;
-}
-
-.recording{
-  background:#ffe9ea!important;
-  color:var(--danger)!important;
-}
-
-.network{
-  position:fixed;
-  left:12px;
-  bottom:12px;
-  background:#173d38;
-  color:#fff;
-  border-radius:10px;
-  padding:7px 10px;
-  font-size:11px;
-  z-index:50;
-}
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:#071b1888;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:100;
-}
-
-.modal.show{
-  display:flex;
-}
-
-.card{
-  width:min(430px,100%);
-  background:#fff;
-  border-radius:20px;
-  padding:24px;
-  box-shadow:0 25px 80px #0004;
-}
-
-.sub{
-  color:var(--muted);
-  font-size:13px;
-  margin:6px 0 18px;
-}
-
-.field{
-  margin-bottom:12px;
-}
-
-.field label{
-  display:block;
-  font-size:12px;
-  font-weight:bold;
-  margin-bottom:5px;
-}
-
-.field input{
-  width:100%;
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:11px;
-  outline:none;
-}
-
-.primary{
-  width:100%;
-  padding:12px;
-  border-radius:11px;
-  background:var(--g);
-  color:#fff;
-  font-weight:800;
-}
-
-.link{
-  background:none;
-  color:var(--g2);
-  font-weight:700;
-  padding:10px 0;
-}
-
-.err{
-  min-height:18px;
-  color:var(--danger);
-  font-size:12px;
-  margin:5px 0;
-}
-
-.ok{
-  color:var(--g2);
-}
-
-.close{
-  float:right;
-  background:#eef5f3;
-  border-radius:10px;
-  width:34px;
-  height:34px;
-}
-
-.call{
-  position:fixed;
-  inset:0;
-  background:#06221f;
-  z-index:200;
-  color:#fff;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-  gap:15px;
-}
-
-.call.show{
-  display:flex;
-}
-
-.remote{
-  width:min(92vw,850px);
-  height:min(70vh,600px);
-  background:#000;
-  border-radius:18px;
-  object-fit:cover;
-}
-
-.local{
-  position:absolute;
-  right:18px;
-  bottom:90px;
-  width:150px;
-  height:210px;
-  background:#000;
-  border-radius:14px;
-  object-fit:cover;
-  border:2px solid #fff;
-}
-
-.callbuttons{
-  display:flex;
-  gap:12px;
-}
-
-.callbuttons button{
-  width:52px;
-  height:52px;
-  border-radius:50%;
-}
-
-.hang{
-  background:#d9363e;
-  color:#fff;
-}
-
-@media(max-width:760px){
-  .sidebar{
-    width:100%;
-  }
-
-  .chat{
-    display:none;
-  }
-
-  .app.chatmode .sidebar{
-    display:none;
-  }
-
-  .app.chatmode .chat{
-    display:flex;
-  }
-
-  .msg{
-    max-width:84%;
-  }
-
-  .composer{
-    padding:8px;
-    gap:5px;
-  }
-
-  .composer button{
-    width:40px;
-    height:40px;
-    flex:none;
-  }
-
-  .composer textarea{
-    min-width:0;
-  }
-
-  .local{
-    width:110px;
-    height:160px;
-    right:12px;
-    bottom:100px;
-  }
-}
-</style>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10bfa3">
+  <meta name="description" content="ZIQVONA — Better vibes • One family">
+  <title>ZIQVONA — Better vibes • One family</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.svg" type="image/svg+xml">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <style>
+    :root {
+      --green: #10bfa3;
+      --green-dark: #07977f;
+      --bg: #f2f6f6;
+      --panel: #fff;
+      --text: #172b29;
+      --muted: #71817f;
+      --line: #e3ecea;
+      --danger: #d83d4c;
+      --bubble-me: #d9f8ee;
+      --shadow: 0 8px 30px rgba(14, 63, 54, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    body { height: 100dvh; overflow: hidden; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    .hidden { display: none !important; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: white;
+      font-size: 23px;
+      font-weight: 900;
+      box-shadow: 0 5px 14px #10bfa344;
+    }
+
+    .brand-name { font-size: 22px; font-weight: 850; letter-spacing: .5px; }
+    .brand-tagline { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    .screen {
+      height: 100dvh;
+      width: 100%;
+    }
+
+    #authScreen {
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      overflow-y: auto;
+      background:
+        radial-gradient(circle at 15% 15%, #10bfa31e, transparent 35%),
+        radial-gradient(circle at 90% 90%, #07977f20, transparent 35%),
+        var(--bg);
+    }
+
+    .auth-card {
+      width: min(100%, 440px);
+      background: var(--panel);
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .auth-card h1 { margin: 25px 0 8px; font-size: 26px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; line-height: 1.6; }
+
+    .field { margin: 18px 0; }
+    .field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .field input, .field textarea, .search-input, .composer textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #dce7e4;
+      border-radius: 12px;
+      background: #fbfdfd;
+      outline: none;
+      color: var(--text);
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px #10bfa31c;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 750;
+      transition: .15s ease;
+    }
+
+    .btn-primary { background: var(--green); color: #063e35; }
+    .btn-primary:hover { background: #23cdb1; }
+    .btn-secondary { background: #edf5f3; color: var(--text); }
+    .btn-danger { background: #fff0f1; color: var(--danger); }
+    .btn-block { width: 100%; }
+    .btn-small { padding: 8px 11px; font-size: 12px; }
+    .btn-icon { padding: 9px 11px; min-width: 40px; }
+
+    .notice {
+      padding: 11px 13px;
+      border-radius: 10px;
+      margin-top: 13px;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.error { background: #fff0f1; color: #a72b39; }
+    .notice.success { background: #e4faf2; color: #086b57; }
+    .notice.info { background: #edf6ff; color: #245c88; }
+
+    #appScreen { display: none; }
+    #appScreen.ready { display: flex; }
+
+    .sidebar {
+      width: 360px;
+      min-width: 300px;
+      height: 100%;
+      background: white;
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 20px 18px 13px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sidebar-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 17px;
+    }
+
+    .my-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px;
+      border-radius: 14px;
+      background: #f5faf8;
+      margin-bottom: 14px;
+    }
+
+    .avatar {
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #d7f8ef;
+      color: #087e69;
+      font-weight: 850;
+      overflow: hidden;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .profile-text { min-width: 0; flex: 1; }
+    .profile-text strong, .profile-text span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .profile-text span { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .search-input { padding: 11px 13px; }
+    .section-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      padding: 16px 18px 8px;
+    }
+
+    .user-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      padding: 11px 10px;
+      border: 0;
+      border-radius: 13px;
+      background: transparent;
+      color: var(--text);
+    }
+
+    .user-item:hover, .user-item.active { background: #eaf9f4; }
+    .user-item .profile-text strong { font-size: 14px; }
+    .user-item .profile-text span { font-size: 12px; }
+    .online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #19ba85;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .empty-users {
+      padding: 18px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid var(--line);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .chat-panel {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 15% 20%, #10bfa30b, transparent 35%),
+        #f5f9f8;
+    }
+
+    .chat-header {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 20px;
+      background: white;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-header .profile-text { flex: 1; }
+    .chat-header .profile-text strong { font-size: 15px; }
+    .chat-header .profile-text span { font-size: 12px; }
+
+    .chat-actions { display: flex; gap: 6px; align-items: center; }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px clamp(12px, 3vw, 38px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .welcome {
+      margin: auto;
+      max-width: 360px;
+      text-align: center;
+      padding: 28px;
+      color: var(--muted);
+    }
+
+    .welcome .brand-logo { margin: 0 auto 18px; width: 64px; height: 64px; font-size: 30px; }
+    .welcome h2 { color: var(--text); margin-bottom: 8px; }
+
+    .day-label {
+      align-self: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 6px 11px;
+      background: #fff;
+      border-radius: 20px;
+      margin: 4px 0;
+    }
+
+    .message {
+      max-width: min(76%, 620px);
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: white;
+      box-shadow: 0 2px 6px #123a3009;
+      overflow-wrap: anywhere;
+      align-self: flex-start;
+    }
+
+    .message.mine {
+      align-self: flex-end;
+      background: var(--bubble-me);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message:not(.mine) { border-bottom-left-radius: 4px; }
+    .message-body { font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+    .message-meta { font-size: 10px; color: #6e827d; text-align: right; margin-top: 5px; }
+
+    .message img, .message video {
+      display: block;
+      max-width: 100%;
+      max-height: 330px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+    }
+
+    .message audio { max-width: 100%; width: 270px; }
+
+    .composer-wrap {
+      padding: 12px clamp(10px, 2vw, 22px) max(12px, env(safe-area-inset-bottom));
+      background: white;
+      border-top: 1px solid var(--line);
+    }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .composer textarea {
+      min-height: 44px;
+      max-height: 130px;
+      resize: vertical;
+      flex: 1;
+      background: #f7faf9;
+      padding: 12px;
+    }
+
+    .composer .btn { flex-shrink: 0; }
+
+    .recording-bar {
+      font-size: 12px;
+      color: #c62838;
+      padding: 0 0 9px 5px;
+    }
+
+    .typing-line {
+      min-height: 18px;
+      padding: 0 25px 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: #0c2624a6;
+      overflow-y: auto;
+    }
+
+    .modal {
+      width: min(100%, 450px);
+      max-height: 90dvh;
+      overflow-y: auto;
+      padding: 22px;
+      border-radius: 20px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .modal h2 { margin-top: 0; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .modal-actions .btn { flex: 1; }
+
+    .profile-preview {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #d7f8ef;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    .profile-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    .call-overlay {
+      position: fixed;
+      z-index: 70;
+      inset: 0;
+      background: #102a28f5;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .call-avatar {
+      width: 115px;
+      height: 115px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #064b40;
+      font-size: 40px;
+      font-weight: 900;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+
+    .call-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .call-controls { display: flex; gap: 12px; margin-top: 25px; }
+    .call-controls .btn { min-width: 90px; }
+    .call-video {
+      width: min(90vw, 700px);
+      max-height: 55dvh;
+      background: #000;
+      border-radius: 15px;
+      margin: 15px 0;
+    }
+
+    #toast {
+      position: fixed;
+      z-index: 100;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #173b35;
+      color: white;
+      padding: 12px 17px;
+      border-radius: 12px;
+      max-width: calc(100% - 30px);
+      font-size: 13px;
+      box-shadow: var(--shadow);
+    }
+
+    .connection-status { display: inline-flex; align-items: center; gap: 5px; }
+    .connection-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d89d28;
+    }
+    .connection-status.connected::before { background: #19ba85; }
+
+    @media (max-width: 760px) {
+      body { height: 100dvh; }
+      .sidebar { width: 100%; min-width: 0; }
+      .chat-panel { width: 100%; }
+      #appScreen { position: relative; }
+      #appScreen.mobile-chat .sidebar { display: none; }
+      #appScreen:not(.mobile-chat) .chat-panel { display: none; }
+      .sidebar-header { padding: 13px 13px 10px; }
+      .sidebar-top { margin-bottom: 12px; }
+      .chat-header { min-height: 67px; padding: 10px 12px; gap: 8px; }
+      .chat-header .avatar { width: 39px; height: 39px; flex-basis: 39px; }
+      .chat-actions { gap: 3px; }
+      .chat-actions .btn { padding: 8px; min-width: 35px; }
+      .messages { padding: 15px 10px; }
+      .message { max-width: 88%; }
+      .composer-wrap { padding: 8px 7px max(8px, env(safe-area-inset-bottom)); }
+      .composer { gap: 5px; }
+      .composer textarea { min-width: 0; font-size: 14px; padding: 11px 9px; }
+      .composer .btn { padding: 10px 9px; min-width: 36px; }
+      .auth-card { padding: 23px 19px; }
+    }
+
+    @media (max-width: 390px) {
+      .brand-name { font-size: 19px; }
+      .chat-actions .call-label { display: none; }
+      .composer .optional-icon { display: none; }
+    }
+  </style>
 </head>
 
 <body>
+  <section id="authScreen" class="screen">
+    <div class="auth-card">
+      <div class="brand">
+        <div class="brand-logo">Z</div>
+        <div>
+          <div class="brand-name">ZIQVONA</div>
+          <div class="brand-tagline">Better vibes • One family</div>
+        </div>
+      </div>
 
-<div class="app" id="app">
+      <h1 id="authHeading">Byenveni sou ZIQVONA</h1>
+      <p class="muted">Konekte pou w pale ak moun ou konnen.</p>
 
-  <aside class="sidebar">
+      <form id="phoneForm">
+        <div class="field">
+          <label for="phoneInput">Nimewo telefòn ak kòd peyi</label>
+          <input id="phoneInput" type="tel" autocomplete="tel"
+            placeholder="+18095551234" required>
+          <div class="small muted" style="margin-top:7px">
+            Egzanp: +1 pou Etazini oswa Repiblik Dominikèn, +509 pou Ayiti.
+            Antre nimewo a ak kòd peyi a.
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="sendOtpBtn" type="submit">
+          Voye kòd verifikasyon
+        </button>
+      </form>
 
-```
-<div class="top">
-  <div class="brand">
-    <div class="logo">Z</div>
-    ZIQVONA
+      <form id="otpForm" class="hidden">
+        <div class="field">
+          <label for="otpInput">Kòd verifikasyon SMS la</label>
+          <input id="otpInput" inputmode="numeric" autocomplete="one-time-code"
+            maxlength="10" placeholder="Antre kòd la" required>
+        </div>
+        <button class="btn btn-primary btn-block" id="verifyOtpBtn" type="submit">
+          Verifye epi konekte
+        </button>
+        <button class="btn btn-secondary btn-block" id="backToPhoneBtn"
+          type="button" style="margin-top:9px">Chanje nimewo</button>
+      </form>
+
+      <div id="authNotice" class="notice hidden"></div>
+      <p class="small muted" style="margin-top:18px">
+        Lè w konekte, pa pataje kòd verifikasyon ou ak okenn moun.
+      </p>
+    </div>
+  </section>
+
+  <section id="appScreen" class="screen">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-top">
+          <div class="brand">
+            <div class="brand-logo">Z</div>
+            <div>
+              <div class="brand-name">ZIQVONA</div>
+              <div class="brand-tagline">Better vibes • One family</div>
+            </div>
+          </div>
+          <button id="logoutBtn" class="btn btn-secondary btn-small"
+            title="Dekonekte">Soti</button>
+        </div>
+
+        <div class="my-profile">
+          <div class="avatar" id="myAvatar">Z</div>
+          <div class="profile-text">
+            <strong id="myDisplayName">Kont mwen</strong>
+            <span id="myUsername">@username</span>
+          </div>
+          <button id="editProfileBtn" class="btn btn-secondary btn-small"
+            title="Modifye pwofil">✎</button>
+        </div>
+
+        <input id="searchInput" class="search-input"
+          placeholder="Chèche moun pa non oswa username..." autocomplete="off">
+        <div class="small muted" style="margin-top:8px">
+          <span class="connection-status" id="connectionStatus">K ap konekte...</span>
+        </div>
+      </div>
+
+      <div class="section-label">Moun sou ZIQVONA</div>
+      <div id="userList" class="user-list">
+        <div class="empty-users">K ap chèche pwofil...</div>
+      </div>
+      <div class="sidebar-footer">ZIQVONA • Better vibes • One family</div>
+    </aside>
+
+    <main class="chat-panel">
+      <header class="chat-header">
+        <button id="backBtn" class="btn btn-secondary btn-icon hidden"
+          aria-label="Retounen">←</button>
+        <div class="avatar" id="chatAvatar">Z</div>
+        <div class="profile-text">
+          <strong id="chatName">Chwazi yon moun</strong>
+          <span id="chatStatus">Mesaj ou yo ap parèt isit la</span>
+        </div>
+        <div class="chat-actions">
+          <button id="voiceCallBtn" class="btn btn-secondary btn-icon"
+            title="Apèl odyo" disabled>📞</button>
+          <button id="videoCallBtn" class="btn btn-secondary btn-icon"
+            title="Apèl videyo" disabled>📹</button>
+          <button id="chatProfileBtn" class="btn btn-secondary btn-icon"
+            title="Gade pwofil" disabled>ⓘ</button>
+        </div>
+      </header>
+
+      <div id="messages" class="messages">
+        <div class="welcome">
+          <div class="brand-logo">Z</div>
+          <h2>Byenveni sou ZIQVONA</h2>
+          <p>Chwazi yon moun nan lis la pou kòmanse pale.</p>
+        </div>
+      </div>
+
+      <div id="typingLine" class="typing-line"></div>
+
+      <div class="composer-wrap">
+        <div id="recordingBar" class="recording-bar hidden">
+          ● Ap anrejistre mesaj vokal... <span id="recordingTimer">0:00</span>
+          <button id="cancelRecordingBtn" class="btn btn-danger btn-small"
+            style="margin-left:8px">Anile</button>
+        </div>
+        <div class="composer">
+          <button id="emojiBtn" class="btn btn-secondary optional-icon"
+            title="Emoji" disabled>😊</button>
+          <button id="mediaBtn" class="btn btn-secondary optional-icon"
+            title="Voye foto oswa videyo" disabled>📎</button>
+          <input id="mediaInput" type="file" accept="image/*,video/*"
+            class="hidden">
+          <textarea id="messageInput" rows="1"
+            placeholder="Ekri yon mesaj..." disabled></textarea>
+          <button id="recordBtn" class="btn btn-secondary"
+            title="Kenbe pou anrejistre mesaj vokal" disabled>🎤</button>
+          <button id="sendBtn" class="btn btn-primary"
+            title="Voye mesaj" disabled>➤</button>
+        </div>
+        <div class="small muted" style="margin-top:7px">
+          Pa voye enfòmasyon sansib. Foto ak videyo yo dwe respekte limit gwosè a.
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <div id="profileModal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h2 id="profileModalTitle">Pwofil mwen</h2>
+      <div id="profilePreview" class="profile-preview">Z</div>
+
+      <div id="editableProfile">
+        <div class="field">
+          <label for="displayNameInput">Non pou moun wè</label>
+          <input id="displayNameInput" maxlength="60" placeholder="Non ou">
+        </div>
+        <div class="field">
+          <label for="statusInput">Estati</label>
+          <input id="statusInput" maxlength="120" placeholder="Kijan ou ye?">
+        </div>
+        <div class="field">
+          <label for="avatarInput">Foto pwofil</label>
+          <input id="avatarInput" type="file" accept="image/*">
+        </div>
+        <p class="small muted">
+          Username ou soti nan pwofil kont lan sou sèvè a. Chanje non itilizatè
+          a mande yon chanjman ki fèt sou sèvè a tou.
+        </p>
+      </div>
+
+      <div id="readOnlyProfile" class="hidden"></div>
+      <div id="profileModalNotice" class="notice hidden"></div>
+
+      <div class="modal-actions">
+        <button id="closeProfileBtn" class="btn btn-secondary">Fèmen</button>
+        <button id="saveProfileBtn" class="btn btn-primary">Sove pwofil</button>
+      </div>
+    </div>
   </div>
 
-  <div class="actions">
-    <button class="ib" id="newBtn" type="button">＋</button>
-    <button class="ib" id="profileBtn" type="button">⚙</button>
-  </div>
-</div>
-
-<div class="profile">
-  <div class="avatar" id="myAvatar">Z</div>
-
-  <div class="info">
-    <b id="myName">ZIQVONA</b>
-    <span id="myStatus">Connecting...</span>
-  </div>
-
-  <button class="ib" id="logoutBtn" type="button">↪</button>
-</div>
-
-<div class="search">
-  <input id="search" placeholder="Search people..." autocomplete="off">
-</div>
-
-<div class="filters">
-  <button class="filter active" type="button">Tout</button>
-  <button class="filter" type="button">Pa li</button>
-  <button class="filter" type="button">Gwoup</button>
-</div>
-
-<div class="people" id="people"></div>
-```
-
-  </aside>
-
-  <main class="chat">
-
-```
-<div class="head">
-
-  <button
-    class="ib"
-    id="backBtn"
-    type="button"
-    style="display:none"
-  >‹</button>
-
-  <div class="avatar" id="chatAvatar">Z</div>
-
-  <div class="headinfo">
-    <b id="chatName">Select a person</b>
-    <span id="chatStatus">Start a conversation</span>
+  <div id="callOverlay" class="call-overlay hidden">
+    <div id="callAvatar" class="call-avatar">Z</div>
+    <h2 id="callName">Apèl ZIQVONA</h2>
+    <p id="callStatusText">Apèl la ap prepare...</p>
+    <video id="remoteVideo" class="call-video" autoplay playsinline></video>
+    <video id="localVideo" class="call-video" autoplay muted playsinline></video>
+    <div class="call-controls">
+      <button id="acceptCallBtn" class="btn btn-primary hidden">Reponn</button>
+      <button id="muteCallBtn" class="btn btn-secondary">🎙️ Silans</button>
+      <button id="endCallBtn" class="btn btn-danger">Fini apèl</button>
+    </div>
   </div>
 
-  <div class="headactions">
-    <button class="ib" id="audioCall" type="button">☎</button>
-    <button class="ib" id="videoCall" type="button">▣</button>
-  </div>
+  <div id="toast" class="hidden" role="status"></div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    // Konfigirasyon Supabase piblik la.
+    // Pa janm mete SUPABASE_SERVICE_ROLE_KEY nan fichye sa a.
+    const SUPABASE_URL = "https://hkirnyqousvmphpwqfga.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
+
+    const $ = (id) => document.getElementById(id);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const state = {
+      session: null,
+      socket: null,
+      me: null,
+      activeUser: null,
+      profiles: {},
+      online: new Set(),
+      chats: {},
+      seen: new Set(),
+      pendingPhone: "",
+      searchTimer: null,
+      recorder: null,
+      recordingChunks: [],
+      recordingStarted: 0,
+      recordingInterval: null,
+      recordingStream: null,
+      pendingAvatar: "",
+      peer: null,
+      localStream: null,
+      remoteStream: null,
+      callTarget: null,
+      callType: "audio",
+      incomingOffer: null,
+      muted: false
+    };
+
+    const ICE_SERVERS = {
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+    };
+
+    function toast(message, duration = 3200) {
+      const el = $("toast");
+      el.textContent = message;
+      el.classList.remove("hidden");
+      window.clearTimeout(toast.timer);
+      toast.timer = window.setTimeout(() => el.classList.add("hidden"), duration);
+    }
+
+    function setNotice(id, message, type = "info") {
+      const el = $(id);
+      el.textContent = message;
+      el.className = "notice " + type;
+      el.classList.remove("hidden");
+    }
+
+    function clearNotice(id) {
+      $(id).textContent = "";
+      $(id).classList.add("hidden");
+    }
+
+    function errorText(error) {
+      return error?.message || String(error || "Gen yon erè. Eseye ankò.");
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[ch]);
+    }
+
+    function initials(value) {
+      const s = String(value || "Z").trim();
+      return (s[0] || "Z").toUpperCase();
+    }
+
+    function normalizeProfile(raw, fallbackUsername = "") {
+      if (!raw || typeof raw !== "object") return null;
+      const username = String(
+        raw.username || raw.user_name || raw.userName || fallbackUsername || ""
+      ).trim();
+      if (!username) return null;
 
-</div>
-
-<div class="messages" id="messages">
-  <div class="empty">Chwazi yon moun pou kòmanse chat.</div>
-</div>
-
-<div class="typing" id="typing"></div>
-
-<div class="composer">
-
-  <button id="emoji" type="button">☺</button>
-
-  <button id="fileBtn" type="button">＋</button>
-
-  <input
-    id="file"
-    type="file"
-    accept="image/*,video/*"
-    hidden
-  >
-
-  <textarea
-    id="text"
-    rows="1"
-    placeholder="Write a message..."
-  ></textarea>
-
-  <button id="voice" type="button">🎙</button>
-
-  <button class="send" id="send" type="button">➤</button>
-
-</div>
-```
-
-  </main>
-
-</div>
-
-<div class="network" id="network">
-  Supabase: checking...
-</div>
-
-<!-- LOGIN -->
-
-<div class="modal show" id="authModal">
-
-  <div class="card">
-
-```
-<div class="brand">
-  <div class="logo">Z</div>
-  ZIQVONA
-</div>
-
-<h2 id="authTitle">Byenveni sou ZIQVONA</h2>
-
-<div class="sub" id="authSub">
-  Antre nimewo telefòn ou. Nou pral voye yon kòd verifikasyon.
-</div>
-
-<form id="authForm">
-
-  <div class="field">
-    <label>Phone number</label>
-
-    <input
-      id="phone"
-      type="tel"
-      inputmode="tel"
-      autocomplete="tel"
-      placeholder="+18095551234"
-    >
-  </div>
-
-  <div class="err" id="authError"></div>
-
-  <button
-    class="primary"
-    id="authSubmit"
-    type="submit"
-  >
-    Voye kòd verifikasyon
-  </button>
-
-</form>
-
-<div
-  class="field"
-  id="otpField"
-  style="display:none;margin-top:14px"
->
-
-  <label>6-digit verification code</label>
-
-  <input
-    id="otp"
-    inputmode="numeric"
-    autocomplete="one-time-code"
-    maxlength="6"
-    placeholder="123456"
-  >
-
-</div>
-
-<button
-  class="primary"
-  id="verifyOtp"
-  type="button"
-  style="display:none"
->
-  Verifye kòd
-</button>
-
-<button
-  class="link"
-  id="resendOtp"
-  type="button"
-  style="display:none"
->
-  Voye yon lòt kòd
-</button>
-```
-
-  </div>
-
-</div>
-
-<!-- PROFILE -->
-
-<div class="modal" id="profileModal">
-
-  <div class="card">
-
-```
-<button
-  class="close"
-  data-close="profileModal"
-  type="button"
->×</button>
-
-<h2>My profile</h2>
-
-<div class="sub">
-  Modifye enfòmasyon pwofil ou.
-</div>
-
-<div class="field">
-  <label>Username</label>
-  <input id="pUsername">
-</div>
-
-<div class="field">
-  <label>Display name</label>
-  <input id="pDisplay">
-</div>
-
-<div class="field">
-  <label>Status</label>
-  <input id="pStatus">
-</div>
-
-<div class="field">
-  <label>Profile photo</label>
-  <input id="pAvatar" type="file" accept="image/*">
-</div>
-
-<div class="err" id="profileError"></div>
-
-<button
-  class="primary"
-  id="saveProfile"
-  type="button"
->
-  Save profile
-</button>
-```
-
-  </div>
-
-</div>
-
-<!-- NEW CHAT -->
-
-<div class="modal" id="newModal">
-
-  <div class="card">
-
-```
-<button
-  class="close"
-  data-close="newModal"
-  type="button"
->×</button>
-
-<h2>New chat</h2>
-
-<div class="sub">
-  Chèche yon username.
-</div>
-
-<div class="field">
-  <input id="newUsername" placeholder="@username">
-</div>
-
-<button
-  class="primary"
-  id="findUser"
-  type="button"
->
-  Search
-</button>
-
-<div id="newResults" class="empty">
-  Tape username pou chèche.
-</div>
-```
-
-  </div>
-
-</div>
-
-<!-- CALL -->
-
-<div class="call" id="callScreen">
-
-<video
-id="remote"
-class="remote"
-autoplay
-playsinline
-
-> </video>
-
-<video
-id="local"
-class="local"
-autoplay
-muted
-playsinline
-
-> </video>
-
-  <div id="callLabel">Calling...</div>
-
-  <div class="callbuttons">
-
-```
-<button id="mute" type="button">🎙</button>
-
-<button
-  class="hang"
-  id="hangup"
-  type="button"
->✕</button>
-```
-
-  </div>
-
-</div>
-
-<script src="/socket.io/socket.io.js"></script>
-
-<script>
-(function(){
-"use strict";
-
-const URL="https://hkirnyqousvmphpwqfga.supabase.co";
-
-const KEY="sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
-
-const $=function(id){
-  return document.getElementById(id);
-};
-
-const STORE={
-  me:"ziqvona_me",
-  chats:"ziqvona_chats",
-  profiles:"ziqvona_profiles"
-};
-
-let sb=null;
-let session=null;
-let me=null;
-let selected=null;
-let lastSessionId="";
-let profiles=JSON.parse(
-  localStorage.getItem(STORE.profiles)||"{}"
-);
-let chats=JSON.parse(
-  localStorage.getItem(STORE.chats)||"{}"
-);
-let socket=null;
-let recorder=null;
-let chunks=[];
-let stream=null;
-let peer=null;
-let target=null;
-let callType=null;
-let otpPending=false;
-let otpDestination="";
-
-
-function save(key,value){
-  localStorage.setItem(
-    key,
-    JSON.stringify(value)
-  );
-}
-
-
-function esc(value){
-  return String(value||"").replace(
-    /[&<>"']/g,
-    function(c){
       return {
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#039;"
-      }[c];
-    }
-  );
-}
-
-
-function friendly(error){
-
-  let message=String(
-    error && error.message
-      ? error.message
-      : error || ""
-  );
-
-  let lower=message.toLowerCase();
-
-  if(
-    lower.includes("invalid login credentials")
-  ){
-    return "Nimewo oswa enfòmasyon koneksyon an pa bon.";
-  }
-
-  if(
-    lower.includes("phone provider") ||
-    lower.includes("sms provider") ||
-    lower.includes("twilio") ||
-    lower.includes("vonage")
-  ){
-    return "Phone OTP pa disponib. Verifye Vonage nan Supabase.";
-  }
-
-  if(
-    lower.includes("rate limit") ||
-    lower.includes("too many")
-  ){
-    return "Twòp demann. Tann kèk minit epi eseye ankò.";
-  }
-
-  if(
-    lower.includes("invalid api key") ||
-    lower.includes("apikey")
-  ){
-    return "Kle Supabase la pa bon. Verifye Settings → API.";
-  }
-
-  if(
-    lower.includes("failed to fetch") ||
-    lower.includes("networkerror") ||
-    lower.includes("fetch")
-  ){
-    return "ZIQVONA pa rive kontakte Supabase. Verifye entènèt la.";
-  }
-
-  if(
-    lower.includes("sms") &&
-    lower.includes("not")
-  ){
-    return "SMS OTP pa disponib kounye a. Verifye Vonage.";
-  }
-
-  return message || "Yon erè rive.";
-}
-
-
-function avatar(el,src,name){
-
-  if(src){
-
-    el.innerHTML=
-      '<img src="'+esc(src)+'">';
-
-  }else{
-
-    let letter=(name||"Z")
-      .charAt(0)
-      .toUpperCase();
-
-    el.textContent=letter;
-  }
-}
-
-
-function net(text,ok){
-
-  $("network").textContent=text;
-
-  $("network").style.background=
-    ok
-      ? "#087f6c"
-      : "#173d38";
-}
-
-
-async function init(){
-
-  try{
-
-    if(
-      !window.supabase ||
-      !window.supabase.createClient
-    ){
-      throw new Error(
-        "Supabase SDK pa chaje."
-      );
+        ...raw,
+        username,
+        display_name: raw.display_name || raw.displayName || username,
+        status: raw.status || "",
+        avatar: raw.avatar || raw.avatar_url || raw.avatarUrl || ""
+      };
     }
 
-    sb=window.supabase.createClient(
-      URL,
-      KEY,
-      {
-        auth:{
-          autoRefreshToken:true,
-          persistSession:true,
-          detectSessionInUrl:true
-        }
+    function avatarMarkup(profile, extraClass = "") {
+      const p = normalizeProfile(profile) || { username: "Z", display_name: "Z" };
+      const content = p.avatar
+        ? `<img src="${escapeHTML(p.avatar)}" alt="">`
+        : escapeHTML(initials(p.display_name || p.username));
+      return `<div class="avatar ${extraClass}">${content}</div>`;
+    }
+
+    function setMyProfile(profile) {
+      state.me = normalizeProfile(profile) || state.me;
+      if (!state.me) return;
+      $("myAvatar").innerHTML = state.me.avatar
+        ? `<img src="${escapeHTML(state.me.avatar)}" alt="">`
+        : escapeHTML(initials(state.me.display_name));
+      $("myDisplayName").textContent = state.me.display_name || state.me.username;
+      $("myUsername").textContent = "@" + state.me.username;
+    }
+
+    function showAuth() {
+      $("authScreen").style.display = "grid";
+      $("appScreen").classList.remove("ready", "mobile-chat");
+    }
+
+    function showApp() {
+      $("authScreen").style.display = "none";
+      $("appScreen").classList.add("ready");
+      if (window.innerWidth <= 760) {
+        $("appScreen").classList.remove("mobile-chat");
       }
-    );
-
-    const result=
-      await sb.auth.getSession();
-
-    if(result.error){
-      throw result.error;
     }
 
-    net(
-      "Supabase: connected",
-      true
-    );
+    function setConnection(connected, label) {
+      const el = $("connectionStatus");
+      el.textContent = label || (connected ? "Konekte" : "Dekonekte");
+      el.classList.toggle("connected", !!connected);
+    }
 
-    await sessionReady(
-      result.data.session
-    );
+    function chatKey(username) {
+      return String(username || "");
+    }
 
-    sb.auth.onAuthStateChange(
-      function(event,newSession){
+    function getChat(username) {
+      const key = chatKey(username);
+      if (!state.chats[key]) state.chats[key] = [];
+      return state.chats[key];
+    }
 
-        if(event==="SIGNED_OUT"){
+    function rememberMessage(message) {
+      if (!message || typeof message !== "object") return false;
+      const id = message.id ? String(message.id) : "";
+      if (id && state.seen.has(id)) return false;
 
-          session=null;
-          me=null;
-          lastSessionId="";
+      const from = String(message.from || "");
+      const to = String(message.to || "");
+      let peer = "";
 
-          $("authModal")
-            .classList
-            .add("show");
+      if (from === state.me?.username) peer = to;
+      else if (to === state.me?.username) peer = from;
+      else return false;
 
-        }else if(newSession){
+      if (!peer) return false;
+      if (id) state.seen.add(id);
 
-          sessionReady(newSession);
-        }
+      const chat = getChat(peer);
+      if (id && chat.some(m => String(m.id || "") === id)) return false;
 
+      chat.push({
+        ...message,
+        from,
+        to,
+        text: message.text || "",
+        kind: message.kind || message.type || "text",
+        timestamp: message.timestamp || message.time || new Date().toISOString()
+      });
+
+      if (chat.length > 5000) chat.splice(0, chat.length - 5000);
+      if (state.activeUser?.username === peer) renderMessages();
+      renderUsers();
+      return true;
+    }
+
+    function formatTime(value) {
+      const date = new Date(value || Date.now());
+      if (Number.isNaN(date.getTime())) return "";
+      return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function renderMessage(message) {
+      const mine = message.from === state.me?.username;
+      const kind = message.kind || message.type || "text";
+      let body = "";
+
+      if (kind === "image") {
+        body = `<img src="${escapeHTML(message.text)}" alt="Foto voye nan chat la">`;
+      } else if (kind === "video") {
+        body = `<video src="${escapeHTML(message.text)}" controls playsinline></video>`;
+      } else if (kind === "voice") {
+        body = `<audio src="${escapeHTML(message.text)}" controls></audio>`;
+      } else {
+        body = `<div class="message-body">${escapeHTML(message.text)}</div>`;
       }
-    );
 
-  }catch(error){
-
-    console.error(error);
-
-    net("Supabase: error");
-
-    $("authError").textContent=
-      friendly(error);
-  }
-}
-
-
-async function sessionReady(newSession){
-
-  session=newSession;
-
-  if(!session){
-
-    $("authModal")
-      .classList
-      .add("show");
-
-    return;
-  }
-
-  if(
-    lastSessionId===session.user.id &&
-    socket &&
-    socket.connected
-  ){
-    return;
-  }
-
-  lastSessionId=session.user.id;
-
-  me={
-    id:session.user.id,
-    email:session.user.email||"",
-    phone:session.user.phone||"",
-    username:
-      session.user.user_metadata?.username ||
-      (
-        session.user.phone
-          ? "user_"+session.user.id.slice(0,8)
-          : "user"
-      ),
-    display_name:
-      session.user.user_metadata?.display_name ||
-      "ZIQVONA User",
-    status:
-      session.user.user_metadata?.status ||
-      "Online",
-    avatar:
-      localStorage.getItem(
-        "ziqvona_avatar"
-      )||""
-  };
-
-  save(STORE.me,me);
-
-  $("authModal")
-    .classList
-    .remove("show");
-
-  renderMe();
-
-  connect();
-}
-
-
-function normalizePhone(value){
-
-  return String(value||"")
-    .trim()
-    .replace(/[\s()-]/g,"");
-}
-
-
-function validPhone(phone){
-
-  return /^\+[1-9]\d{7,14}$/.test(phone);
-}
-
-
-function validOtp(code){
-
-  return /^\d{6}$/.test(code);
-}
-
-
-async function sendOtp(){
-
-  $("authError").className="err";
-  $("authError").textContent="";
-  $("authSubmit").disabled=true;
-
-  try{
-
-    if(!sb){
-      throw new Error(
-        "Supabase poko konekte."
-      );
+      return `<article class="message ${mine ? "mine" : ""}">
+        ${body}
+        <div class="message-meta">${mine ? "Ou · " : ""}${escapeHTML(formatTime(message.timestamp || message.time))}</div>
+      </article>`;
     }
 
-    const phone=
-      normalizePhone(
-        $("phone").value
-      );
+    function renderMessages() {
+      const container = $("messages");
+      if (!state.activeUser) {
+        container.innerHTML = `<div class="welcome">
+          <div class="brand-logo">Z</div>
+          <h2>Byenveni sou ZIQVONA</h2>
+          <p>Chwazi yon moun nan lis la pou kòmanse pale.</p>
+        </div>`;
+        return;
+      }
 
-    if(!validPhone(phone)){
+      const chat = getChat(state.activeUser.username);
+      if (!chat.length) {
+        container.innerHTML = `<div class="welcome">
+          <div class="brand-logo">Z</div>
+          <h2>Pale ak ${escapeHTML(state.activeUser.display_name || state.activeUser.username)}</h2>
+          <p>Voye premye mesaj la pou kòmanse konvèsasyon an.</p>
+        </div>`;
+        return;
+      }
 
-      throw new Error(
-        "Mete nimewo a ak kòd peyi a, egzanp +18005550123."
-      );
+      container.innerHTML = chat.map(renderMessage).join("");
+      container.scrollTop = container.scrollHeight;
     }
 
-    const result=
-      await sb.auth.signInWithOtp({
-        phone:phone,
-        options:{
-          shouldCreateUser:true
-        }
-      });
+    function renderUsers(searchResults) {
+      const list = $("userList");
+      let profiles = Object.values(state.profiles)
+        .map(p => normalizeProfile(p))
+        .filter(Boolean)
+        .filter(p => p.username !== state.me?.username);
 
-    if(result.error){
-      throw result.error;
-    }
+      if (Array.isArray(searchResults)) {
+        const map = new Map(profiles.map(p => [p.username, p]));
+        searchResults.forEach(raw => {
+          const p = normalizeProfile(raw);
+          if (p && p.username !== state.me?.username) map.set(p.username, p);
+        });
+        profiles = Array.from(map.values());
+      }
 
-    otpDestination=phone;
-    otpPending=true;
-
-    $("authError").className=
-      "err ok";
-
-    $("authError").textContent=
-      "Nou voye yon kòd verifikasyon 6 chif nan telefòn ou.";
-
-    $("otpField")
-      .style
-      .display="block";
-
-    $("verifyOtp")
-      .style
-      .display="block";
-
-    $("resendOtp")
-      .style
-      .display="block";
-
-    $("authSubmit")
-      .textContent="Voye kòd ankò";
-
-    $("otp").focus();
-
-  }catch(error){
-
-    console.error(error);
-
-    $("authError").className="err";
-
-    $("authError").textContent=
-      friendly(error);
-
-  }finally{
-
-    $("authSubmit").disabled=false;
-  }
-}
-
-
-async function verifyCode(){
-
-  const token=
-    $("otp").value
-      .trim()
-      .replace(/\D/g,"");
-
-  if(!validOtp(token)){
-
-    $("authError").className="err";
-
-    $("authError").textContent=
-      "Antre 6 chif kòd la.";
-
-    return;
-  }
-
-  $("verifyOtp").disabled=true;
-
-  try{
-
-    const result=
-      await sb.auth.verifyOtp({
-        phone:otpDestination,
-        token:token,
-        type:"sms"
-      });
-
-    if(result.error){
-      throw result.error;
-    }
-
-    if(result.data && result.data.session){
-
-      await sessionReady(
-        result.data.session
-      );
-    }
-
-    otpPending=false;
-    $("otp").value="";
-    $("authError").textContent="";
-
-  }catch(error){
-
-    console.error(error);
-
-    $("authError").className="err";
-
-    $("authError").textContent=
-      friendly(error);
-
-  }finally{
-
-    $("verifyOtp").disabled=false;
-  }
-}
-
-
-function renderMe(){
-
-  if(!me){
-    return;
-  }
-
-  $("myName").textContent=
-    me.display_name;
-
-  $("myStatus").textContent=
-    me.status;
-
-  avatar(
-    $("myAvatar"),
-    me.avatar,
-    me.display_name
-  );
-}
-
-
-function add(profile){
-
-  if(
-    !profile ||
-    !profile.username ||
-    profile.username===me?.username
-  ){
-    return;
-  }
-
-  profiles[profile.username]={
-    ...profiles[profile.username],
-    ...profile
-  };
-
-  save(
-    STORE.profiles,
-    profiles
-  );
-}
-
-
-function renderPeople(){
-
-  const query=
-    $("search").value
-      .toLowerCase()
-      .trim();
-
-  const list=
-    Object.values(profiles)
-      .filter(function(profile){
-
-        return (
-          profile.displayName ||
-          profile.username ||
-          ""
-        )
-        .toLowerCase()
-        .includes(query);
-      });
-
-  if(!list.length){
-
-    $("people").innerHTML=
-      '<div class="empty">Pa gen lòt itilizatè ki parèt kounye a.</div>';
-
-  }else{
-
-    $("people").innerHTML=
-      list.map(function(profile){
-
-        const name=
-          profile.displayName ||
-          profile.username;
-
-        const image=
-          profile.avatar
-            ? '<img src="'+
-              esc(profile.avatar)+
-              '">'
-            : esc(
-                name
-                  .charAt(0)
-                  .toUpperCase()
-              );
-
-        return (
-          '<div class="person '+
-          (
-            selected &&
-            selected.username===
-            profile.username
-              ? "active"
-              : ""
-          )+
-          '" data-u="'+
-          esc(profile.username)+
-          '">'+
-
-          '<div class="avatar">'+
-          image+
-          '</div>'+
-
-          '<div class="info">'+
-          '<b>'+
-          esc(name)+
-          '</b>'+
-          '<span>'+
-          esc(profile.status||"Online")+
-          '</span>'+
-          '</div>'+
-
-          '</div>'
+      const term = $("searchInput").value.trim().toLowerCase();
+      if (term && !Array.isArray(searchResults)) {
+        profiles = profiles.filter(p =>
+          p.username.toLowerCase().includes(term) ||
+          String(p.display_name || "").toLowerCase().includes(term)
         );
+      }
 
+      profiles.sort((a, b) => {
+        const onlineDiff = Number(state.online.has(b.username)) -
+          Number(state.online.has(a.username));
+        return onlineDiff || String(a.display_name).localeCompare(String(b.display_name));
+      });
+
+      if (!profiles.length) {
+        list.innerHTML = `<div class="empty-users">${
+          term ? "Pa gen rezilta pou rechèch sa a." :
+          "Pa gen lòt pwofil ki disponib pou kounye a."
+        }</div>`;
+        return;
+      }
+
+      list.innerHTML = profiles.map(p => {
+        const active = state.activeUser?.username === p.username;
+        const online = state.online.has(p.username);
+        return `<button class="user-item ${active ? "active" : ""}"
+          data-username="${escapeHTML(p.username)}">
+          ${avatarMarkup(p)}
+          <div class="profile-text">
+            <strong>${escapeHTML(p.display_name || p.username)}</strong>
+            <span>${escapeHTML(p.status || (online ? "Sou entènèt" : "Pa sou entènèt"))}</span>
+          </div>
+          ${online ? '<span class="online-dot" title="Sou entènèt"></span>' : ""}
+        </button>`;
       }).join("");
-  }
 
-  document
-    .querySelectorAll(".person")
-    .forEach(function(item){
-
-      item.onclick=function(){
-
-        openChat(
-          item.dataset.u
-        );
-      };
-
-    });
-}
-
-
-function connect(){
-
-  if(socket){
-    socket.disconnect();
-  }
-
-  socket=io({
-    transports:[
-      "websocket",
-      "polling"
-    ]
-  });
-
-  socket.on(
-    "connect",
-    function(){
-
-      net(
-        "ZIQVONA: online",
-        true
-      );
-
-      socket.emit(
-        "register",
-        {
-          username:me.username,
-          displayName:me.display_name,
-          status:me.status,
-          avatar:me.avatar||"",
-          supabaseUserId:me.id,
-          email:me.email,
-          phone:me.phone
-        }
-      );
-
-    }
-  );
-
-  socket.on(
-    "disconnect",
-    function(){
-      net("ZIQVONA: offline");
-    }
-  );
-
-  socket.on(
-    "connect_error",
-    function(){
-      net("Socket: error");
-    }
-  );
-
-  socket.on(
-    "registered",
-    function(data){
-
-      (data?.users||[])
-        .forEach(add);
-
-      renderPeople();
-    }
-  );
-
-  socket.on(
-    "presence",
-    function(data){
-
-      if(data?.user){
-        add(data.user);
-      }
-
-      renderPeople();
-    }
-  );
-
-  socket.on(
-    "profile-updated",
-    function(data){
-
-      if(data?.user){
-        add(data.user);
-      }
-
-      renderPeople();
-    }
-  );
-
-  socket.on(
-    "private-message",
-    receive
-  );
-
-  socket.on(
-    "history",
-    function(data){
-
-      if(
-        data?.with &&
-        selected?.username===data.with
-      ){
-
-        chats[data.with]=
-          data.messages||[];
-
-        save(
-          STORE.chats,
-          chats
-        );
-
-        renderMessages();
-      }
-
-    }
-  );
-
-  socket.on(
-    "typing",
-    function(data){
-
-      if(
-        selected?.username===
-        data?.from
-      ){
-
-        $("typing").textContent=
-          (
-            data.displayName ||
-            data.from
-          )+
-          " ap ekri...";
-      }
-
-    }
-  );
-
-  socket.on(
-    "stop-typing",
-    function(){
-      $("typing").textContent="";
-    }
-  );
-
-  socket.on(
-    "search-results",
-    function(data){
-      searchResults(
-        data?.users||[]
-      );
-    }
-  );
-
-  socket.on(
-    "call-offer",
-    incomingCall
-  );
-
-  socket.on(
-    "call-answer",
-    answerCall
-  );
-
-  socket.on(
-    "ice-candidate",
-    addIce
-  );
-
-  socket.on(
-    "call-reject",
-    endCall
-  );
-
-  socket.on(
-    "call-end",
-    endCall
-  );
-}
-
-
-function openChat(username){
-
-  selected=
-    profiles[username]||
-    {
-      username:username
-    };
-
-  $("app")
-    .classList
-    .add("chatmode");
-
-  $("backBtn")
-    .style
-    .display="block";
-
-  $("chatName").textContent=
-    selected.displayName||
-    username;
-
-  $("chatStatus").textContent=
-    selected.status||
-    "Online";
-
-  avatar(
-    $("chatAvatar"),
-    selected.avatar,
-    selected.displayName||
-    username
-  );
-
-  renderPeople();
-  renderMessages();
-
-  if(socket){
-
-    socket.emit(
-      "get-history",
-      {
-        with:username
-      }
-    );
-  }
-}
-
-
-function renderMessages(){
-
-  if(!selected){
-    return;
-  }
-
-  const messages=
-    chats[selected.username]||
-    [];
-
-  if(!messages.length){
-
-    $("messages").innerHTML=
-      '<div class="empty">Pa gen mesaj ankò. Di bonjou 👋</div>';
-
-    return;
-  }
-
-  $("messages").innerHTML=
-    messages
-      .map(function(message){
-
-        const mine=
-          message.from===me.username ||
-          message.mine;
-
-        let body="";
-
-        if(message.type==="image"){
-
-          body=
-            '<img src="'+
-            esc(message.data||"")+
-            '">';
-
-        }else if(message.type==="video"){
-
-          body=
-            '<video src="'+
-            esc(message.data||"")+
-            '" controls playsinline></video>';
-
-        }else if(message.type==="voice"){
-
-          body=
-            '<div class="voice">'+
-            '<audio src="'+
-            esc(message.data||"")+
-            '" controls></audio>'+
-            '</div>';
-
-        }else{
-
-          body=
-            '<div>'+
-            esc(
-              message.text||
-              message.message||
-              ""
-            )+
-            '</div>';
-        }
-
-        const time=
-          new Date(
-            message.time||Date.now()
-          ).toLocaleTimeString(
-            [],
-            {
-              hour:"2-digit",
-              minute:"2-digit"
-            }
-          );
-
-        return (
-          '<div class="msg '+
-          (mine?"mine":"")+
-          '">'+
-          body+
-          '<small>'+
-          time+
-          '</small>'+
-          '</div>'
-        );
-
-      })
-      .join("");
-
-  $("messages").scrollTop=
-    $("messages").scrollHeight;
-}
-
-
-function store(message,username){
-
-  if(!chats[username]){
-    chats[username]=[];
-  }
-
-  chats[username].push(message);
-
-  chats[username]=
-    chats[username]
-      .slice(-5000);
-
-  save(
-    STORE.chats,
-    chats
-  );
-}
-
-
-function receive(message){
-
-  const username=
-    message.from||
-    message.sender;
-
-  if(!username){
-    return;
-  }
-
-  add({
-    username:username,
-    displayName:
-      message.displayName||
-      username,
-    status:
-      message.status||
-      "Online",
-    avatar:
-      message.avatar||
-      ""
-  });
-
-  store(
-    message,
-    username
-  );
-
-  if(
-    selected &&
-    selected.username===username
-  ){
-
-    renderMessages();
-  }
-
-  renderPeople();
-}
-
-
-function send(){
-
-  const text=
-    $("text").value.trim();
-
-  if(!text || !selected){
-    return;
-  }
-
-  const message={
-    from:me.username,
-    to:selected.username,
-    text:text,
-    type:"text",
-    time:Date.now(),
-    displayName:me.display_name
-  };
-
-  store(
-    message,
-    selected.username
-  );
-
-  renderMessages();
-
-  if(socket){
-
-    socket.emit(
-      "private-message",
-      message
-    );
-  }
-
-  $("text").value="";
-}
-
-
-function media(file){
-
-  if(!selected){
-    return;
-  }
-
-  if(file.size>12*1024*1024){
-
-    alert(
-      "Fichye a dwe pi piti pase 12MB."
-    );
-
-    return;
-  }
-
-  const reader=
-    new FileReader();
-
-  reader.onload=function(){
-
-    let type="file";
-
-    if(
-      file.type.startsWith("image/")
-    ){
-      type="image";
-    }else if(
-      file.type.startsWith("video/")
-    ){
-      type="video";
-    }
-
-    const message={
-      from:me.username,
-      to:selected.username,
-      type:type,
-      data:reader.result,
-      fileName:file.name,
-      time:Date.now(),
-      displayName:me.display_name
-    };
-
-    store(
-      message,
-      selected.username
-    );
-
-    renderMessages();
-
-    if(socket){
-
-      socket.emit(
-        "media-message",
-        message
-      );
-    }
-
-  };
-
-  reader.readAsDataURL(file);
-}
-
-
-async function voiceStart(){
-
-  if(!selected){
-    return;
-  }
-
-  try{
-
-    stream=
-      await navigator.mediaDevices
-        .getUserMedia({
-          audio:true
+      list.querySelectorAll("[data-username]").forEach(button => {
+        button.addEventListener("click", () => {
+          const profile = state.profiles[button.dataset.username] ||
+            profiles.find(p => p.username === button.dataset.username);
+          if (profile) openChat(profile);
         });
+      });
+    }
 
-    recorder=
-      new MediaRecorder(stream);
+    function updateChatControls() {
+      const enabled = !!state.activeUser && !!state.socket?.connected;
+      ["messageInput", "sendBtn", "mediaBtn", "recordBtn", "emojiBtn",
+       "voiceCallBtn", "videoCallBtn", "chatProfileBtn"].forEach(id => {
+        $(id).disabled = !enabled;
+      });
+    }
 
-    chunks=[];
+    function openChat(rawProfile) {
+      const profile = normalizeProfile(rawProfile);
+      if (!profile || profile.username === state.me?.username) return;
 
-    recorder.ondataavailable=
-      function(event){
+      state.activeUser = profile;
+      state.profiles[profile.username] = profile;
+      $("chatName").textContent = profile.display_name || profile.username;
+      $("chatStatus").textContent = state.online.has(profile.username)
+        ? "Sou entènèt"
+        : (profile.status || "Pa sou entènèt");
+      $("chatAvatar").innerHTML = profile.avatar
+        ? `<img src="${escapeHTML(profile.avatar)}" alt="">`
+        : escapeHTML(initials(profile.display_name || profile.username));
 
-        if(event.data.size){
-          chunks.push(event.data);
-        }
+      $("backBtn").classList.toggle("hidden", window.innerWidth > 760);
+      $("appScreen").classList.toggle("mobile-chat", window.innerWidth <= 760);
 
-      };
+      updateChatControls();
+      renderUsers();
+      renderMessages();
 
-    recorder.onstop=
-      function(){
-
-        const blob=
-          new Blob(
-            chunks,
-            {
-              type:
-                recorder.mimeType||
-                "audio/webm"
-            }
-          );
-
-        const reader=
-          new FileReader();
-
-        reader.onload=
-          function(){
-
-            const message={
-              from:me.username,
-              to:selected.username,
-              type:"voice",
-              data:reader.result,
-              time:Date.now(),
-              displayName:me.display_name
-            };
-
-            store(
-              message,
-              selected.username
-            );
-
-            renderMessages();
-
-            if(socket){
-
-              socket.emit(
-                "media-message",
-                message
-              );
-            }
-
-          };
-
-        reader.readAsDataURL(blob);
-
-        stream
-          .getTracks()
-          .forEach(function(track){
-            track.stop();
-          });
-
-      };
-
-    recorder.start();
-
-    $("voice")
-      .classList
-      .add("recording");
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Mikwo a pa disponib."
-    );
-  }
-}
-
-
-function voiceStop(){
-
-  if(
-    recorder &&
-    recorder.state!=="inactive"
-  ){
-
-    recorder.stop();
-  }
-
-  $("voice")
-    .classList
-    .remove("recording");
-}
-
-
-async function iceServers(){
-
-  try{
-
-    const response=
-      await fetch(
-        "/config",
-        {
-          cache:"no-store"
-        }
-      );
-
-    if(response.ok){
-
-      const data=
-        await response.json();
-
-      if(data.iceServers){
-        return data.iceServers;
+      if (state.socket?.connected) {
+        state.socket.emit("get-history", { with: profile.username });
       }
     }
 
-  }catch(error){}
+    function mergeProfiles(data) {
+      if (!data || typeof data !== "object") return;
 
-  return[
-    {
-      urls:
-        "stun:stun.l.google.com:19302"
-    },
-    {
-      urls:
-        "stun:stun1.l.google.com:19302"
+      // Sèvè aktyèl la voye profiles kòm yon objè.
+      const source = Array.isArray(data) ? data : Object.values(data);
+      source.forEach(raw => {
+        const p = normalizeProfile(raw);
+        if (p) state.profiles[p.username] = p;
+      });
+
+      if (state.me?.username && state.profiles[state.me.username]) {
+        setMyProfile({ ...state.me, ...state.profiles[state.me.username] });
+      }
+      renderUsers();
     }
-  ];
-}
 
+    function setupSocket() {
+      if (!state.session?.access_token) {
+        toast("Sesyon an pa gen token. Rekonekte tanpri.");
+        return;
+      }
 
-async function makePeer(to){
+      if (state.socket) {
+        state.socket.removeAllListeners();
+        state.socket.disconnect();
+      }
 
-  peer=
-    new RTCPeerConnection({
-      iceServers:
-        await iceServers()
-    });
+      // Sèvè a verifye accessToken nan handshake la.
+      state.socket = io({
+        transports: ["websocket", "polling"],
+        auth: { accessToken: state.session.access_token }
+      });
 
-  peer.onicecandidate=
-    function(event){
+      const socket = state.socket;
 
-      if(
-        event.candidate &&
-        socket
-      ){
+      socket.on("connect", () => {
+        setConnection(true, "Konekte");
+        updateChatControls();
+        socket.emit("register", {});
+      });
 
-        socket.emit(
-          "ice-candidate",
-          {
-            to:to,
-            candidate:event.candidate
+      socket.on("disconnect", reason => {
+        setConnection(false, "Koneksyon koupe");
+        updateChatControls();
+        if (reason !== "io client disconnect") {
+          toast("Koneksyon an koupe. App la ap eseye rekonekte.");
+        }
+      });
+
+      socket.on("connect_error", err => {
+        setConnection(false, "Erè koneksyon");
+        updateChatControls();
+        console.error("Socket connect_error:", err);
+        toast("Sèvè chat la pa aksepte koneksyon an: " + errorText(err));
+      });
+
+      socket.on("registered", data => {
+        if (data?.profiles) mergeProfiles(data.profiles);
+        if (Array.isArray(data?.online)) {
+          state.online = new Set(data.online.map(String));
+        }
+        if (data?.me) {
+          const p = normalizeProfile(data.me);
+          if (p) {
+            state.me = { ...state.me, ...p };
+            setMyProfile(state.me);
           }
-        );
-      }
-    };
-
-  peer.ontrack=
-    function(event){
-
-      $("remote").srcObject=
-        event.streams[0];
-
-      $("remote")
-        .play()
-        .catch(function(){});
-    };
-
-  if(stream){
-
-    stream
-      .getTracks()
-      .forEach(function(track){
-
-        peer.addTrack(
-          track,
-          stream
-        );
-
-      });
-  }
-
-  return peer;
-}
-
-
-async function startCall(type){
-
-  if(
-    !selected ||
-    !socket ||
-    !socket.connected
-  ){
-
-    alert(
-      "Chwazi yon moun epi verifye koneksyon an."
-    );
-
-    return;
-  }
-
-  try{
-
-    callType=type;
-    target=selected.username;
-
-    stream=
-      await navigator.mediaDevices
-        .getUserMedia({
-          audio:true,
-          video:type==="video"
-        });
-
-    $("local").srcObject=
-      stream;
-
-    $("remote").style.display=
-      type==="video"
-        ? "block"
-        : "none";
-
-    $("callLabel").textContent=
-      "Calling "+
-      (
-        selected.displayName||
-        target
-      )+
-      "...";
-
-    $("callScreen")
-      .classList
-      .add("show");
-
-    await makePeer(target);
-
-    const offer=
-      await peer.createOffer();
-
-    await peer.setLocalDescription(
-      offer
-    );
-
-    socket.emit(
-      "call-offer",
-      {
-        to:target,
-        from:me.username,
-        displayName:me.display_name,
-        type:type,
-        offer:offer
-      }
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    alert(
-      "Kamera/mikwo pa disponib."
-    );
-
-    endCall();
-  }
-}
-
-
-async function incomingCall(data){
-
-  const accepted=
-    confirm(
-      (
-        data.displayName||
-        data.from
-      )+
-      " ap rele w. Aksepte?"
-    );
-
-  if(!accepted){
-
-    if(socket){
-
-      socket.emit(
-        "call-reject",
-        {
-          to:data.from
         }
-      );
-    }
-
-    return;
-  }
-
-  try{
-
-    target=data.from;
-
-    callType=
-      data.type||
-      "audio";
-
-    stream=
-      await navigator.mediaDevices
-        .getUserMedia({
-          audio:true,
-          video:callType==="video"
-        });
-
-    $("local").srcObject=
-      stream;
-
-    $("remote").style.display=
-      callType==="video"
-        ? "block"
-        : "none";
-
-    $("callScreen")
-      .classList
-      .add("show");
-
-    $("callLabel").textContent=
-      "Connected";
-
-    await makePeer(target);
-
-    await peer.setRemoteDescription(
-      new RTCSessionDescription(
-        data.offer
-      )
-    );
-
-    const answer=
-      await peer.createAnswer();
-
-    await peer.setLocalDescription(
-      answer
-    );
-
-    socket.emit(
-      "call-answer",
-      {
-        to:target,
-        answer:answer
-      }
-    );
-
-  }catch(error){
-
-    console.error(error);
-
-    endCall();
-  }
-}
-
-
-async function answerCall(data){
-
-  if(
-    peer &&
-    data &&
-    data.answer
-  ){
-
-    await peer.setRemoteDescription(
-      new RTCSessionDescription(
-        data.answer
-      )
-    );
-  }
-}
-
-
-async function addIce(data){
-
-  if(
-    peer &&
-    data &&
-    data.candidate
-  ){
-
-    try{
-
-      await peer.addIceCandidate(
-        data.candidate
-      );
-
-    }catch(error){}
-  }
-}
-
-
-function endCall(){
-
-  if(peer){
-
-    peer.close();
-    peer=null;
-  }
-
-  if(stream){
-
-    stream
-      .getTracks()
-      .forEach(function(track){
-        track.stop();
+        renderUsers();
+        updateChatControls();
       });
 
-    stream=null;
-  }
-
-  $("local").srcObject=null;
-  $("remote").srcObject=null;
-
-  $("callScreen")
-    .classList
-    .remove("show");
-
-  if(
-    target &&
-    socket &&
-    socket.connected
-  ){
-
-    socket.emit(
-      "call-end",
-      {
-        to:target
-      }
-    );
-  }
-
-  target=null;
-}
-
-
-async function saveProfile(){
-
-  try{
-
-    const username=
-      $("pUsername")
-        .value
-        .trim()
-        .replace(/^@/,"");
-
-    const display=
-      $("pDisplay")
-        .value
-        .trim()||
-      username;
-
-    const status=
-      $("pStatus")
-        .value
-        .trim()||
-      "Online";
-
-    if(!username){
-
-      throw new Error(
-        "Username obligatwa."
-      );
-    }
-
-    const result=
-      await sb.auth.updateUser({
-        data:{
-          username:username,
-          display_name:display,
-          status:status
+      socket.on("presence", data => {
+        // Sèvè aktyèl la voye { online: [...] }.
+        if (Array.isArray(data?.online)) {
+          state.online = new Set(data.online.map(String));
+          renderUsers();
+          if (state.activeUser) {
+            $("chatStatus").textContent = state.online.has(state.activeUser.username)
+              ? "Sou entènèt"
+              : (state.activeUser.status || "Pa sou entènèt");
+          }
         }
       });
 
-    if(result.error){
-      throw result.error;
-    }
-
-    me={
-      ...me,
-      username:username,
-      display_name:display,
-      status:status
-    };
-
-    save(
-      STORE.me,
-      me
-    );
-
-    renderMe();
-
-    if(socket){
-
-      socket.emit(
-        "register",
-        {
-          username:username,
-          displayName:display,
-          status:status,
-          avatar:me.avatar||"",
-          supabaseUserId:me.id,
-          email:me.email,
-          phone:me.phone
+      socket.on("profile-updated", raw => {
+        // Sèvè aktyèl la voye pwofil la dirèkteman.
+        const p = normalizeProfile(raw);
+        if (!p) return;
+        state.profiles[p.username] = p;
+        if (p.username === state.me?.username) setMyProfile(p);
+        if (state.activeUser?.username === p.username) {
+          state.activeUser = p;
+          $("chatName").textContent = p.display_name || p.username;
+          $("chatAvatar").innerHTML = p.avatar
+            ? `<img src="${escapeHTML(p.avatar)}" alt="">`
+            : escapeHTML(initials(p.display_name));
         }
-      );
-    }
+        renderUsers();
+      });
 
-    $("profileModal")
-      .classList
-      .remove("show");
+      socket.on("search-results", results => {
+        // Sèvè aktyèl la voye yon tablo dirèkteman.
+        if (Array.isArray(results)) {
+          results.forEach(raw => {
+            const p = normalizeProfile(raw);
+            if (p) state.profiles[p.username] = p;
+          });
+          renderUsers(results);
+        }
+      });
 
-  }catch(error){
+      socket.on("history", data => {
+        const messages = Array.isArray(data) ? data : data?.messages;
+        if (!Array.isArray(messages)) return;
+        messages.forEach(rememberMessage);
+        if (state.activeUser) renderMessages();
+      });
 
-    $("profileError").textContent=
-      friendly(error);
-  }
-}
+      socket.on("chat-history", data => {
+        const messages = Array.isArray(data) ? data : data?.messages;
+        if (!Array.isArray(messages)) return;
+        messages.forEach(rememberMessage);
+        renderMessages();
+      });
 
+      socket.on("message-history", data => {
+        const messages = Array.isArray(data) ? data : data?.messages;
+        if (!Array.isArray(messages)) return;
+        messages.forEach(rememberMessage);
+        renderMessages();
+      });
 
-function searchResults(list){
+      socket.on("private-message", message => {
+        if (rememberMessage(message)) {
+          if (message.from !== state.me?.username &&
+              state.activeUser?.username !== message.from) {
+            toast("Nouvo mesaj soti nan " + message.from);
+          }
+        }
+      });
 
-  if(!list.length){
+      socket.on("media-message", message => {
+        rememberMessage(message);
+      });
 
-    $("newResults").innerHTML=
-      "Pa jwenn itilizatè sa.";
+      socket.on("typing", data => {
+        if (data?.from && data.from === state.activeUser?.username) {
+          $("typingLine").textContent = "Ap ekri...";
+          clearTimeout(setupSocket.typingTimer);
+          setupSocket.typingTimer = setTimeout(() => {
+            $("typingLine").textContent = "";
+          }, 1800);
+        }
+      });
 
-    return;
-  }
+      socket.on("error-message", data => {
+        toast(typeof data === "string" ? data : errorText(data?.message || data));
+      });
 
-  $("newResults").innerHTML=
-    list
-      .map(function(user){
+      socket.on("message-error", data => {
+        toast("Mesaj la pa voye: " + errorText(data?.message || data));
+      });
 
-        return (
-          '<button class="primary" '+
-          'style="margin-top:7px;text-align:left" '+
-          'data-user="'+
-          esc(user.username)+
-          '" type="button">'+
-          esc(
-            user.displayName||
-            user.username
-          )+
-          '</button>'
-        );
-
-      })
-      .join("");
-
-  document
-    .querySelectorAll("[data-user]")
-    .forEach(function(button){
-
-      button.onclick=function(){
-
-        $("newModal")
-          .classList
-          .remove("show");
-
-        add({
-          username:button.dataset.user,
-          displayName:button.textContent,
-          status:"Online"
-        });
-
-        openChat(
-          button.dataset.user
-        );
-      };
-
-    });
-}
-
-
-/* LOGIN */
-
-$("authForm").onsubmit=
-  function(event){
-
-    event.preventDefault();
-
-    if(otpPending){
-
-      verifyCode();
-
-    }else{
-
-      sendOtp();
-    }
-
-  };
-
-
-$("verifyOtp").onclick=
-  verifyCode;
-
-
-$("resendOtp").onclick=
-  sendOtp;
-
-
-$("otp").oninput=
-  function(){
-
-    this.value=
-      this.value.replace(
-        /\D/g,
-        ""
-      ).slice(0,6);
-
-    if(
-      this.value.length===6
-    ){
-
-      verifyCode();
-    }
-
-  };
-
-
-$("phone").oninput=
-  function(){
-
-    this.value=
-      this.value.replace(
-        /[^\d+]/g,
-        ""
-      );
-
-    if(
-      this.value.indexOf("+")>0
-    ){
-
-      this.value=
-        "+"+
-        this.value
-          .replace(/\+/g,"");
-    }
-
-  };
-
-
-/* LOGOUT */
-
-$("logoutBtn").onclick=
-  async function(){
-
-    try{
-
-      if(socket){
+      socket.on("force-disconnect", data => {
+        toast("Sèvè a fèmen koneksyon an: " + errorText(data?.message || data));
         socket.disconnect();
-      }
+      });
 
-    }catch(error){}
-
-    try{
-
-      if(sb){
-        await sb.auth.signOut();
-      }
-
-    }catch(error){
-
-      console.warn(error);
+      // Siyal apèl yo: si non evènman yo pa koresponn ak server.js la,
+      // nou dwe adapte yo ak evènman egzak sèvè a.
+      socket.on("call-offer", handleIncomingOffer);
+      socket.on("call-answer", handleCallAnswer);
+      socket.on("call-ice-candidate", handleRemoteCandidate);
+      socket.on("call-end", handleRemoteCallEnd);
+      socket.on("call-error", data => toast("Erè apèl: " + errorText(data?.message || data)));
     }
 
-    session=null;
-    me=null;
-    selected=null;
-    lastSessionId="";
-    otpPending=false;
-    otpDestination="";
-
-    localStorage.removeItem(
-      STORE.me
-    );
-
-    $("authModal")
-      .classList
-      .add("show");
-
-    $("otpField")
-      .style
-      .display="none";
-
-    $("verifyOtp")
-      .style
-      .display="none";
-
-    $("resendOtp")
-      .style
-      .display="none";
-
-    $("authSubmit").textContent=
-      "Voye kòd verifikasyon";
-
-    $("authError").textContent="";
-    $("phone").value="";
-    $("otp").value="";
-
-  };
-
-
-/* CHAT */
-
-$("search").oninput=
-  renderPeople;
-
-
-$("send").onclick=
-  send;
-
-
-$("text").onkeydown=
-  function(event){
-
-    if(
-      event.key==="Enter" &&
-      !event.shiftKey
-    ){
-
-      event.preventDefault();
-
-      send();
-    }
-
-  };
-
-
-$("emoji").onclick=
-  function(){
-
-    $("text").value+=
-      " 😊";
-
-    $("text").focus();
-  };
-
-
-$("fileBtn").onclick=
-  function(){
-
-    $("file").click();
-  };
-
-
-$("file").onchange=
-  function(event){
-
-    const file=
-      event.target.files[0];
-
-    if(file){
-      media(file);
-    }
-
-    event.target.value="";
-  };
-
-
-$("voice").onpointerdown=
-  voiceStart;
-
-
-$("voice").onpointerup=
-  voiceStop;
-
-
-$("voice").onpointerleave=
-  voiceStop;
-
-
-/* CALLS */
-
-$("audioCall").onclick=
-  function(){
-
-    startCall("audio");
-  };
-
-
-$("videoCall").onclick=
-  function(){
-
-    startCall("video");
-  };
-
-
-$("hangup").onclick=
-  endCall;
-
-
-$("mute").onclick=
-  function(){
-
-    const track=
-      stream?.getAudioTracks()[0];
-
-    if(track){
-
-      track.enabled=
-        !track.enabled;
-
-      $("mute").textContent=
-        track.enabled
-          ? "🎙"
-          : "🔇";
-    }
-
-  };
-
-
-$("backBtn").onclick=
-  function(){
-
-    $("app")
-      .classList
-      .remove("chatmode");
-
-    selected=null;
-
-    $("backBtn")
-      .style
-      .display="none";
-  };
-
-
-/* PROFILE */
-
-$("profileBtn").onclick=
-  function(){
-
-    if(!me){
-      return;
-    }
-
-    $("pUsername").value=
-      me.username||"";
-
-    $("pDisplay").value=
-      me.display_name||"";
-
-    $("pStatus").value=
-      me.status||"Online";
-
-    $("profileModal")
-      .classList
-      .add("show");
-  };
-
-
-$("saveProfile").onclick=
-  saveProfile;
-
-
-$("pAvatar").onchange=
-  function(event){
-
-    const file=
-      event.target.files[0];
-
-    if(!file){
-      return;
-    }
-
-    if(file.size>2*1024*1024){
-
-      $("profileError").textContent=
-        "Foto a dwe pi piti pase 2MB.";
-
-      return;
-    }
-
-    const reader=
-      new FileReader();
-
-    reader.onload=
-      function(){
-
-        me.avatar=
-          reader.result;
-
-        localStorage.setItem(
-          "ziqvona_avatar",
-          reader.result
-        );
-
-        renderMe();
-
-      };
-
-    reader.readAsDataURL(file);
-  };
-
-
-/* MODALS */
-
-document
-  .querySelectorAll("[data-close]")
-  .forEach(function(button){
-
-    button.onclick=function(){
-
-      const id=
-        button.dataset.close;
-
-      $(id)
-        .classList
-        .remove("show");
-    };
-
-  });
-
-
-$("newBtn").onclick=
-  function(){
-
-    $("newModal")
-      .classList
-      .add("show");
-  };
-
-
-$("findUser").onclick=
-  function(){
-
-    const query=
-      $("newUsername")
-        .value
-        .trim()
-        .replace(/^@/,"");
-
-    if(
-      socket &&
-      socket.connected
-    ){
-
-      socket.emit(
-        "search-users",
-        {
-          query:query
+    async function refreshSessionAndSocket(session) {
+      state.session = session;
+      if (!session) {
+        state.me = null;
+        if (state.socket) {
+          state.socket.disconnect();
+          state.socket = null;
         }
-      );
+        showAuth();
+        return;
+      }
 
+      const user = session.user || {};
+      const meta = user.user_metadata || {};
+      const username = meta.username || meta.user_name ||
+        user.phone || user.email || user.id;
+
+      state.me = normalizeProfile({
+        username,
+        display_name: meta.display_name || meta.full_name || username,
+        status: meta.status || "",
+        avatar: meta.avatar || meta.avatar_url || ""
+      });
+
+      setMyProfile(state.me);
+      showApp();
+      setupSocket();
     }
 
-  };
+    async function loadInitialSession() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error(error);
+        showAuth();
+        return;
+      }
+      if (data.session) await refreshSessionAndSocket(data.session);
+      else showAuth();
+    }
 
+    $("phoneForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice("authNotice");
 
-/* START */
+      const phone = $("phoneInput").value.trim();
+      if (!/^\+[1-9]\d{7,14}$/.test(phone)) {
+        setNotice("authNotice",
+          "Mete nimewo a ak kòd peyi a, san espas. Egzanp: +18095551234.",
+          "error");
+        return;
+      }
 
-init();
+      $("sendOtpBtn").disabled = true;
+      $("sendOtpBtn").textContent = "Ap voye kòd la...";
 
-})();
-</script>
+      try {
+        const { error } = await supabase.auth.signInWithOtp({
+          phone,
+          options: { shouldCreateUser: true }
+        });
+        if (error) throw error;
 
+        state.pendingPhone = phone;
+        $("phoneForm").classList.add("hidden");
+        $("otpForm").classList.remove("hidden");
+        setNotice("authNotice",
+          "Nou voye demann kòd la. Tcheke SMS ou. Si li pa vini, verifye konfigirasyon SMS Supabase la.",
+          "success");
+        $("otpInput").focus();
+      } catch (error) {
+        setNotice("authNotice", errorText(error), "error");
+      } finally {
+        $("sendOtpBtn").disabled = false;
+        $("sendOtpBtn").textContent = "Voye kòd verifikasyon";
+      }
+    });
+
+    $("otpForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      clearNotice("authNotice");
+
+      const token = $("otpInput").value.trim();
+      if (!state.pendingPhone || !token) {
+        setNotice("authNotice", "Mete nimewo a epi kòd verifikasyon an.", "error");
+        return;
+      }
+
+      $("verifyOtpBtn").disabled = true;
+      $("verifyOtpBtn").textContent = "Ap verifye...";
+
+      try {
+        const { data, error } = await supabase.auth.verifyOtp({
+          phone: state.pendingPhone,
+          token,
+          type: "sms"
+        });
+        if (error) throw error;
+        if (!data.session) throw new Error("Supabase pa retounen yon sesyon.");
+        await refreshSessionAndSocket(data.session);
+      } catch (error) {
+        setNotice("authNotice", errorText(error), "error");
+      } finally {
+        $("verifyOtpBtn").disabled = false;
+        $("verifyOtpBtn").textContent = "Verifye epi konekte";
+      }
+    });
+
+    $("backToPhoneBtn").addEventListener("click", () => {
+      $("otpForm").classList.add("hidden");
+      $("phoneForm").classList.remove("hidden");
+      $("otpInput").value = "";
+      clearNotice("authNotice");
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      if (!confirm("Èske ou vle dekonekte sou ZIQVONA?")) return;
+      try {
+        if (state.socket) {
+          state.socket.disconnect();
+          state.socket = null;
+        }
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+
+        state.session = null;
+        state.me = null;
+        state.activeUser = null;
+        state.profiles = {};
+        state.online.clear();
+        state.chats = {};
+        state.seen.clear();
+        $("phoneForm").reset();
+        $("otpForm").reset();
+        $("otpForm").classList.add("hidden");
+        $("phoneForm").classList.remove("hidden");
+        closeCall();
+        showAuth();
+      } catch (error) {
+        toast("Pa t kapab dekonekte: " + errorText(error));
+      }
+    });
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      // TOKEN_REFRESHED: rekonekte socket la ak nouvo access token an.
+      if (event === "TOKEN_REFRESHED" && session) {
+        state.session = session;
+        if (state.socket?.connected) setupSocket();
+      } else if (event === "SIGNED_OUT") {
+        state.session = null;
+        state.me = null;
+        if (state.socket) {
+          state.socket.disconnect();
+          state.socket = null;
+        }
+        showAuth();
+      } else if (event === "SIGNED_IN" && session) {
+        state.session = session;
+        if (!state.socket?.connected) refreshSessionAndSocket(session);
+      }
+    });
+
+    $("searchInput").addEventListener("input", () => {
+      clearTimeout(state.searchTimer);
+      const term = $("searchInput").value.trim();
+      renderUsers();
+
+      if (term.length >= 2 && state.socket?.connected) {
+        state.searchTimer = setTimeout(() => {
+          state.socket.emit("search-users", { query: term, q: term });
+        }, 250);
+      }
+    });
+
+    $("sendBtn").addEventListener("click", sendText);
+    $("messageInput").addEventListener("keydown", event => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendText();
+      }
+      if (state.socket?.connected && state.activeUser) {
+        state.socket.emit("typing", { to: state.activeUser.username });
+      }
+    });
+
+    function sendText() {
+      const text = $("messageInput").value.trim();
+      if (!text || !state.activeUser || !state.socket?.connected) return;
+      if (text.length > 4000) {
+        toast("Mesaj la twò long. Limit la se 4000 karaktè.");
+        return;
+      }
+
+      // Nou pa ajoute mesaj la lokalman. Sèvè a retounen menm mesaj la,
+      // sa anpeche kopi doub nan chat la.
+      state.socket.emit("private-message", {
+        to: state.activeUser.username,
+        text,
+        kind: "text",
+        type: "text"
+      });
+      $("messageInput").value = "";
+      $("messageInput").focus();
+    }
+
+    $("mediaBtn").addEventListener("click", () => $("mediaInput").click());
+
+    $("mediaInput").addEventListener("change", async () => {
+      const file = $("mediaInput").files?.[0];
+      $("mediaInput").value = "";
+      if (!file || !state.activeUser || !state.socket?.connected) return;
+
+      if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+        toast("Chwazi yon foto oswa videyo.");
+        return;
+      }
+
+      // Base64 ogmante gwosè a. Nou limite fichye orijinal la a 5 MB.
+      if (file.size > 5 * 1024 * 1024) {
+        toast("Fichye a twò gwo. Eseye yon fichye ki pi piti pase 5 MB.");
+        return;
+      }
+
+      try {
+        const dataUrl = await fileToDataURL(file);
+        const kind = file.type.startsWith("video/") ? "video" : "image";
+        state.socket.emit("media-message", {
+          to: state.activeUser.username,
+          text: dataUrl,
+          kind,
+          type: kind
+        });
+        toast("Fichye a ap voye...");
+      } catch (error) {
+        toast("Pa t kapab li fichye a: " + errorText(error));
+      }
+    });
+
+    function fileToDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Erè pandan lekti fichye a."));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    $("emojiBtn").addEventListener("click", () => {
+      const emojis = ["😀","😂","🥰","😍","😘","❤️","💚","👍","🙏","🔥","😭","🎉","😊","🤝"];
+      const choice = prompt("Chwazi emoji:\n" + emojis.join("  "));
+      if (choice) {
+        $("messageInput").value += choice;
+        $("messageInput").focus();
+      }
+    });
+
+    // Anrejistreman mesaj vokal: peze bouton mikwo a pou kòmanse,
+    // peze l ankò pou sispann epi voye.
+    $("recordBtn").addEventListener("click", async () => {
+      if (state.recorder?.state === "recording") {
+        state.recorder.stop();
+        return;
+      }
+      await startRecording();
+    });
+
+    async function startRecording() {
+      if (!state.activeUser || !state.socket?.connected) return;
+
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        toast("Navigatè sa a pa sipòte anrejistreman odyo.");
+        return;
+      }
+
+      try {
+        state.recordingStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        state.recordingChunks = [];
+
+        let options = {};
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          options.mimeType = "audio/webm;codecs=opus";
+        } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+          options.mimeType = "audio/webm";
+        }
+
+        state.recorder = new MediaRecorder(state.recordingStream, options);
+        state.recorder.ondataavailable = event => {
+          if (event.data?.size) state.recordingChunks.push(event.data);
+        };
+
+        state.recorder.onstop = async () => {
+          clearInterval(state.recordingInterval);
+          $("recordingBar").classList.add("hidden");
+          $("recordBtn").textContent = "🎤";
+
+          state.recordingStream?.getTracks().forEach(track => track.stop());
+          state.recordingStream = null;
+
+          const blob = new Blob(state.recordingChunks, {
+            type: state.recorder?.mimeType || "audio/webm"
+          });
+          state.recordingChunks = [];
+
+          if (!blob.size) {
+            toast("Pa gen odyo ki anrejistre.");
+            return;
+          }
+
+          // Fòma base64 ka pi gwo pase blob la; kenbe l anba limit sèvè a.
+          if (blob.size > 4 * 1024 * 1024) {
+            toast("Mesaj vokal la twò long. Tanpri anrejistre yon mesaj pi kout.");
+            return;
+          }
+
+          try {
+            const dataUrl = await blobToDataURL(blob);
+            if (state.activeUser && state.socket?.connected) {
+              state.socket.emit("media-message", {
+                to: state.activeUser.username,
+                text: dataUrl,
+                kind: "voice",
+                type: "voice"
+              });
+              toast("Mesaj vokal la ap voye...");
+            }
+          } catch (error) {
+            toast("Pa t kapab voye odyo a: " + errorText(error));
+          }
+        };
+
+        state.recorder.start();
+        state.recordingStarted = Date.now();
+        $("recordingBar").classList.remove("hidden");
+        $("recordBtn").textContent = "⏹";
+        state.recordingInterval = setInterval(() => {
+          const seconds = Math.floor((Date.now() - state.recordingStarted) / 1000);
+          $("recordingTimer").textContent =
+            Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
+          if (seconds >= 90 && state.recorder?.state === "recording") {
+            state.recorder.stop();
+            toast("Nou sispann anrejistreman an apre 90 segonn.");
+          }
+        }, 250);
+      } catch (error) {
+        toast("Mikwo a pa disponib oswa ou pa bay pèmisyon: " + errorText(error));
+      }
+    }
+
+    function blobToDataURL(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error("Pa t kapab konvèti odyo a."));
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    $("cancelRecordingBtn").addEventListener("click", () => {
+      if (state.recorder?.state === "recording") {
+        state.recorder.onstop = () => {
+          clearInterval(state.recordingInterval);
+          $("recordingBar").classList.add("hidden");
+          $("recordBtn").textContent = "🎤";
+          state.recordingStream?.getTracks().forEach(track => track.stop());
+          state.recordingStream = null;
+          state.recordingChunks = [];
+        };
+        state.recorder.stop();
+      }
+    });
+
+    $("backBtn").addEventListener("click", () => {
+      $("appScreen").classList.remove("mobile-chat");
+      state.activeUser = null;
+      $("chatName").textContent = "Chwazi yon moun";
+      $("chatStatus").textContent = "Mesaj ou yo ap parèt isit la";
+      $("typingLine").textContent = "";
+      renderMessages();
+      updateChatControls();
+      renderUsers();
+    });
+
+    $("editProfileBtn").addEventListener("click", () => openProfileModal(true));
+    $("chatProfileBtn").addEventListener("click", () => openProfileModal(false));
+    $("closeProfileBtn").addEventListener("click", closeProfileModal);
+
+    function openProfileModal(editing) {
+      const profile = editing ? state.me : state.activeUser;
+      if (!profile) return;
+
+      $("profileModalTitle").textContent = editing ? "Modifye pwofil mwen" : "Pwofil moun nan";
+      $("editableProfile").classList.toggle("hidden", !editing);
+      $("saveProfileBtn").classList.toggle("hidden", !editing);
+      $("readOnlyProfile").classList.toggle("hidden", editing);
+      $("displayNameInput").value = profile.display_name || "";
+      $("statusInput").value = profile.status || "";
+      state.pendingAvatar = profile.avatar || "";
+
+      $("profilePreview").innerHTML = state.pendingAvatar
+        ? `<img src="${escapeHTML(state.pendingAvatar)}" alt="">`
+        : escapeHTML(initials(profile.display_name || profile.username));
+
+      $("readOnlyProfile").innerHTML = `
+        <p><strong>Non:</strong> ${escapeHTML(profile.display_name || profile.username)}</p>
+        <p><strong>Username:</strong> @${escapeHTML(profile.username)}</p>
+        <p><strong>Estati:</strong> ${escapeHTML(profile.status || "Pa gen estati")}</p>
+        <p class="small muted">Nou pa montre lis zanmi oswa lòt konvèsasyon moun sa a.</p>`;
+
+      clearNotice("profileModalNotice");
+      $("profileModal").classList.remove("hidden");
+    }
+
+    function closeProfileModal() {
+      $("profileModal").classList.add("hidden");
+      $("avatarInput").value = "";
+    }
+
+    $("avatarInput").addEventListener("change", async () => {
+      const file = $("avatarInput").files?.[0];
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        toast("Chwazi yon foto.");
+        return;
+      }
+      if (file.size > 1.5 * 1024 * 1024) {
+        toast("Foto a twò gwo. Chwazi youn ki pi piti pase 1.5 MB.");
+        $("avatarInput").value = "";
+        return;
+      }
+      try {
+        state.pendingAvatar = await fileToDataURL(file);
+        $("profilePreview").innerHTML =
+          `<img src="${escapeHTML(state.pendingAvatar)}" alt="">`;
+      } catch (error) {
+        toast(errorText(error));
+      }
+    });
+
+    $("saveProfileBtn").addEventListener("click", async () => {
+      if (!state.me) return;
+      const display_name = $("displayNameInput").value.trim().slice(0, 60);
+      const status = $("statusInput").value.trim().slice(0, 120);
+      if (!display_name) {
+        setNotice("profileModalNotice", "Mete yon non pou pwofil la.", "error");
+        return;
+      }
+
+      $("saveProfileBtn").disabled = true;
+
+      try {
+        const updates = {
+          display_name,
+          status,
+          avatar: state.pendingAvatar || ""
+        };
+
+        const { error } = await supabase.auth.updateUser({
+          data: {
+            display_name,
+            status,
+            avatar: updates.avatar
+          }
+        });
+        if (error) throw error;
+
+        const updated = { ...state.me, ...updates };
+        state.me = updated;
+        state.profiles[updated.username] = updated;
+        setMyProfile(updated);
+
+        // Sèvè a dwe verifye itilizatè a ak token Socket.IO li.
+        if (state.socket?.connected) {
+          state.socket.emit("update-profile", updates);
+        }
+
+        setNotice("profileModalNotice",
+          "Nou mete pwofil la ajou sou kont ou. Si sèvè a pa gen sèvis pwofil ki konekte ak baz done a, lòt itilizatè yo ka pa wè chanjman yo touswit.",
+          "success");
+        renderUsers();
+      } catch (error) {
+        setNotice("profileModalNotice", errorText(error), "error");
+      } finally {
+        $("saveProfileBtn").disabled = false;
+      }
+    });
+
+    // Apèl odyo/videyo WebRTC. Sèvè a dwe relè evènman call-offer,
+    // call-answer, call-ice-candidate ak call-end yo pou sa fonksyone.
+    $("voiceCallBtn").addEventListener("click", () => startCall("audio"));
+    $("videoCallBtn").addEventListener("click", () => startCall("video"));
+    $("acceptCallBtn").addEventListener("click", acceptIncomingCall);
+    $("endCallBtn").addEventListener("click", () => {
+      if (state.socket?.connected && state.callTarget) {
+        state.socket.emit("call-end", { to: state.callTarget });
+      }
+      closeCall();
+    });
+
+    $("muteCallBtn").addEventListener("click", () => {
+      state.muted = !state.muted;
+      state.localStream?.getAudioTracks().forEach(track => track.enabled = !state.muted);
+      $("muteCallBtn").textContent = state.muted ? "🔇 Aktive son" : "🎙️ Silans";
+    });
+
+    async function startCall(type) {
+      if (!state.activeUser || !state.socket?.connected) return;
+      if (!navigator.mediaDevices?.getUserMedia || !window.RTCPeerConnection) {
+        toast("Navigatè a pa sipòte apèl sa a.");
+        return;
+      }
+
+      state.callType = type;
+      state.callTarget = state.activeUser.username;
+      $("callName").textContent = state.activeUser.display_name || state.callTarget;
+      $("callStatusText").textContent = "Ap rele...";
+      $("callAvatar").innerHTML = state.activeUser.avatar
+        ? `<img src="${escapeHTML(state.activeUser.avatar)}" alt="">`
+        : escapeHTML(initials(state.activeUser.display_name));
+      $("acceptCallBtn").classList.add("hidden");
+      $("localVideo").classList.toggle("hidden", type !== "video");
+      $("remoteVideo").classList.toggle("hidden", type !== "video");
+      $("callOverlay").classList.remove("hidden");
+
+      try {
+        state.localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: type === "video"
+        });
+        $("localVideo").srcObject = state.localStream;
+
+        state.peer = new RTCPeerConnection(ICE_SERVERS);
+        state.remoteStream = new MediaStream();
+        $("remoteVideo").srcObject = state.remoteStream;
+
+        state.localStream.getTracks().forEach(track => {
+          state.peer.addTrack(track, state.localStream);
+        });
+
+        state.peer.ontrack = event => {
+          event.streams[0]?.getTracks().forEach(track => {
+            state.remoteStream.addTrack(track);
+          });
+        };
+
+        state.peer.onicecandidate = event => {
+          if (event.candidate && state.socket?.connected) {
+            state.socket.emit("call-ice-candidate", {
+              to: state.callTarget,
+              candidate: event.candidate
+            });
+          }
+        };
+
+        const offer = await state.peer.createOffer();
+        await state.peer.setLocalDescription(offer);
+        state.socket.emit("call-offer", {
+          to: state.callTarget,
+          offer,
+          callType: type
+        });
+      } catch (error) {
+        toast("Pa t kapab kòmanse apèl la: " + errorText(error));
+        closeCall();
+      }
+    }
+
+    async function handleIncomingOffer(data) {
+      if (!data?.from || !data?.offer) return;
+      state.callTarget = data.from;
+      state.callType = data.callType === "video" ? "video" : "audio";
+      state.incomingOffer = data.offer;
+
+      const profile = state.profiles[data.from] || {
+        username: data.from, display_name: data.from
+      };
+      $("callName").textContent = profile.display_name || data.from;
+      $("callAvatar").innerHTML = profile.avatar
+        ? `<img src="${escapeHTML(profile.avatar)}" alt="">`
+        : escapeHTML(initials(profile.display_name));
+      $("callStatusText").textContent = "Apèl k ap antre...";
+      $("localVideo").classList.toggle("hidden", state.callType !== "video");
+      $("remoteVideo").classList.toggle("hidden", state.callType !== "video");
+      $("acceptCallBtn").classList.remove("hidden");
+      $("callOverlay").classList.remove("hidden");
+    }
+
+    async function acceptIncomingCall() {
+      if (!state.incomingOffer || !state.callTarget) return;
+
+      try {
+        state.localStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: state.callType === "video"
+        });
+        $("localVideo").srcObject = state.localStream;
+
+        state.peer = new RTCPeerConnection(ICE_SERVERS);
+        state.remoteStream = new MediaStream();
+        $("remoteVideo").srcObject = state.remoteStream;
+
+        state.localStream.getTracks().forEach(track => {
+          state.peer.addTrack(track, state.localStream);
+        });
+
+        state.peer.ontrack = event => {
+          event.streams[0]?.getTracks().forEach(track => state.remoteStream.addTrack(track));
+        };
+
+        state.peer.onicecandidate = event => {
+          if (event.candidate && state.socket?.connected) {
+            state.socket.emit("call-ice-candidate", {
+              to: state.callTarget,
+              candidate: event.candidate
+            });
+          }
+        };
+
+        await state.peer.setRemoteDescription(state.incomingOffer);
+        const answer = await state.peer.createAnswer();
+        await state.peer.setLocalDescription(answer);
+        state.socket.emit("call-answer", { to: state.callTarget, answer });
+        state.incomingOffer = null;
+        $("acceptCallBtn").classList.add("hidden");
+        $("callStatusText").textContent = "Apèl la konekte";
+      } catch (error) {
+        toast("Pa t kapab reponn apèl la: " + errorText(error));
+        closeCall();
+      }
+    }
+
+    async function handleCallAnswer(data) {
+      if (!state.peer || !data?.answer) return;
+      try {
+        await state.peer.setRemoteDescription(data.answer);
+        $("callStatusText").textContent = "Apèl la konekte";
+      } catch (error) {
+        toast("Pwoblèm nan repons apèl la: " + errorText(error));
+      }
+    }
+
+    async function handleRemoteCandidate(data) {
+      if (!state.peer || !data?.candidate) return;
+      try {
+        await state.peer.addIceCandidate(data.candidate);
+      } catch (error) {
+        console.warn("ICE candidate error:", error);
+      }
+    }
+
+    function handleRemoteCallEnd() {
+      toast("Lòt moun nan fini apèl la.");
+      closeCall();
+    }
+
+    function closeCall() {
+      if (state.peer) {
+        state.peer.ontrack = null;
+        state.peer.onicecandidate = null;
+        state.peer.close();
+      }
+      state.peer = null;
+
+      state.localStream?.getTracks().forEach(track => track.stop());
+      state.remoteStream?.getTracks().forEach(track => track.stop());
+      state.localStream = null;
+      state.remoteStream = null;
+      state.callTarget = null;
+      state.incomingOffer = null;
+      state.muted = false;
+
+      $("localVideo").srcObject = null;
+      $("remoteVideo").srcObject = null;
+      $("callOverlay").classList.add("hidden");
+      $("acceptCallBtn").classList.add("hidden");
+      $("muteCallBtn").textContent = "🎙️ Silans";
+    }
+
+    window.addEventListener("resize", () => {
+      if (!state.activeUser) return;
+      if (window.innerWidth > 760) {
+        $("appScreen").classList.remove("mobile-chat");
+        $("backBtn").classList.add("hidden");
+      }
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (state.socket) state.socket.disconnect();
+      state.recordingStream?.getTracks().forEach(track => track.stop());
+      state.localStream?.getTracks().forEach(track => track.stop());
+    });
+
+    loadInitialSession().catch(error => {
+      console.error(error);
+      showAuth();
+      setNotice("authNotice", errorText(error), "error");
+    });
+  })();
+  </script>
 </body>
 </html>
