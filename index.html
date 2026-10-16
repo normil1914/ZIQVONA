@@ -2,1135 +2,643 @@
 <!doctype html>
 <html lang="ht">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#10bfa3">
-  <title>ZIQVONA — Better vibes • One family</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <style>
-    :root {
-      --green:#10bfa3;
-      --dark:#07977f;
-      --bg:#eef5f4;
-      --white:#fff;
-      --text:#172522;
-      --muted:#6e817d;
-      --border:#e0e9e7;
-      --danger:#d92d45;
-    }
-    * { box-sizing:border-box }
-    body {
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-    button,input,textarea { font:inherit }
-    button {
-      cursor:pointer;
-      border:0;
-      border-radius:12px;
-      padding:11px 14px;
-      background:var(--green);
-      color:#073b32;
-      font-weight:700;
-    }
-    button:disabled { opacity:.5;cursor:not-allowed }
-    input,textarea {
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px;
-      outline-color:var(--green);
-      background:white;
-      color:var(--text);
-    }
-    .hidden { display:none!important }
-    .muted { color:var(--muted);font-size:13px }
-    .brand { color:var(--dark);font-weight:900;letter-spacing:1px }
-    .login-wrap {
-      min-height:100dvh;
-      display:grid;
-      place-items:center;
-      padding:20px;
-    }
-    .login-card {
-      width:min(100%,420px);
-      background:white;
-      border-radius:24px;
-      padding:26px;
-      box-shadow:0 10px 40px #153c3212;
-    }
-    .login-card h1 { margin:8px 0 }
-    .stack { display:grid;gap:12px }
-    .tabs { display:flex;gap:8px;margin:18px 0 }
-    .tabs button { flex:1;background:#e9f6f3 }
-    .tabs button.active { background:var(--green) }
-    #app {
-      height:100dvh;
-      min-height:500px;
-      display:flex;
-      overflow:hidden;
-    }
-    aside {
-      width:340px;
-      min-width:280px;
-      background:white;
-      border-right:1px solid var(--border);
-      display:flex;
-      flex-direction:column;
-    }
-    .side-head { padding:18px;border-bottom:1px solid var(--border) }
-    .side-title { display:flex;align-items:center;justify-content:space-between;gap:8px }
-    .side-title h2 { margin:0;font-size:20px }
-    .profile-mini {
-      display:flex;align-items:center;gap:10px;
-      padding:14px 18px;border-bottom:1px solid var(--border)
-    }
-    .avatar {
-      width:44px;height:44px;border-radius:50%;
-      background:#d8f5ef;display:grid;place-items:center;
-      color:var(--dark);font-weight:800;overflow:hidden;flex-shrink:0;
-    }
-    .avatar img { width:100%;height:100%;object-fit:cover }
-    .grow { flex:1;min-width:0 }
-    .person-name { font-weight:750;overflow-wrap:anywhere }
-    .people { overflow:auto;flex:1 }
-    .person {
-      display:flex;align-items:center;gap:10px;
-      width:100%;text-align:left;border-radius:0;
-      background:white;color:var(--text);padding:13px 16px;
-      border-bottom:1px solid #f0f4f3;
-    }
-    .person.selected { background:#e7f8f4 }
-    .person .muted { overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
-    .chat { flex:1;min-width:0;display:flex;flex-direction:column }
-    .chat-head {
-      display:flex;align-items:center;gap:10px;
-      padding:14px 18px;background:white;border-bottom:1px solid var(--border)
-    }
-    .chat-head .actions { display:flex;gap:6px;flex-wrap:wrap }
-    .icon-btn { padding:10px;background:#eaf7f4 }
-    .messages {
-      flex:1;overflow:auto;padding:20px;
-      display:flex;flex-direction:column;gap:10px;
-      background-color:#f2f7f5;
-      background-image:radial-gradient(#dcece7 0.7px,transparent 0.7px);
-      background-size:18px 18px;
-    }
-    .bubble {
-      max-width:min(78%,520px);padding:10px 12px;
-      border-radius:16px;background:white;box-shadow:0 2px 6px #1232;
-      overflow-wrap:anywhere;align-self:flex-start;
-    }
-    .bubble.mine { align-self:flex-end;background:#d8f8ee }
-    .bubble img,.bubble video { max-width:100%;border-radius:10px }
-    .bubble audio { max-width:100% }
-    .bubble small { display:block;text-align:right;color:var(--muted);font-size:10px;margin-top:5px }
-    .empty { margin:auto;text-align:center;color:var(--muted);padding:20px }
-    .composer {
-      padding:12px;display:flex;gap:8px;align-items:flex-end;
-      background:white;border-top:1px solid var(--border)
-    }
-    .composer textarea { resize:none;max-height:120px;min-height:44px }
-    .composer button { flex-shrink:0 }
-    .recording { background:#ffe2e5!important;color:#a51f36!important }
-    .notice { padding:10px 12px;border-radius:10px;background:#e7f8f4;color:#12695a;font-size:13px }
-    .error { background:#fff0f1;color:#a51f36 }
-    .modal {
-      position:fixed;inset:0;background:#102a25aa;
-      display:grid;place-items:center;padding:16px;z-index:5;
-    }
-    .modal-card {
-      background:white;border-radius:20px;padding:20px;
-      width:min(100%,480px);max-height:90dvh;overflow:auto;
-    }
-    .modal-card h3 { margin-top:0 }
-    #callScreen {
-      position:fixed;inset:0;background:#102a25;color:white;
-      z-index:10;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;gap:16px;padding:20px;
-    }
-    #remoteVideo { width:min(100%,700px);max-height:60dvh;background:#243b35;border-radius:18px }
-    #localVideo {
-      position:absolute;right:14px;top:14px;width:110px;
-      border-radius:12px;background:#263a35;
-    }
-    .call-actions { display:flex;gap:12px;flex-wrap:wrap;justify-content:center }
-    .hangup { background:var(--danger);color:white }
-    @media(max-width:720px) {
-      #app { min-height:0 }
-      aside { width:100%;min-width:0;border-right:0 }
-      .chat { width:100% }
-      #app.chat-open aside { display:none }
-      #app:not(.chat-open) .chat { display:none }
-      .chat-head { padding:10px }
-      .messages { padding:12px }
-      .bubble { max-width:88% }
-      .composer { padding:8px;gap:5px }
-      .composer button { padding:10px }
-      .composer textarea { min-width:0;font-size:16px }
-      .side-head { padding:14px }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10bfa3">
+<title>ZIQVONA — Better vibes • One family</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--g:#10bfa3;--g2:#07977f;--bg:#eef7f5;--line:#dce9e6;--muted:#71817e;--danger:#d9363e}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:Arial,sans-serif;background:var(--bg);color:#18302d}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.app{display:flex;height:100dvh;overflow:hidden}
+.sidebar{width:360px;flex:none;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column}
+.top{height:70px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:900;color:var(--g2);font-size:21px}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,var(--g),var(--g2));color:white;display:grid;place-items:center;font-weight:900}
+.actions{display:flex;gap:7px}
+.ib{width:38px;height:38px;border-radius:11px;background:#edf8f5;color:var(--g2);font-size:18px}
+.profile{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.avatar{width:42px;height:42px;border-radius:50%;background:#d9f4ee;color:var(--g2);display:grid;place-items:center;font-weight:800;overflow:hidden;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.info{min-width:0;flex:1}
+.info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.info span{font-size:12px;color:var(--muted)}
+.search{padding:11px 14px}
+.search input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:13px;outline:none;background:#f7fbfa}
+.filters{display:flex;gap:7px;padding:0 14px 10px}
+.filter{padding:8px 13px;border-radius:10px;background:#f1f6f5;color:#526461;font-size:13px}
+.filter.active{background:var(--g);color:#fff}
+.people{overflow:auto;flex:1}
+.person{padding:11px 14px;display:flex;gap:10px;align-items:center;border-bottom:1px solid #f0f4f3;cursor:pointer}
+.person.active,.person:hover{background:#e8f8f4}
+.empty{padding:35px 20px;text-align:center;color:var(--muted);font-size:14px}
+.chat{flex:1;display:flex;flex-direction:column;min-width:0;background:#e9f2ef}
+.head{min-height:70px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:10px 18px;gap:10px}
+.headinfo{flex:1;min-width:0}
+.headinfo b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.headinfo span{font-size:12px;color:var(--muted)}
+.headactions{display:flex;gap:8px}
+.messages{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:7px}
+.msg{max-width:72%;overflow-wrap:anywhere;padding:9px 11px;border-radius:14px;background:#fff;align-self:flex-start}
+.msg.mine{background:#d5f6ed;align-self:flex-end}
+.msg small{display:block;text-align:right;color:#78908c;font-size:10px;margin-top:3px}
+.msg img,.msg video{max-width:100%;border-radius:11px}
+.voice{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.typing{min-height:20px;padding:0 20px;color:var(--muted);font-size:12px}
+.composer{background:#fff;border-top:1px solid var(--line);padding:10px;display:flex;gap:7px;align-items:end}
+.composer textarea{flex:1;min-width:0;resize:none;max-height:120px;border:1px solid var(--line);border-radius:13px;padding:11px;outline:none}
+.composer button{flex:none;width:42px;height:42px;border-radius:12px;background:#edf8f5;color:var(--g2)}
+.composer .send{background:var(--g);color:#fff}
+.recording{background:#ffe9ea!important;color:var(--danger)!important}
+.network{position:fixed;left:12px;bottom:12px;background:#173d38;color:#fff;border-radius:10px;padding:7px 10px;font-size:11px;z-index:50;pointer-events:none}
+.modal{position:fixed;inset:0;background:#071b1888;display:none;align-items:center;justify-content:center;padding:18px;z-index:100;overflow:auto}
+.modal.show{display:flex}
+.card{width:min(430px,100%);max-height:94dvh;overflow:auto;background:#fff;border-radius:20px;padding:24px;box-shadow:0 25px 80px #0004}
+.sub{color:var(--muted);font-size:13px;margin:6px 0 18px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:bold;margin-bottom:5px}
+.field input{width:100%;padding:12px;border:1px solid var(--line);border-radius:11px;outline:none}
+.primary{width:100%;padding:12px;border-radius:11px;background:var(--g);color:#fff;font-weight:800}
+.primary:disabled{opacity:.6;cursor:wait}
+.link{background:none;color:var(--g2);font-weight:700;padding:10px 0}
+.err{min-height:18px;color:var(--danger);font-size:12px;margin:5px 0;overflow-wrap:anywhere}
+.ok{color:var(--g2)}
+.close{float:right;background:#eef5f3;border-radius:10px;width:34px;height:34px}
+.call{position:fixed;inset:0;background:#06221f;z-index:200;color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:15px}
+.call.show{display:flex}
+.remote{width:min(92vw,850px);height:min(70vh,600px);background:#000;border-radius:18px;object-fit:cover}
+.local{position:absolute;right:18px;bottom:90px;width:150px;height:210px;background:#000;border-radius:14px;object-fit:cover;border:2px solid #fff}
+.callbuttons{display:flex;gap:12px}
+.callbuttons button{width:52px;height:52px;border-radius:50%}
+.hang{background:#d9363e;color:#fff}
+@media(max-width:760px){
+ .sidebar{width:100%;height:100%;border-right:0}
+ .chat{display:none}
+ .app.chatmode .sidebar{display:none}
+ .app.chatmode .chat{display:flex;width:100%;height:100%}
+ .msg{max-width:88%}
+ .head{padding:8px}
+ .messages{padding:12px}
+ .composer{padding:7px;gap:5px}
+ .composer button{width:37px;height:40px}
+ .composer textarea{font-size:16px}
+ .local{width:100px;height:145px;right:10px;bottom:95px}
+}
+</style>
 </head>
 <body>
-  <section id="loginScreen" class="login-wrap">
-    <div class="login-card">
-      <div class="brand">ZIQVONA</div>
-      <h1>Byenveni sou ZIQVONA</h1>
-      <p class="muted">Better vibes • One family</p>
-      <div class="tabs">
-        <button id="emailTab" class="active" type="button">Imèl</button>
-        <button id="phoneTab" type="button">Telefòn</button>
-      </div>
-      <form id="loginForm" class="stack">
-        <label id="loginLabel" for="loginValue">Adrès imèl</label>
-        <input id="loginValue" autocomplete="email" type="email" placeholder="ou@example.com" required>
-        <button id="sendCodeBtn" type="submit">Voye kòd verifikasyon</button>
-      </form>
-      <form id="verifyForm" class="stack hidden" style="margin-top:14px">
-        <label for="otpValue">Kòd verifikasyon</label>
-        <input id="otpValue" inputmode="numeric" autocomplete="one-time-code" placeholder="Antre kòd la" required>
-        <button type="submit">Verifye epi konekte</button>
-        <button id="backLoginBtn" type="button" class="icon-btn">Retounen</button>
-      </form>
-      <div id="loginMessage" class="notice hidden" style="margin-top:14px"></div>
-      <p class="muted">Ou bezwen aksè nan imèl oswa telefòn ki sou kont ou a.</p>
-    </div>
-  </section>
-
-  <main id="app" class="hidden">
-    <aside>
-      <div class="side-head">
-        <div class="side-title">
-          <h2 class="brand">ZIQVONA</h2>
-          <button id="logoutBtn" class="icon-btn" type="button">Dekonekte</button>
-        </div>
-        <p class="muted">Better vibes • One family</p>
-        <input id="searchInput" type="search" placeholder="Chèche moun...">
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button id="allBtn" class="icon-btn" type="button">Tout</button>
-          <button id="unreadBtn" class="icon-btn" type="button">Pa li</button>
-          <button id="groupsBtn" class="icon-btn" type="button">Gwoup</button>
-        </div>
-      </div>
-      <div class="profile-mini">
-        <div id="myAvatar" class="avatar">Z</div>
-        <div class="grow">
-          <div id="myName" class="person-name">Kont mwen</div>
-          <div id="myStatus" class="muted">Disponib</div>
-        </div>
-        <button id="editProfileBtn" class="icon-btn" type="button">Pwofil</button>
-      </div>
-      <div id="peopleList" class="people"></div>
-    </aside>
-
-    <section class="chat">
-      <header class="chat-head">
-        <button id="backBtn" class="icon-btn hidden" type="button">←</button>
-        <div id="activeAvatar" class="avatar">Z</div>
-        <div class="grow">
-          <div id="activeName" class="person-name">Chwazi yon kontak</div>
-          <div id="activeStatus" class="muted">Mesaj prive</div>
-        </div>
-        <div class="actions">
-          <button id="voiceCallBtn" class="icon-btn" type="button" title="Apèl vwa">📞</button>
-          <button id="videoCallBtn" class="icon-btn" type="button" title="Apèl videyo">📹</button>
-        </div>
-      </header>
-      <div id="messages" class="messages">
-        <div class="empty">Chwazi yon moun pou kòmanse pale.</div>
-      </div>
-      <div class="composer">
-        <button id="emojiBtn" class="icon-btn" type="button" title="Emoji">😊</button>
-        <button id="attachBtn" class="icon-btn" type="button" title="Foto oswa videyo">📎</button>
-        <input id="fileInput" class="hidden" type="file" accept="image/*,video/*">
-        <textarea id="messageInput" rows="1" placeholder="Ekri yon mesaj..." disabled></textarea>
-        <button id="recordBtn" class="icon-btn" type="button" title="Kenbe pou anrejistre mesaj vokal" disabled>🎤</button>
-        <button id="sendBtn" type="button" disabled>Voye</button>
-      </div>
-      <div id="appMessage" class="notice hidden"></div>
-    </section>
-  </main>
-
-  <div id="profileModal" class="modal hidden">
-    <div class="modal-card stack">
-      <h3>Modifye pwofil mwen</h3>
-      <label for="profileDisplayName">Non pou moun wè</label>
-      <input id="profileDisplayName" maxlength="50">
-      <label for="profileStatus">Estati</label>
-      <input id="profileStatus" maxlength="120">
-      <label for="profileAvatar">Lyen foto pwofil (opsyonèl)</label>
-      <input id="profileAvatar" type="url" placeholder="https://...">
-      <div style="display:flex;gap:8px">
-        <button id="saveProfileBtn" type="button">Sove</button>
-        <button id="cancelProfileBtn" type="button" class="icon-btn">Anile</button>
-      </div>
-    </div>
+<div class="app" id="app">
+ <aside class="sidebar">
+  <div class="top">
+   <div class="brand"><div class="logo">Z</div>ZIQVONA</div>
+   <div class="actions"><button class="ib" id="newBtn" aria-label="Nouvo chat">＋</button><button class="ib" id="profileBtn" aria-label="Pwofil">⚙</button></div>
   </div>
-
-  <div id="callScreen" class="hidden">
-    <div id="callTitle" style="font-size:22px;font-weight:800">Apèl ZIQVONA</div>
-    <div id="callState" class="muted" style="color:#d0e4df">Koneksyon...</div>
-    <video id="remoteVideo" autoplay playsinline></video>
-    <video id="localVideo" autoplay muted playsinline></video>
-    <audio id="remoteAudio" autoplay></audio>
-    <div class="call-actions">
-      <button id="muteBtn" type="button">Mute</button>
-      <button id="cameraBtn" type="button">Kamera</button>
-      <button id="hangupBtn" class="hangup" type="button">Fèmen apèl</button>
-    </div>
+  <div class="profile">
+   <div class="avatar" id="myAvatar">Z</div>
+   <div class="info"><b id="myName">ZIQVONA</b><span id="myStatus">Konekte...</span></div>
+   <button class="ib" id="logoutBtn" aria-label="Dekonekte">↪</button>
   </div>
+  <div class="search"><input id="search" placeholder="Chèche moun..." aria-label="Chèche moun"></div>
+  <div class="filters"><button class="filter active" type="button">Tout</button><button class="filter" type="button">Pa li</button><button class="filter" type="button">Gwoup</button></div>
+  <div class="people" id="people"><div class="empty">Ap chèche itilizatè...</div></div>
+ </aside>
+ <main class="chat">
+  <div class="head">
+   <button class="ib" id="backBtn" style="display:none" aria-label="Retounen">‹</button>
+   <div class="avatar" id="chatAvatar">Z</div>
+   <div class="headinfo"><b id="chatName">Chwazi yon moun</b><span id="chatStatus">Kòmanse yon konvèsasyon</span></div>
+   <div class="headactions"><button class="ib" id="audioCall" aria-label="Apèl odyo">☎</button><button class="ib" id="videoCall" aria-label="Apèl videyo">▣</button></div>
+  </div>
+  <div class="messages" id="messages"><div class="empty">Chwazi yon moun pou kòmanse chat.</div></div>
+  <div class="typing" id="typing"></div>
+  <div class="composer">
+   <button id="emoji" aria-label="Emoji">☺</button>
+   <button id="fileBtn" aria-label="Voye foto oswa videyo">＋</button>
+   <input id="file" type="file" accept="image/*,video/*" hidden>
+   <textarea id="text" rows="1" placeholder="Ekri yon mesaj..." aria-label="Ekri yon mesaj"></textarea>
+   <button id="voice" aria-label="Anrejistre mesaj vwa">🎙</button>
+   <button class="send" id="send" aria-label="Voye mesaj">➤</button>
+  </div>
+ </main>
+</div>
 
+<div class="network" id="network">ZIQVONA: ap verifye...</div>
+
+<div class="modal show" id="authModal">
+ <div class="card">
+  <div class="brand"><div class="logo">Z</div>ZIQVONA</div>
+  <h2 id="authTitle">Byenveni sou ZIQVONA</h2>
+  <div class="sub" id="authSub">Antre email oswa nimewo telefòn ou. N ap voye yon kòd verifikasyon.</div>
+  <div class="filters" style="padding:0 0 12px">
+   <button class="filter active" id="emailMode" type="button">Email</button>
+   <button class="filter" id="phoneMode" type="button">Telefòn</button>
+  </div>
+  <form id="authForm">
+   <div class="field" id="emailField"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="ou@example.com"></div>
+   <div class="field" id="phoneField" style="display:none"><label for="phone">Nimewo telefòn</label><input id="phone" type="tel" autocomplete="tel" placeholder="+18005550123"></div>
+   <div class="err" id="authError" role="status"></div>
+   <button class="primary" id="authSubmit" type="submit">Voye kòd verifikasyon</button>
+  </form>
+  <div class="field" id="otpField" style="display:none;margin-top:14px"><label for="otp">Kòd verifikasyon 6 chif</label><input id="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>
+  <button class="primary" id="verifyOtp" type="button" style="display:none">Verifye kòd</button>
+  <button class="link" id="resendOtp" type="button" style="display:none">Voye yon lòt kòd</button>
+ </div>
+</div>
+
+<div class="modal" id="profileModal">
+ <div class="card">
+  <button class="close" data-close="profileModal" aria-label="Fèmen">×</button>
+  <h2>Pwofil mwen</h2><div class="sub">Modifye enfòmasyon pwofil ou.</div>
+  <div class="field"><label for="pUsername">Username</label><input id="pUsername" maxlength="30"></div>
+  <div class="field"><label for="pDisplay">Non pou montre</label><input id="pDisplay" maxlength="60"></div>
+  <div class="field"><label for="pStatus">Estati</label><input id="pStatus" maxlength="120"></div>
+  <div class="field"><label for="pAvatar">Foto pwofil</label><input id="pAvatar" type="file" accept="image/*"></div>
+  <div class="err" id="profileError"></div><button class="primary" id="saveProfile">Sove pwofil</button>
+ </div>
+</div>
+
+<div class="modal" id="newModal">
+ <div class="card">
+  <button class="close" data-close="newModal" aria-label="Fèmen">×</button>
+  <h2>Nouvo chat</h2><div class="sub">Chèche username yon moun.</div>
+  <div class="field"><input id="newUsername" placeholder="@username" maxlength="30"></div>
+  <button class="primary" id="findUser">Chèche</button>
+  <div id="newResults" class="empty">Tape username pou chèche.</div>
+ </div>
+</div>
+
+<div class="call" id="callScreen">
+ <video id="remote" class="remote" autoplay playsinline></video>
+ <video id="local" class="local" autoplay muted playsinline></video>
+ <div id="callLabel">Ap rele...</div>
+ <div class="callbuttons"><button id="mute">🎙</button><button class="hang" id="hangup">✕</button></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
 <script>
-(() => {
-  "use strict";
+(()=>{
+"use strict";
 
-  // Mete URL pwojè Supabase ou ak anon/publishable key ou isit la.
-  // Pa janm mete service_role key la nan fichye piblik sa a.
-  const SUPABASE_URL = "https://hkirnyqousvmphpwqfga.supabase.co";
-  const SUPABASE_ANON_KEY = "METE_ANON_KEY_SUPABASE_OU_ISIT";
+const SUPABASE_URL="https://hkirnyqousvmphpwqfga.supabase.co";
+const SUPABASE_KEY="sb_publishable_DEo3KVe4-8hOii445ahWMg_Xv_LInWa";
+const $=id=>document.getElementById(id);
+const STORE={me:"ziqvona_me",chats:"ziqvona_chats",profiles:"ziqvona_profiles"};
+let sb,session,me,selected,lastSessionId="";
+let profiles=readStore(STORE.profiles,{}),chats=readStore(STORE.chats,{});
+let socket,recorder,chunks=[],stream,peer,target,callType;
+let authChannel="email",otpPending=false,otpDestination="";
 
-  const $ = id => document.getElementById(id);
-  const loginScreen = $("loginScreen");
-  const app = $("app");
-  const loginForm = $("loginForm");
-  const verifyForm = $("verifyForm");
-  const loginValue = $("loginValue");
-  const loginLabel = $("loginLabel");
-  const loginMessage = $("loginMessage");
-  const appMessage = $("appMessage");
-  const messagesBox = $("messages");
-  const peopleList = $("peopleList");
-  const messageInput = $("messageInput");
-  const sendBtn = $("sendBtn");
-  const recordBtn = $("recordBtn");
-  const fileInput = $("fileInput");
+function readStore(k,fallback){
+ try{return JSON.parse(localStorage.getItem(k))||fallback}catch{return fallback}
+}
+function save(k,v){
+ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn("Local save error",e)}
+}
+function esc(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))
+}
+function friendly(e){
+ const m=String(e?.message||e||""),l=m.toLowerCase();
+ if(l.includes("invalid otp"))return"Kòd la pa bon oswa li ekspire. Mande yon lòt kòd.";
+ if(l.includes("expired"))return"Kòd la ekspire. Mande yon lòt kòd.";
+ if(l.includes("invalid api key")||l.includes("apikey"))return"Kle Supabase la pa aksepte. Verifye kle piblik la nan Supabase Settings → API.";
+ if(l.includes("sms provider")||l.includes("phone provider")||l.includes("twilio"))return"Phone OTP poko konfigire nèt. Verifye SMS provider nan Supabase → Authentication → Providers → Phone.";
+ if(l.includes("rate limit"))return"Yo limite kantite kòd yo pou kounye a. Tann kèk minit.";
+ if(l.includes("failed to fetch")||l.includes("networkerror"))return"ZIQVONA pa rive kontakte Supabase. Verifye koneksyon entènèt ou.";
+ if(l.includes("user not found"))return"Nou pa jwenn kont sa a.";
+ return m||"Yon erè rive. Eseye ankò.";
+}
+function avatar(el,src,name){
+ el.innerHTML=src?'<img alt="" src="'+esc(src)+'">':esc((name||"Z")[0].toUpperCase())
+}
+function net(t,ok=false){
+ $("network").textContent=t;
+ $("network").style.background=ok?"#087f6c":"#173d38"
+}
 
-  if (!window.supabase) {
-    showLoginMessage("Nou pa kapab chaje sèvis koneksyon an. Rafrechi paj la.");
-    return;
-  }
-
-  if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes("METE_ANON")) {
-    showLoginMessage("Anvan koneksyon mache, mete Supabase anon/publishable key la nan kòd la.");
-  }
-
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  let loginMethod = "email";
-  let pendingLoginValue = "";
-  let currentUser = null;
-  let socket = null;
-  let me = null;
-  let profiles = {};
-  let activeContact = null;
-  let knownMessages = new Set();
-  let mediaRecorder = null;
-  let recordedChunks = [];
-  let recordStream = null;
-  let recordStart = 0;
-  let recordTimer = null;
-  let recording = false;
-  let callPc = null;
-  let callStream = null;
-  let currentCallPeer = null;
-  let callKind = "audio";
-  let pendingOffer = null;
-  let muted = false;
-  let cameraOff = false;
-  let searchResults = [];
-  let searchTimer = null;
-  const chatCache = new Map();
-  const unread = new Set();
-
-  function showLoginMessage(text, isError = false) {
-    loginMessage.textContent = text;
-    loginMessage.classList.remove("hidden", "error");
-    if (isError) loginMessage.classList.add("error");
-  }
-
-  function showAppMessage(text, isError = false) {
-    appMessage.textContent = text;
-    appMessage.classList.remove("hidden", "error");
-    if (isError) appMessage.classList.add("error");
-    setTimeout(() => appMessage.classList.add("hidden"), 5000);
-  }
-
-  function escapeText(value) {
-    return String(value ?? "");
-  }
-
-  function formatTime(value) {
-    try {
-      return new Date(value).toLocaleTimeString([], {
-        hour: "2-digit", minute: "2-digit"
-      });
-    } catch {
-      return "";
-    }
-  }
-
-  function avatarNode(container, profile) {
-    container.replaceChildren();
-    if (profile?.avatar && /^https?:\/\//i.test(profile.avatar)) {
-      const img = document.createElement("img");
-      img.src = profile.avatar;
-      img.alt = "";
-      img.referrerPolicy = "no-referrer";
-      img.onerror = () => { container.textContent = (profile.displayName || profile.username || "Z")[0].toUpperCase(); };
-      container.append(img);
-    } else {
-      container.textContent = (profile?.displayName || profile?.username || "Z")[0].toUpperCase();
-    }
-  }
-
-  function setLoginMethod(method) {
-    loginMethod = method;
-    $("emailTab").classList.toggle("active", method === "email");
-    $("phoneTab").classList.toggle("active", method === "phone");
-    loginLabel.textContent = method === "email" ? "Adrès imèl" : "Nimewo telefòn ak kòd peyi";
-    loginValue.type = method === "email" ? "email" : "tel";
-    loginValue.autocomplete = method === "email" ? "email" : "tel";
-    loginValue.placeholder = method === "email" ? "ou@example.com" : "+18095551234";
-    loginValue.value = "";
-  }
-
-  $("emailTab").addEventListener("click", () => setLoginMethod("email"));
-  $("phoneTab").addEventListener("click", () => setLoginMethod("phone"));
-
-  loginForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const value = loginValue.value.trim();
-    if (!value) return;
-
-    $("sendCodeBtn").disabled = true;
-    try {
-      let result;
-      if (loginMethod === "email") {
-        result = await sb.auth.signInWithOtp({
-          email: value,
-          options: { shouldCreateUser: true }
-        });
-      } else {
-        if (!/^\+[1-9]\d{7,14}$/.test(value)) {
-          throw new Error("Mete nimewo telefòn nan ak kòd peyi a, pa egzanp +18095551234.");
-        }
-        result = await sb.auth.signInWithOtp({
-          phone: value,
-          options: { shouldCreateUser: true }
-        });
-      }
-      if (result.error) throw result.error;
-      pendingLoginValue = value;
-      loginForm.classList.add("hidden");
-      verifyForm.classList.remove("hidden");
-      showLoginMessage(
-        loginMethod === "email"
-          ? "Nou voye yon kòd oswa lyen verifikasyon nan imèl ou. Swiv enstriksyon mesaj la."
-          : "Nou voye yon kòd SMS si founisè telefòn Supabase ou a byen konfigire."
-      );
-    } catch (error) {
-      showLoginMessage(error.message || "Nou pa kapab voye kòd la.", true);
-    } finally {
-      $("sendCodeBtn").disabled = false;
-    }
+async function init(){
+ try{
+  if(!window.supabase?.createClient)throw Error("Supabase SDK pa chaje.");
+  let url=SUPABASE_URL,key=SUPABASE_KEY;
+  try{
+   const r=await fetch("/config",{cache:"no-store"});
+   if(r.ok){
+    const cfg=await r.json();
+    if(cfg.supabaseUrl)url=cfg.supabaseUrl;
+    if(cfg.supabaseAnonKey)key=cfg.supabaseAnonKey;
+   }
+  }catch(e){}
+  sb=window.supabase.createClient(url,key,{auth:{autoRefreshToken:true,persistSession:true,detectSessionInUrl:true}});
+  const r=await sb.auth.getSession();
+  if(r.error)throw r.error;
+  net("Supabase: konekte",true);
+  await sessionReady(r.data.session);
+  sb.auth.onAuthStateChange((event,s)=>{
+   if(event==="SIGNED_OUT"){
+    if(socket)socket.disconnect();
+    session=null;me=null;lastSessionId="";
+    $("authModal").classList.add("show");
+   }else if(s){
+    sessionReady(s);
+    if(socket?.connected&&socket.auth?.accessToken!==s.access_token)socket.disconnect();
+   }
   });
+ }catch(e){
+  console.error(e);net("Supabase: erè");
+  $("authError").textContent=friendly(e)
+ }
+}
 
-  $("backLoginBtn").addEventListener("click", () => {
-    verifyForm.classList.add("hidden");
-    loginForm.classList.remove("hidden");
-    loginMessage.classList.add("hidden");
-  });
+async function sessionReady(s){
+ session=s;
+ if(!s)return;
+ if(lastSessionId===s.user.id&&socket?.connected)return;
+ lastSessionId=s.user.id;
+ const meta=s.user.user_metadata||{};
+ me={
+  id:s.user.id,email:s.user.email||"",phone:s.user.phone||"",
+  username:meta.username||s.user.email?.split("@")[0]||s.user.phone||"user",
+  display_name:meta.display_name||"ZIQVONA User",
+  status:meta.status||"Online",
+  avatar:localStorage.getItem("ziqvona_avatar")||""
+ };
+ save(STORE.me,me);
+ $("authModal").classList.remove("show");
+ renderMe();connect()
+}
 
-  verifyForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const token = $("otpValue").value.trim();
-    if (!token) return;
+function setAuthMode(mode){
+ authChannel=mode;
+ $("emailMode").classList.toggle("active",mode==="email");
+ $("phoneMode").classList.toggle("active",mode==="phone");
+ $("emailField").style.display=mode==="email"?"block":"none";
+ $("phoneField").style.display=mode==="phone"?"block":"none";
+ $("otpField").style.display="none";
+ $("verifyOtp").style.display="none";
+ $("resendOtp").style.display="none";
+ $("authSubmit").textContent="Voye kòd verifikasyon";
+ $("authError").textContent="";
+ otpPending=false;otpDestination=""
+}
 
-    try {
-      const credentials = loginMethod === "email"
-        ? { email: pendingLoginValue, token, type: "email" }
-        : { phone: pendingLoginValue, token, type: "sms" };
-
-      const { data, error } = await sb.auth.verifyOtp(credentials);
-      if (error) throw error;
-      if (!data.session) {
-        throw new Error("Verifikasyon an fini men sesyon an poko disponib. Eseye konekte ankò.");
-      }
-      currentUser = data.user;
-      await startApp();
-    } catch (error) {
-      showLoginMessage(error.message || "Kòd la pa valab oswa li ekspire.", true);
-    }
-  });
-
-  async function restoreSession() {
-    const { data, error } = await sb.auth.getSession();
-    if (error) throw error;
-    if (data.session?.user) {
-      currentUser = data.session.user;
-      await startApp();
-    }
+async function sendOtp(){
+ $("authError").className="err";
+ $("authError").textContent="";
+ $("authSubmit").disabled=true;
+ try{
+  if(!sb)throw Error("Supabase poko konekte.");
+  let r;
+  if(authChannel==="email"){
+   const email=$("email").value.trim().toLowerCase();
+   if(!email)throw Error("Antre email ou.");
+   r=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:true}});
+   if(r.error)throw r.error;
+   otpDestination=email;
+   $("authError").className="err ok";
+   $("authError").textContent="Si demann lan reyisi, verifye email ou pou jwenn kòd la.";
+  }else{
+   const phone=$("phone").value.trim();
+   if(!/^\+[1-9]\d{7,14}$/.test(phone))throw Error("Mete nimewo a ak kòd peyi a, egzanp +18005550123.");
+   r=await sb.auth.signInWithOtp({phone,options:{shouldCreateUser:true}});
+   if(r.error)throw r.error;
+   otpDestination=phone;
+   $("authError").className="err ok";
+   $("authError").textContent="Si demann lan reyisi, verifye SMS ou pou jwenn kòd la.";
   }
+  otpPending=true;
+  $("otpField").style.display="block";
+  $("verifyOtp").style.display="block";
+  $("resendOtp").style.display="block";
+  $("authSubmit").textContent="Voye kòd ankò";
+  $("otp").focus()
+ }catch(e){
+  console.error(e);$("authError").textContent=friendly(e)
+ }finally{$("authSubmit").disabled=false}
+}
 
-  async function startApp() {
-    if (!currentUser) return;
-    loginScreen.classList.add("hidden");
-    app.classList.remove("hidden");
-    me = {
-      username: currentUser.user_metadata?.username ||
-        currentUser.user_metadata?.user_name ||
-        currentUser.email ||
-        currentUser.phone ||
-        currentUser.id,
-      displayName: currentUser.user_metadata?.display_name ||
-        currentUser.user_metadata?.full_name ||
-        currentUser.email ||
-        currentUser.phone ||
-        "ZIQVONA",
-      status: "Disponib",
-      avatar: ""
-    };
+async function verifyCode(){
+ const token=$("otp").value.trim();
+ if(!/^\d{6}$/.test(token)){
+  $("authError").textContent="Antre kòd 6 chif la.";
+  return
+ }
+ $("verifyOtp").disabled=true;
+ try{
+  if(!sb||!otpDestination)throw Error("Voye yon kòd verifikasyon anvan.");
+  let r=authChannel==="email"
+   ?await sb.auth.verifyOtp({email:otpDestination,token,type:"email"})
+   :await sb.auth.verifyOtp({phone:otpDestination,token,type:"sms"});
+  if(r.error)throw r.error;
+  if(r.data?.session)await sessionReady(r.data.session);
+  otpPending=false;$("otp").value="";$("authError").textContent=""
+ }catch(e){
+  console.error(e);$("authError").textContent=friendly(e)
+ }finally{$("verifyOtp").disabled=false}
+}
 
-    $("myName").textContent = me.displayName;
-    $("myStatus").textContent = me.status;
-    avatarNode($("myAvatar"), me);
-    connectSocket();
+function renderMe(){
+ if(!me)return;
+ $("myName").textContent=me.display_name||me.username;
+ $("myStatus").textContent=me.status||"Online";
+ avatar($("myAvatar"),me.avatar,me.display_name||me.username)
+}
+function add(p){
+ if(!p?.username||p.username===me?.username)return;
+ profiles[p.username]={...profiles[p.username],...p};
+ save(STORE.profiles,profiles)
+}
+function renderPeople(){
+ const q=$("search").value.toLowerCase();
+ const a=Object.values(profiles).filter(p=>(p.displayName||p.display_name||p.username||"").toLowerCase().includes(q));
+ $("people").innerHTML=a.length?a.map(p=>{
+  const name=p.displayName||p.display_name||p.username;
+  return '<div class="person '+(selected?.username===p.username?"active":"")+'" data-u="'+esc(p.username)+'"><div class="avatar">'+(p.avatar?'<img alt="" src="'+esc(p.avatar)+'">':esc((name||"Z")[0].toUpperCase()))+'</div><div class="info"><b>'+esc(name)+'</b><span>'+esc(p.status||"Online")+'</span></div></div>'
+ }).join(""):'<div class="empty">Pa gen lòt itilizatè ki parèt kounye a.</div>';
+ document.querySelectorAll(".person").forEach(x=>x.onclick=()=>open(x.dataset.u))
+}
+
+function connect(){
+ if(socket)socket.disconnect();
+ socket=io({auth:{accessToken:session?.access_token||""}});
+ socket.on("connect",()=>{
+  net("ZIQVONA: konekte",true);
+  socket.emit("register",{
+   username:me.username,displayName:me.display_name,status:me.status,
+   avatar:me.avatar||"",supabaseUserId:me.id,email:me.email
+  })
+ });
+ socket.on("disconnect",()=>net("ZIQVONA: dekonekte"));
+ socket.on("connect_error",e=>{
+  net("Socket: erè");console.error("Socket connection error:",e.message)
+ });
+ socket.on("message-error",d=>alert(d?.message||"Mesaj la pa pase."));
+ socket.on("error-message",d=>alert(d?.message||"Gen yon erè."));
+ socket.on("registered",d=>{
+  (d?.users||Object.values(d?.profiles||{})).forEach(add);renderPeople()
+ });
+ socket.on("presence",d=>{
+  (d?.online||[]).forEach(u=>{if(profiles[u])profiles[u].online=true});
+  renderPeople()
+ });
+ socket.on("profile-updated",d=>{if(d?.username)add(d);renderPeople()});
+ socket.on("private-message",receive);
+ socket.on("history",d=>{
+  if(d?.with&&selected?.username===d.with){
+   chats[d.with]=d.messages||[];save(STORE.chats,chats);renderMessages()
   }
+ });
+ socket.on("typing",d=>{
+  if(selected?.username===d?.from)$("typing").textContent=(d.displayName||d.from)+" ap ekri..."
+ });
+ socket.on("stop-typing",()=> $("typing").textContent="");
+ socket.on("search-results",d=>searchResults(Array.isArray(d)?d:(d?.users||[])));
+ socket.on("call-offer",incoming);
+ socket.on("call-answer",answer);
+ socket.on("ice-candidate",ice);
+ socket.on("call-reject",()=>{alert("Apèl la refize.");cleanupCall()});
+ socket.on("call-end",cleanupCall)
+}
 
-  function connectSocket() {
-    if (socket) socket.disconnect();
+function open(u){
+ selected=profiles[u]||{username:u};
+ $("app").classList.add("chatmode");
+ $("backBtn").style.display="block";
+ $("chatName").textContent=selected.displayName||selected.display_name||u;
+ $("chatStatus").textContent=selected.status||"Online";
+ avatar($("chatAvatar"),selected.avatar,selected.displayName||u);
+ renderPeople();renderMessages();
+ socket?.emit("get-history",{with:u})
+}
 
-    socket = io({
-      auth: {
-        accessToken: getAccessToken()
-      },
-      transports: ["websocket", "polling"]
-    });
+function renderMessages(){
+ if(!selected)return;
+ $("messages").innerHTML=(chats[selected.username]||[]).map(m=>{
+  const mine=m.from===me?.username||m.mine;
+  const k=m.type||m.kind;
+  let b;
+  if(k==="image")b='<img alt="Foto voye" src="'+esc(m.data||"")+'">';
+  else if(k==="video")b='<video src="'+esc(m.data||"")+'" controls playsinline></video>';
+  else if(k==="voice")b='<div class="voice"><audio src="'+esc(m.data||"")+'" controls></audio></div>';
+  else b='<div>'+esc(m.text||m.message||"")+'</div>';
+  return '<div class="msg '+(mine?"mine":"")+'">'+b+'<small>'+new Date(m.time||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+"</small></div>"
+ }).join("")||'<div class="empty">Pa gen mesaj ankò. Di bonjou 👋</div>';
+ $("messages").scrollTop=$("messages").scrollHeight
+}
+function store(m,u){
+ (chats[u]??=[]).push(m);
+ chats[u]=chats[u].slice(-5000);
+ save(STORE.chats,chats)
+}
+function receive(m){
+ const u=m.from||m.sender;
+ if(!u||u===me?.username)return;
+ m.type=m.type||m.kind||"text";
+ add({username:u,displayName:m.displayName||u,status:m.status||"Online",avatar:m.avatar||""});
+ store(m,u);
+ if(selected?.username===u)renderMessages();
+ renderPeople()
+}
+function send(){
+ const t=$("text").value.trim();
+ if(!t||!selected)return;
+ if(!socket?.connected)return alert("Koneksyon an poko pare. Eseye ankò.");
+ const m={to:selected.username,text:t,type:"text",time:Date.now(),displayName:me.display_name};
+ socket.emit("private-message",m);
+ $("text").value=""
+}
+function media(f){
+ if(!selected)return alert("Chwazi yon moun anvan.");
+ if(f.size>7*1024*1024)return alert("Fichye a dwe pi piti pase 7MB.");
+ const r=new FileReader();
+ r.onload=()=>{
+  const type=f.type.startsWith("image/")?"image":f.type.startsWith("video/")?"video":"file";
+  if(type==="file")return alert("Fòma sa a poko sipòte. Voye foto oswa videyo.");
+  const m={to:selected.username,type,data:r.result,fileName:f.name,time:Date.now(),displayName:me.display_name};
+  socket?.emit("media-message",{...m,kind:type})
+ };
+ r.readAsDataURL(f)
+}
 
-    socket.on("connect", () => {
-      // The server derives identity from the verified Supabase token.
-      socket.emit("register", {});
-    });
-
-    socket.on("connect_error", error => {
-      showAppMessage(error.message || "Koneksyon ak sèvè a echwe.", true);
-    });
-
-    socket.on("registered", data => {
-      profiles = data.profiles || {};
-      if (data.me) {
-        me = { ...me, ...data.me };
-        $("myName").textContent = me.displayName;
-        $("myStatus").textContent = me.status;
-        avatarNode($("myAvatar"), me);
-      }
-      renderPeople(data.online || Object.keys(profiles));
-    });
-
-    socket.on("presence", data => {
-      const online = data?.online || [];
-      for (const name of Object.keys(profiles)) {
-        profiles[name].online = online.includes(name);
-      }
-      renderPeople(online);
-      if (activeContact) {
-        $("activeStatus").textContent =
-          profiles[activeContact]?.online ? "Sou entènèt" : "Pa online";
-      }
-    });
-
-    socket.on("search-results", results => {
-      searchResults = Array.isArray(results) ? results : [];
-      renderPeople((searchResults.map(p => p.username)));
-    });
-
-    socket.on("profile-updated", profile => {
-      if (!profile?.username) return;
-      profiles[profile.username] = profile;
-      if (profile.username === me.username) {
-        me = { ...me, ...profile };
-        $("myName").textContent = me.displayName;
-        $("myStatus").textContent = me.status;
-        avatarNode($("myAvatar"), me);
-      }
-      renderPeople(Object.keys(profiles));
-    });
-
-    socket.on("private-message", message => {
-      if (!message || !message.id) return;
-      // Server may echo the message to its sender; prevent duplicate display.
-      if (knownMessages.has(message.id)) return;
-      knownMessages.add(message.id);
-      const other = message.from === me.username ? message.to : message.from;
-      const list = chatCache.get(other) || [];
-      list.push(message);
-      chatCache.set(other, list.slice(-200));
-
-      if (activeContact === other) {
-        renderMessages();
-      } else if (message.from !== me.username) {
-        unread.add(other);
-        renderPeople(Object.keys(profiles));
-      }
-    });
-
-    socket.on("history", data => {
-      if (!data?.with || !Array.isArray(data.messages)) return;
-      chatCache.set(data.with, data.messages);
-      for (const m of data.messages) knownMessages.add(m.id);
-      if (activeContact === data.with) renderMessages();
-    });
-
-    socket.on("error-message", data => showAppMessage(data?.message || "Erè koneksyon.", true));
-    socket.on("message-error", data => showAppMessage(data?.message || "Mesaj la pa t voye.", true));
-    socket.on("force-disconnect", data => {
-      showAppMessage(data?.message || "Kont lan konekte sou yon lòt aparèy.", true);
-      if (socket) socket.disconnect();
-    });
-
-    socket.on("typing", data => {
-      if (data?.from === activeContact) $("activeStatus").textContent = "Ap ekri...";
-    });
-    socket.on("stop-typing", data => {
-      if (data?.from === activeContact) {
-        $("activeStatus").textContent =
-          profiles[activeContact]?.online ? "Sou entènèt" : "Pa online";
-      }
-    });
-
-    socket.on("call-offer", handleIncomingCall);
-    socket.on("call-answer", handleCallAnswer);
-    socket.on("ice-candidate", handleIceCandidate);
-    socket.on("call-reject", () => endCall(false));
-    socket.on("call-end", () => endCall(false));
-    socket.on("call-error", data => showAppMessage(data?.message || "Apèl la pa mache.", true));
-  }
-
-  function getAccessToken() {
-    // The Supabase client stores its session; this helper is replaced below
-    // by the async session refresh before the socket is opened.
-    return window.__ziqvonaAccessToken || "";
-  }
-
-  async function refreshSocketToken() {
-    const { data, error } = await sb.auth.getSession();
-    if (error) throw error;
-    window.__ziqvonaAccessToken = data.session?.access_token || "";
-    if (!window.__ziqvonaAccessToken) {
-      throw new Error("Sesyon Supabase la ekspire. Rekonekte.");
-    }
-  }
-
-  // Ensure the access token is available before opening Socket.IO.
-  const originalStartApp = startApp;
-  startApp = async function () {
-    await refreshSocketToken();
-    await originalStartApp();
+async function voiceStart(){
+ if(!selected)return;
+ if(!navigator.mediaDevices?.getUserMedia)return alert("Navigatè sa a pa sipòte anrejistreman vwa.");
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recorder=new MediaRecorder(stream);chunks=[];
+  recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+  recorder.onstop=()=>{
+   const b=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+   const r=new FileReader();
+   r.onload=()=>{
+    const m={to:selected?.username,type:"voice",data:r.result,time:Date.now(),displayName:me.display_name};
+    if(m.to)socket?.emit("media-message",{...m,kind:"voice"})
+   };
+   r.readAsDataURL(b);
+   stream?.getTracks().forEach(t=>t.stop());stream=null
   };
+  recorder.start();$("voice").classList.add("recording")
+ }catch(e){console.error(e);alert("Mikwo a pa disponib. Verifye pèmisyon navigatè a.")}
+}
+function voiceStop(){
+ if(recorder&&recorder.state!=="inactive")recorder.stop();
+ $("voice").classList.remove("recording")
+}
 
-  function renderPeople(names) {
-    const unique = [...new Set(names || [])]
-      .filter(name => name && name !== me?.username);
+async function iceServers(){
+ try{
+  const r=await fetch("/config",{cache:"no-store"});
+  if(r.ok){const d=await r.json();if(d.iceServers)return d.iceServers}
+ }catch(e){}
+ return [{urls:"stun:stun.l.google.com:19302"},{urls:"stun:stun1.l.google.com:19302"}]
+}
+async function makePeer(to){
+ peer=new RTCPeerConnection({iceServers:await iceServers()});
+ peer.onicecandidate=e=>{if(e.candidate)socket.emit("ice-candidate",{to,candidate:e.candidate})};
+ peer.ontrack=e=>{$("remote").srcObject=e.streams[0];$("remote").play().catch(()=>{})};
+ if(stream)stream.getTracks().forEach(t=>peer.addTrack(t,stream));
+ return peer
+}
+async function startCall(type){
+ if(!selected||!socket?.connected)return alert("Chwazi yon moun epi verifye koneksyon an.");
+ try{
+  callType=type;target=selected.username;
+  stream=await navigator.mediaDevices.getUserMedia({audio:true,video:type==="video"});
+  $("local").srcObject=stream;
+  $("remote").style.display=type==="video"?"block":"none";
+  $("callLabel").textContent="Ap rele "+(selected.displayName||target)+"...";
+  $("callScreen").classList.add("show");
+  await makePeer(target);
+  const offer=await peer.createOffer();
+  await peer.setLocalDescription(offer);
+  socket.emit("call-offer",{to:target,type,offer,displayName:me.display_name})
+ }catch(e){console.error(e);alert("Kamera oswa mikwo pa disponib.");cleanupCall()}
+}
+async function incoming(d){
+ if(!confirm((d.displayName||d.from)+" ap rele w. Aksepte?")){
+  socket.emit("call-reject",{to:d.from});return
+ }
+ try{
+  target=d.from;callType=d.type||"audio";
+  stream=await navigator.mediaDevices.getUserMedia({audio:true,video:callType==="video"});
+  $("local").srcObject=stream;
+  $("remote").style.display=callType==="video"?"block":"none";
+  $("callScreen").classList.add("show");
+  $("callLabel").textContent="Ap konekte...";
+  await makePeer(target);
+  await peer.setRemoteDescription(new RTCSessionDescription(d.offer));
+  const a=await peer.createAnswer();
+  await peer.setLocalDescription(a);
+  socket.emit("call-answer",{to:target,answer:a})
+ }catch(e){console.error(e);cleanupCall()}
+}
+async function answer(d){
+ if(peer&&d.answer)await peer.setRemoteDescription(new RTCSessionDescription(d.answer))
+}
+async function ice(d){
+ if(peer&&d.candidate){try{await peer.addIceCandidate(d.candidate)}catch(e){}}
+}
+function cleanupCall(){
+ if(peer){peer.close();peer=null}
+ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ $("local").srcObject=null;$("remote").srcObject=null;
+ $("callScreen").classList.remove("show");target=null
+}
+function endCall(){
+ const old=target;
+ cleanupCall();
+ if(old&&socket?.connected)socket.emit("call-end",{to:old})
+}
 
-    const list = unique.map(name => profiles[name] || searchResults.find(p => p.username === name))
-      .filter(Boolean);
+async function saveProfile(){
+ try{
+  const u=$("pUsername").value.trim().replace(/^@/,"");
+  const d=$("pDisplay").value.trim()||u;
+  const s=$("pStatus").value.trim()||"Online";
+  if(!/^[a-zA-Z0-9_.-]{3,30}$/.test(u))throw Error("Username dwe gen 3–30 karaktè: lèt, chif, pwen, tirè oswa souliye.");
+  const r=await sb.auth.updateUser({data:{username:u,display_name:d,status:s}});
+  if(r.error)throw r.error;
+  me={...me,username:u,display_name:d,status:s};
+  save(STORE.me,me);renderMe();
+  socket?.emit("register",{username:u,displayName:d,status:s,avatar:me.avatar||"",supabaseUserId:me.id,email:me.email});
+  $("profileModal").classList.remove("show")
+ }catch(e){$("profileError").textContent=friendly(e)}
+}
+function searchResults(a){
+ $("newResults").innerHTML=a.length?a.map(u=>'<button class="primary" style="margin-top:7px;text-align:left" data-user="'+esc(u.username)+'">'+esc(u.displayName||u.display_name||u.username)+"</button>").join(""):"Pa jwenn itilizatè sa a.";
+ document.querySelectorAll("[data-user]").forEach(b=>b.onclick=()=>{
+  $("newModal").classList.remove("show");
+  add({username:b.dataset.user,displayName:b.textContent});
+  open(b.dataset.user)
+ })
+}
 
-    peopleList.replaceChildren();
+$("emailMode").onclick=()=>setAuthMode("email");
+$("phoneMode").onclick=()=>setAuthMode("phone");
+$("authForm").onsubmit=e=>{e.preventDefault();otpPending?verifyCode():sendOtp()};
+$("verifyOtp").onclick=verifyCode;
+$("resendOtp").onclick=sendOtp;
+$("otp").oninput=()=>{if($("otp").value.length===6)verifyCode()};
 
-    if (!list.length) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "Pa gen kontak pou montre. Sèvi ak rechèch la pou jwenn moun.";
-      peopleList.append(empty);
-      return;
-    }
+$("logoutBtn").onclick=async()=>{
+ try{if(socket)socket.disconnect()}catch(e){}
+ try{if(sb)await sb.auth.signOut()}catch(e){console.warn(e)}
+ session=null;me=null;lastSessionId="";
+ localStorage.removeItem(STORE.me);
+ $("authModal").classList.add("show");
+ setAuthMode("email");$("otp").value=""
+};
+$("search").oninput=renderPeople;
+$("send").onclick=send;
+$("text").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}};
+$("emoji").onclick=()=>{$("text").value+=" 😊";$("text").focus()};
+$("fileBtn").onclick=()=>$("file").click();
+$("file").onchange=e=>{if(e.target.files[0])media(e.target.files[0]);e.target.value=""};
+$("voice").onpointerdown=voiceStart;
+$("voice").onpointerup=voiceStop;
+$("voice").onpointerleave=voiceStop;
+$("audioCall").onclick=()=>startCall("audio");
+$("videoCall").onclick=()=>startCall("video");
+$("hangup").onclick=endCall;
+$("mute").onclick=()=>{
+ const t=stream?.getAudioTracks()[0];
+ if(t){t.enabled=!t.enabled;$("mute").textContent=t.enabled?"🎙":"🔇"}
+};
+$("backBtn").onclick=()=>{
+ $("app").classList.remove("chatmode");selected=null;
+ $("backBtn").style.display="none"
+};
+$("profileBtn").onclick=()=>{
+ if(!me)return;
+ $("pUsername").value=me.username||"";
+ $("pDisplay").value=me.display_name||"";
+ $("pStatus").value=me.status||"Online";
+ $("profileError").textContent="";
+ $("profileModal").classList.add("show")
+};
+$("saveProfile").onclick=saveProfile;
+$("pAvatar").onchange=e=>{
+ const f=e.target.files[0];if(!f||!me)return;
+ if(f.size>2*1024*1024){$("profileError").textContent="Foto a dwe pi piti pase 2MB.";return}
+ const r=new FileReader();
+ r.onload=()=>{
+  me.avatar=r.result;localStorage.setItem("ziqvona_avatar",r.result);
+  save(STORE.me,me);renderMe()
+ };
+ r.readAsDataURL(f)
+};
+document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).classList.remove("show"));
+$("newBtn").onclick=()=>$("newModal").classList.add("show");
+$("findUser").onclick=()=>{
+ const q=$("newUsername").value.trim().replace(/^@/,"");
+ if(!q)return;
+ if(socket?.connected)socket.emit("search-users",{query:q});
+ else $("newResults").textContent="Koneksyon an poko pare."
+};
 
-    for (const profile of list) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "person" + (activeContact === profile.username ? " selected" : "");
-      const avatar = document.createElement("div");
-      avatar.className = "avatar";
-      avatarNode(avatar, profile);
-      const details = document.createElement("div");
-      details.className = "grow";
-      const name = document.createElement("div");
-      name.className = "person-name";
-      name.textContent = profile.displayName || profile.username;
-      const status = document.createElement("div");
-      status.className = "muted";
-      status.textContent = profile.online ? "Sou entènèt" : (profile.status || "Pa online");
-      details.append(name, status);
-      button.append(avatar, details);
-      if (unread.has(profile.username)) {
-        const dot = document.createElement("span");
-        dot.textContent = "●";
-        dot.style.color = "var(--green)";
-        button.append(dot);
-      }
-      button.addEventListener("click", () => openChat(profile.username));
-      peopleList.append(button);
-    }
-  }
-
-  function openChat(username) {
-    if (!username || username === me?.username) return;
-    activeContact = username;
-    unread.delete(username);
-    app.classList.add("chat-open");
-    $("backBtn").classList.remove("hidden");
-    const profile = profiles[username] || searchResults.find(p => p.username === username) || {
-      username, displayName: username
-    };
-    $("activeName").textContent = profile.displayName || username;
-    $("activeStatus").textContent = profile.online ? "Sou entènèt" : "Mesaj prive";
-    avatarNode($("activeAvatar"), profile);
-    messageInput.disabled = false;
-    sendBtn.disabled = false;
-    recordBtn.disabled = false;
-    renderPeople(Object.keys(profiles));
-    renderMessages();
-    if (socket?.connected) socket.emit("get-history", { with: username });
-    messageInput.focus();
-  }
-
-  $("backBtn").addEventListener("click", () => {
-    app.classList.remove("chat-open");
-  });
-
-  function renderMessages() {
-    messagesBox.replaceChildren();
-    if (!activeContact) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "Chwazi yon moun pou kòmanse pale.";
-      messagesBox.append(empty);
-      return;
-    }
-    const list = chatCache.get(activeContact) || [];
-    if (!list.length) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "Mesaj ou voye bay kontak sa a ap parèt isit la.";
-      messagesBox.append(empty);
-      return;
-    }
-    for (const message of list) {
-      const bubble = document.createElement("div");
-      bubble.className = "bubble" + (message.from === me.username ? " mine" : "");
-      if (message.kind === "image") {
-        const img = document.createElement("img");
-        img.src = message.data;
-        img.alt = "Foto";
-        img.loading = "lazy";
-        bubble.append(img);
-      } else if (message.kind === "video") {
-        const video = document.createElement("video");
-        video.src = message.data;
-        video.controls = true;
-        video.playsInline = true;
-        bubble.append(video);
-      } else if (message.kind === "voice") {
-        const audio = document.createElement("audio");
-        audio.src = message.data;
-        audio.controls = true;
-        bubble.append(audio);
-      } else {
-        const text = document.createElement("div");
-        text.textContent = escapeText(message.text);
-        bubble.append(text);
-      }
-      const time = document.createElement("small");
-      time.textContent = formatTime(message.time);
-      bubble.append(time);
-      messagesBox.append(bubble);
-    }
-    messagesBox.scrollTop = messagesBox.scrollHeight;
-  }
-
-  function sendText() {
-    const text = messageInput.value.trim();
-    if (!text || !activeContact || !socket?.connected) return;
-    socket.emit("private-message", { to: activeContact, text });
-    messageInput.value = "";
-    messageInput.style.height = "auto";
-  }
-
-  sendBtn.addEventListener("click", sendText);
-  messageInput.addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      sendText();
-    }
-  });
-  messageInput.addEventListener("input", () => {
-    messageInput.style.height = "auto";
-    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + "px";
-    if (activeContact && socket?.connected) {
-      socket.emit("typing", { to: activeContact });
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        socket?.emit("stop-typing", { to: activeContact });
-      }, 900);
-    }
-  });
-
-  $("searchInput").addEventListener("input", event => {
-    const query = event.target.value.trim();
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      if (socket?.connected) socket.emit("search-users", { query });
-    }, 250);
-    if (!query) {
-      searchResults = [];
-      renderPeople(Object.keys(profiles));
-    }
-  });
-
-  $("allBtn").addEventListener("click", () => renderPeople(Object.keys(profiles)));
-  $("unreadBtn").addEventListener("click", () => renderPeople([...unread]));
-  $("groupsBtn").addEventListener("click", () => showAppMessage("Fonksyon gwoup yo bezwen konfigirasyon separe anvan lansman."));
-
-  $("emojiBtn").addEventListener("click", () => {
-    const emojis = ["😀","😂","🥰","😍","😘","❤️","🙏","👍","😭","🔥","🎉","😊","😔","💯"];
-    const chosen = prompt("Chwazi yon emoji:\n" + emojis.join(" "));
-    if (chosen) {
-      const start = messageInput.selectionStart;
-      const end = messageInput.selectionEnd;
-      const value = messageInput.value;
-      messageInput.value = value.slice(0, start) + chosen + value.slice(end);
-      messageInput.focus();
-      messageInput.setSelectionRange(start + chosen.length, start + chosen.length);
-    }
-  });
-
-  $("attachBtn").addEventListener("click", () => {
-    if (!activeContact) return showAppMessage("Chwazi yon kontak anvan ou voye medya.");
-    fileInput.click();
-  });
-
-  fileInput.addEventListener("change", async () => {
-    const file = fileInput.files?.[0];
-    fileInput.value = "";
-    if (!file || !activeContact) return;
-
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-      return showAppMessage("Chwazi yon foto oswa yon videyo.", true);
-    }
-    if (file.size > 7 * 1024 * 1024) {
-      return showAppMessage("Fichye a twò gwo. Eseye yon fichye ki pi piti pase 7 MB.", true);
-    }
-
-    try {
-      const data = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error("Nou pa kapab li fichye a."));
-        reader.readAsDataURL(file);
-      });
-      const kind = file.type.startsWith("video/") ? "video" : "image";
-      socket.emit("media-message", { to: activeContact, kind, data });
-    } catch (error) {
-      showAppMessage(error.message, true);
-    }
-  });
-
-  async function startRecording() {
-    if (!activeContact) {
-      showAppMessage("Chwazi yon kontak anvan ou anrejistre.");
-      return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-      showAppMessage("Navigatè sa a pa sipòte anrejistreman odyo.", true);
-      return;
-    }
-
-    try {
-      recordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(recordStream);
-      mediaRecorder.ondataavailable = event => {
-        if (event.data?.size) recordedChunks.push(event.data);
-      };
-      mediaRecorder.onstop = async () => {
-        const duration = Math.round((Date.now() - recordStart) / 1000);
-        const blob = new Blob(recordedChunks, {
-          type: mediaRecorder.mimeType || "audio/webm"
-        });
-        recordStream?.getTracks().forEach(track => track.stop());
-        recordStream = null;
-        recording = false;
-        recordBtn.classList.remove("recording");
-        recordBtn.textContent = "🎤";
-        clearInterval(recordTimer);
-
-        if (blob.size > 7 * 1024 * 1024) {
-          showAppMessage("Mesaj vokal la twò long. Eseye yon mesaj pi kout.", true);
-          return;
-        }
-
-        const data = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = () => reject(new Error("Nou pa kapab prepare odyo a."));
-          reader.readAsDataURL(blob);
-        });
-        socket.emit("media-message", {
-          to: activeContact,
-          kind: "voice",
-          data,
-          duration
-        });
-      };
-      recordStart = Date.now();
-      recording = true;
-      mediaRecorder.start();
-      recordBtn.classList.add("recording");
-      recordBtn.textContent = "⏹";
-      showAppMessage("Ap anrejistre... peze bouton an ankò pou voye mesaj vokal la.");
-      recordTimer = setInterval(() => {
-        const seconds = Math.round((Date.now() - recordStart) / 1000);
-        recordBtn.textContent = seconds + "s";
-        if (seconds >= 90 && mediaRecorder?.state === "recording") {
-          stopRecording();
-        }
-      }, 1000);
-    } catch (error) {
-      showAppMessage(error.message || "Pèmèt mikwofòn nan nan navigatè a.", true);
-    }
-  }
-
-  function stopRecording() {
-    if (mediaRecorder?.state === "recording") mediaRecorder.stop();
-  }
-
-  recordBtn.addEventListener("click", () => {
-    if (recording) stopRecording();
-    else startRecording();
-  });
-
-  $("editProfileBtn").addEventListener("click", () => {
-    $("profileDisplayName").value = me.displayName || "";
-    $("profileStatus").value = me.status || "";
-    $("profileAvatar").value = me.avatar || "";
-    $("profileModal").classList.remove("hidden");
-  });
-  $("cancelProfileBtn").addEventListener("click", () => $("profileModal").classList.add("hidden"));
-  $("saveProfileBtn").addEventListener("click", () => {
-    if (!socket?.connected) return showAppMessage("Koneksyon an pa disponib.", true);
-    socket.emit("update-profile", {
-      displayName: $("profileDisplayName").value.trim(),
-      status: $("profileStatus").value.trim(),
-      avatar: $("profileAvatar").value.trim()
-    });
-    $("profileModal").classList.add("hidden");
-  });
-
-  $("logoutBtn").addEventListener("click", async () => {
-    if (socket) socket.disconnect();
-    await endCall(false);
-    const { error } = await sb.auth.signOut();
-    if (error) showAppMessage(error.message, true);
-    currentUser = null;
-    activeContact = null;
-    app.classList.add("hidden");
-    loginScreen.classList.remove("hidden");
-    loginForm.classList.remove("hidden");
-    verifyForm.classList.add("hidden");
-    loginMessage.classList.add("hidden");
-  });
-
-  async function startCall(kind) {
-    if (!activeContact || !socket?.connected) {
-      return showAppMessage("Chwazi yon kontak ki konekte anvan ou rele.");
-    }
-    if (callPc) await endCall(false);
-    callKind = kind;
-    currentCallPeer = activeContact;
-    $("callScreen").classList.remove("hidden");
-    $("callTitle").textContent = (kind === "video" ? "Apèl videyo ak " : "Apèl vwa ak ") + activeContact;
-    $("callState").textContent = "Ap prepare apèl la...";
-    $("localVideo").classList.toggle("hidden", kind !== "video");
-    $("remoteVideo").classList.toggle("hidden", kind !== "video);
-    $("remoteAudio").classList.toggle("hidden", kind === "video");
-
-    try {
-      const { data, error } = await sb.auth.getSession();
-      if (error || !data.session) throw new Error("Sesyon an ekspire.");
-      const cfgResponse = await fetch("/config", { cache: "no-store" });
-      const cfg = await cfgResponse.json();
-
-      callStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: kind === "video"
-      });
-      $("localVideo").srcObject = callStream;
-
-      callPc = new RTCPeerConnection({ iceServers: cfg.iceServers || [] });
-      callStream.getTracks().forEach(track => callPc.addTrack(track, callStream));
-
-      callPc.ontrack = event => {
-        const stream = event.streams[0];
-        if (kind === "video") $("remoteVideo").srcObject = stream;
-        else $("remoteAudio").srcObject = stream;
-      };
-      callPc.onicecandidate = event => {
-        if (event.candidate && currentCallPeer) {
-          socket.emit("ice-candidate", {
-            to: currentCallPeer,
-            candidate: event.candidate
-          });
-        }
-      };
-      callPc.onconnectionstatechange = () => {
-        $("callState").textContent = callPc?.connectionState || "Koneksyon...";
-      };
-
-      const offer = await callPc.createOffer();
-      await callPc.setLocalDescription(offer);
-      socket.emit("call-offer", { to: currentCallPeer, offer, kind });
-      $("callState").textContent = "Ap rele...";
-    } catch (error) {
-      showAppMessage(error.message || "Nou pa kapab kòmanse apèl la.", true);
-      await endCall(false);
-    }
-  }
-
-  async function handleIncomingCall(packet) {
-    if (!packet?.from || !packet.offer) return;
-    if (callPc) {
-      socket.emit("call-reject", { to: packet.from });
-      return;
-    }
-
-    const accept = confirm(
-      (packet.kind === "video" ? "Apèl videyo" : "Apèl vwa") +
-      " soti nan " + packet.from + ". Aksepte?"
-    );
-    if (!accept) {
-      socket.emit("call-reject", { to: packet.from });
-      return;
-    }
-
-    currentCallPeer = packet.from;
-    callKind = packet.kind === "video" ? "video" : "audio";
-    pendingOffer = packet.offer;
-    $("callScreen").classList.remove("hidden");
-    $("callTitle").textContent = "Apèl ak " + packet.from;
-    $("localVideo").classList.toggle("hidden", callKind !== "video");
-    $("remoteVideo").classList.toggle("hidden", callKind !== "video");
-    $("remoteAudio").classList.toggle("hidden", callKind === "video");
-
-    try {
-      const response = await fetch("/config", { cache: "no-store" });
-      const cfg = await response.json();
-      callStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: callKind === "video"
-      });
-      $("localVideo").srcObject = callStream;
-      callPc = new RTCPeerConnection({ iceServers: cfg.iceServers || [] });
-      callStream.getTracks().forEach(track => callPc.addTrack(track, callStream));
-      callPc.ontrack = event => {
-        if (callKind === "video") $("remoteVideo").srcObject = event.streams[0];
-        else $("remoteAudio").srcObject = event.streams[0];
-      };
-      callPc.onicecandidate = event => {
-        if (event.candidate) socket.emit("ice-candidate", {
-          to: currentCallPeer,
-          candidate: event.candidate
-        });
-      };
-      await callPc.setRemoteDescription(packet.offer);
-      const answer = await callPc.createAnswer();
-      await callPc.setLocalDescription(answer);
-      socket.emit("call-answer", { to: currentCallPeer, answer });
-      $("callState").textContent = "Apèl la konekte";
-      pendingOffer = null;
-    } catch (error) {
-      showAppMessage(error.message || "Nou pa kapab aksepte apèl la.", true);
-      await endCall(false);
-    }
-  }
-
-  async function handleCallAnswer(packet) {
-    if (!callPc || !packet?.answer) return;
-    try {
-      await callPc.setRemoteDescription(packet.answer);
-      $("callState").textContent = "Apèl la konekte";
-    } catch (error) {
-      showAppMessage("Nou pa kapab etabli apèl la.", true);
-    }
-  }
-
-  async function handleIceCandidate(packet) {
-    if (!callPc || !packet?.candidate) return;
-    try {
-      await callPc.addIceCandidate(packet.candidate);
-    } catch (error) {
-      console.warn("ICE candidate failed:", error.message);
-    }
-  }
-
-  async function endCall(notify = true) {
-    const peer = currentCallPeer;
-    if (notify && peer && socket?.connected) {
-      socket.emit("call-end", { to: peer });
-    }
-    if (callPc) {
-      callPc.ontrack = null;
-      callPc.onicecandidate = null;
-      callPc.close();
-      callPc = null;
-    }
-    if (callStream) {
-      callStream.getTracks().forEach(track => track.stop());
-      callStream = null;
-    }
-    $("localVideo").srcObject = null;
-    $("remoteVideo").srcObject = null;
-    $("remoteAudio").srcObject = null;
-    $("callScreen").classList.add("hidden");
-    currentCallPeer = null;
-    pendingOffer = null;
-    muted = false;
-    cameraOff = false;
-    $("muteBtn").textContent = "Mute";
-    $("cameraBtn").textContent = "Kamera";
-  }
-
-  $("voiceCallBtn").addEventListener("click", () => startCall("audio"));
-  $("videoCallBtn").addEventListener("click", () => startCall("video"));
-  $("hangupBtn").addEventListener("click", () => endCall(true));
-  $("muteBtn").addEventListener("click", () => {
-    if (!callStream) return;
-    muted = !muted;
-    callStream.getAudioTracks().forEach(track => track.enabled = !muted);
-    $("muteBtn").textContent = muted ? "Aktive mikwo" : "Mute";
-  });
-  $("cameraBtn").addEventListener("click", () => {
-    if (!callStream) return;
-    cameraOff = !cameraOff;
-    callStream.getVideoTracks().forEach(track => track.enabled = !cameraOff);
-    $("cameraBtn").textContent = cameraOff ? "Aktive kamera" : "Kamera";
-  });
-
-  sb.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT") {
-      if (socket) socket.disconnect();
-      currentUser = null;
-      app.classList.add("hidden");
-      loginScreen.classList.remove("hidden");
-    }
-  });
-
-  restoreSession().catch(error => {
-    showLoginMessage(error.message || "Nou pa kapab retabli sesyon an.", true);
-  });
+init();
 })();
 </script>
 </body>
