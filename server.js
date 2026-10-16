@@ -4,599 +4,884 @@
 const express = require("express");
 const http = require("http");
 const path = require("path");
-const { randomUUID } = require("crypto");
+const crypto = require("crypto");
 const { Server } = require("socket.io");
 const { createClient } = require("@supabase/supabase-js");
 
 const app = express();
 const server = http.createServer(app);
-const PORT = process.env.PORT || 10000;
 
-const SUPABASE_URL = (
+const PORT = Number(process.env.PORT || 10000);
+const MAX_USERS = 10000;
+const MAX_TEXT = 4000;
+const MAX_MEDIA_BYTES = 8 * 1024 * 1024;
+const MAX_EVENTS_PER_MINUTE = 120;
+const MAX_HISTORY = 200;
+const MAX_STATUS = 120;
+const MAX_AVATAR = 2 * 1024 * 1024;
+
+const SUPABASE_URL =
   process.env.SUPABASE_URL ||
-  "https://hkirnyqousvmphpwqfga.supabase.co"
-).trim();
+  "https://hkirnyqousvmphpwqfga.supabase.co";
 
-const SUPABASE_KEY = (
+const SUPABASE_PUBLIC_KEY =
   process.env.SUPABASE_ANON_KEY ||
   process.env.SUPABASE_PUBLISHABLE_KEY ||
-  process.env.SUPABASE_KEY ||
-  ""
-).trim();
+  process.env.SUPABASE_KEY;
 
-if (!SUPABASE_KEY) {
+const SUPABASE_SERVER_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_PUBLIC_KEY) {
+  throw new Error("Render bezwen SUPABASE_URL ak SUPABASE_PUBLISHABLE_KEY.");
+}
+
+if (!SUPABASE_SERVER_KEY) {
   throw new Error(
-    "Mete SUPABASE_ANON_KEY oswa SUPABASE_PUBLISHABLE_KEY nan Render."
+    "Render bezwen SUPABASE_SERVICE_ROLE_KEY oswa SUPABASE_SECRET_KEY. " +
+    "Pa janm mete kle sa a nan public/index.html."
   );
 }
 
-const authClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
+const authClient = createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false
+    autoRefreshToken: false,
+    persistSession: false
   }
 });
 
-const SERVICE_KEY = (
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-).trim();
-
-const adminClient = SERVICE_KEY
-  ? createClient(SUPABASE_URL, SERVICE_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
-    })
-  : null;
+const db = createClient(SUPABASE_URL, SUPABASE_SERVER_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
 const io = new Server(server, {
   cors: {
     origin: true,
-    methods: ["GET", "POST"]
+    credentials: false
   },
-  maxHttpBufferSize: 12 * 1024 * 1024,
+  maxHttpBufferSize: MAX_MEDIA_BYTES + 1024 * 1024,
   pingInterval: 25000,
   pingTimeout: 20000
 });
 
-const MAX_USERS = 10000;
-const MAX_TEXT = 4000;
-const MAX_MEDIA = 8 * 1024 * 1024;
-const MAX_AVATAR = 2 * 1024 * 1024;
-const MAX_STATUS = 120;
-const MAX_EVENTS_PER_MINUTE = 120;
-const MAX_HISTORY = 5000;
-
-const users = new Map();
-const byName = new Map();
-const profiles = new Map();
-const messages = [];
-const limits = new Map();
-
+app.disable("x-powered-by");
 app.use(express.json({ limit: "1mb" }));
-app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/health", (req, res) => {
-  res.set("Cache-Control", "no-store");
-  res.json({
-    ok: true,
-    app: "ZIQVONA",
-    onlineUsers: users.size,
-    maxUsers: MAX_USERS,
-    uptime: Math.round(process.uptime())
-  });
-});
+const onlineUsers = new Map();
+const eventCounters = new Map();
 
-app.get("/config", (req, res) => {
-  const iceServers = [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" }
-  ];
-
-  if (process.env.TURN_URL) {
-    iceServers.push({
-      urls: process.env.TURN_URL
-        .split(",")
-        .map(value => value.trim())
-        .filter(Boolean),
-      username: process.env.TURN_USERNAME || "",
-      credential: process.env.TURN_CREDENTIAL || ""
-    });
-  }
-
-  res.set("Cache-Control", "no-store");
-  res.json({ iceServers });
-});
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-function clean(value, max = 1000) {
-  return String(value ?? "").trim().slice(0, max);
+function cleanString(value, max = 200) {
+  return typeof value === "string"
+    ? value.trim().slice(0, max)
+    : "";
 }
 
-function publicProfile(username) {
-  const profile = profiles.get(username) || {};
+function safeError(error) {
+  console.error("[ZIQVONA]", error?.message || error);
+  return "Operasyon an pa t reyisi. Tanpri eseye ankò.";
+}
 
+function emitError(socket, message) {
+  socket.emit("error-message", { message });
+}
+
+function profileUsername(profile, authUser) {
+  return cleanString(
+    profile?.username ||
+    authUser?.user_metadata?.username ||
+    authUser?.user_metadata?.user_name ||
+    authUser?.phone ||
+    authUser?.email ||
+    authUser?.id,
+    160
+  );
+}
+
+function publicProfile(profile, authUser) {
+  const username = profileUsername(profile, authUser);
   return {
+    id: profile?.id || authUser?.id || null,
     username,
-    displayName: profile.displayName || username,
-    status: profile.status || "Disponib",
-    avatar: profile.avatar || "",
-    online: byName.has(username)
+    display_name: cleanString(
+      profile?.display_name ||
+      authUser?.user_metadata?.display_name ||
+      authUser?.user_metadata?.full_name ||
+      username,
+      80
+    ),
+    status: cleanString(
+      profile?.status || authUser?.user_metadata?.status || "",
+      MAX_STATUS
+    ),
+    avatar: profile?.avatar_url ||
+      profile?.avatar ||
+      authUser?.user_metadata?.avatar ||
+      authUser?.user_metadata?.avatar_url ||
+      ""
   };
 }
 
-function allProfiles() {
+async function getProfileById(userId) {
+  const { data, error } = await db
+    .from("profiles")
+    .select("id,username,display_name,status,avatar_url")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+async function getProfileByUsername(username) {
+  const { data, error } = await db
+    .from("profiles")
+    .select("id,username,display_name,status,avatar_url")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+async function getUserProfile(authUser) {
+  const profile = await getProfileById(authUser.id);
+  return publicProfile(profile, authUser);
+}
+
+function isOnline(username) {
+  return onlineUsers.has(username);
+}
+
+function currentOnlineList() {
+  return Array.from(onlineUsers.keys());
+}
+
+function allOnlineProfiles() {
   const result = {};
-
-  for (const username of profiles.keys()) {
-    result[username] = publicProfile(username);
+  for (const [username, entry] of onlineUsers.entries()) {
+    result[username] = entry.profile;
   }
-
   return result;
 }
 
-function sendToUser(username, event, data) {
-  const socketId = byName.get(username);
-
-  if (!socketId) return false;
-
-  io.to(socketId).emit(event, data);
-  return true;
-}
-
-function rateLimited(socket) {
+function rateLimit(socket) {
   const now = Date.now();
-  let entry = limits.get(socket.id);
+  let item = eventCounters.get(socket.id);
 
-  if (!entry || now - entry.start >= 60000) {
-    entry = { start: now, count: 0 };
+  if (!item || now - item.startedAt >= 60000) {
+    item = { startedAt: now, count: 0 };
+    eventCounters.set(socket.id, item);
   }
 
-  entry.count += 1;
-  limits.set(socket.id, entry);
-
-  return entry.count > MAX_EVENTS_PER_MINUTE;
+  item.count += 1;
+  return item.count <= MAX_EVENTS_PER_MINUTE;
 }
 
-function reportError(socket, event, message) {
-  socket.emit(event, { message });
+function decodeMediaData(value) {
+  if (typeof value !== "string") return null;
+
+  const match = value.match(
+    /^data:(image\/[a-zA-Z0-9.+-]+|video\/[a-zA-Z0-9.+-]+|audio\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/
+  );
+
+  if (!match) return null;
+
+  const mime = match[1].toLowerCase();
+  const buffer = Buffer.from(match[2], "base64");
+
+  if (!buffer.length || buffer.length > MAX_MEDIA_BYTES) return null;
+
+  if (!["image", "video", "audio"].some(prefix => mime.startsWith(prefix))) {
+    return null;
+  }
+
+  return { mime, buffer };
 }
 
-function privateHistory(requester, other) {
-  // Istwa sa a pa retounen konvèsasyon ant de lòt moun.
-  return messages
-    .filter(message =>
-      (message.from === requester && message.to === other) ||
-      (message.from === other && message.to === requester)
-    )
-    .slice(-200);
+function mediaKindAllowed(kind, mime) {
+  if (kind === "image") return mime.startsWith("image/");
+  if (kind === "video") return mime.startsWith("video/");
+  if (kind === "voice") return mime.startsWith("audio/");
+  return false;
 }
 
-function presence() {
-  io.emit("presence", {
-    online: [...byName.keys()]
-  });
+function parseMessageBody(body) {
+  if (typeof body !== "string") return { kind: "text", text: "" };
+
+  try {
+    const parsed = JSON.parse(body);
+    if (parsed && typeof parsed === "object") {
+      return {
+        kind: cleanString(parsed.kind || parsed.type || "text", 20),
+        text: typeof parsed.text === "string" ? parsed.text : ""
+      };
+    }
+  } catch (_) {
+    // Ansyen mesaj yo ka genyen tèks senp.
+  }
+
+  return { kind: "text", text: body };
 }
 
-function validUsername(value) {
-  return /^[a-zA-Z0-9_.@+-]{1,80}$/.test(value);
-}
+function toClientMessage(row, senderProfile, recipientProfile) {
+  const body = parseMessageBody(row.body);
+  const senderId = row.sender_id;
 
-function profileFromRow(row, metadata, username) {
+  const from = senderProfile?.username || senderId;
+  const to = recipientProfile?.username || "";
+
   return {
-    displayName: clean(
-      row?.display_name ||
-      metadata?.display_name ||
-      metadata?.full_name ||
-      username,
-      50
-    ),
-    status: clean(
-      row?.status ||
-      metadata?.status ||
-      "Disponib",
-      MAX_STATUS
-    ),
-    avatar: clean(row?.avatar || "", MAX_AVATAR)
+    id: row.id,
+    conversation_id: row.conversation_id,
+    from,
+    to,
+    text: body.text,
+    kind: body.kind,
+    type: body.kind,
+    timestamp: row.created_at || new Date().toISOString()
   };
 }
 
-// Verify Supabase access token before accepting a socket.
+/*
+ * Sekirite DM:
+ * - Konvèsasyon an dwe gen egzakteman de manm pou fonksyon DM sa a.
+ * - Se manm konvèsasyon yo sèlman ki ka li istwa a.
+ * - Pou kòmanse yon nouvo DM, toude itilizatè yo dwe nan contacts
+ *   youn lòt nan baz done a.
+ *
+ * Sa pa montre konvèsasyon yon moun bay zanmi li yo.
+ */
+
+async function areMutualContacts(userA, userB) {
+  const { data: a, error: errorA } = await db
+    .from("contacts")
+    .select("contact_id")
+    .eq("owner_id", userA)
+    .eq("contact_id", userB)
+    .limit(1);
+
+  if (errorA) throw errorA;
+
+  const { data: b, error: errorB } = await db
+    .from("contacts")
+    .select("contact_id")
+    .eq("owner_id", userB)
+    .eq("contact_id", userA)
+    .limit(1);
+
+  if (errorB) throw errorB;
+
+  return Boolean(a?.length && b?.length);
+}
+
+async function getDirectConversation(userA, userB) {
+  const { data: membershipsA, error: errorA } = await db
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", userA);
+
+  if (errorA) throw errorA;
+
+  const ids = (membershipsA || []).map(row => row.conversation_id);
+  if (!ids.length) return null;
+
+  const { data: membershipsB, error: errorB } = await db
+    .from("conversation_members")
+    .select("conversation_id")
+    .eq("user_id", userB)
+    .in("conversation_id", ids);
+
+  if (errorB) throw errorB;
+
+  const common = (membershipsB || []).map(row => row.conversation_id);
+  if (!common.length) return null;
+
+  const { data: conversations, error: convError } = await db
+    .from("conversations")
+    .select("id,type")
+    .in("id", common);
+
+  if (convError) throw convError;
+
+  for (const conversation of conversations || []) {
+    if (conversation.type && conversation.type !== "direct") continue;
+
+    const { data: members, error: memberError } = await db
+      .from("conversation_members")
+      .select("user_id")
+      .eq("conversation_id", conversation.id);
+
+    if (memberError) throw memberError;
+
+    const memberIds = new Set((members || []).map(row => row.user_id));
+    if (
+      memberIds.size === 2 &&
+      memberIds.has(userA) &&
+      memberIds.has(userB)
+    ) {
+      return conversation;
+    }
+  }
+
+  return null;
+}
+
+async function getOrCreateDirectConversation(userA, userB) {
+  const existing = await getDirectConversation(userA, userB);
+  if (existing) return existing;
+
+  if (!(await areMutualContacts(userA, userB))) {
+    const error = new Error(
+      "Nouvo konvèsasyon pa otorize: nou bezwen relasyon kontak mityèl."
+    );
+    error.code = "CONTACT_REQUIRED";
+    throw error;
+  }
+
+  const { data: conversation, error: createError } = await db
+    .from("conversations")
+    .insert({ type: "direct" })
+    .select("id,type")
+    .single();
+
+  if (createError) throw createError;
+
+  const { error: memberError } = await db
+    .from("conversation_members")
+    .insert([
+      { conversation_id: conversation.id, user_id: userA },
+      { conversation_id: conversation.id, user_id: userB }
+    ]);
+
+  if (memberError) {
+    // Pa kite yon konvèsasyon vid si enskripsyon manm yo echwe.
+    await db.from("conversations").delete().eq("id", conversation.id);
+    throw memberError;
+  }
+
+  return conversation;
+}
+
+async function getConversationMembers(conversationId) {
+  const { data, error } = await db
+    .from("conversation_members")
+    .select("user_id")
+    .eq("conversation_id", conversationId);
+
+  if (error) throw error;
+  return (data || []).map(row => row.user_id);
+}
+
+async function ensureConversationMember(conversationId, userId) {
+  const members = await getConversationMembers(conversationId);
+  return members.includes(userId);
+}
+
+async function loadConversationHistory(conversation, userA, userB) {
+  const allowed = await ensureConversationMember(conversation.id, userA);
+  if (!allowed) {
+    const error = new Error("Ou pa manm konvèsasyon sa a.");
+    error.code = "NOT_MEMBER";
+    throw error;
+  }
+
+  const allowedB = await ensureConversationMember(conversation.id, userB);
+  if (!allowedB) {
+    const error = new Error("Manm konvèsasyon an pa valab.");
+    error.code = "NOT_MEMBER";
+    throw error;
+  }
+
+  const { data, error } = await db
+    .from("messages")
+    .select("id,conversation_id,sender_id,body,created_at")
+    .eq("conversation_id", String(conversation.id))
+    .order("created_at", { ascending: false })
+    .limit(MAX_HISTORY);
+
+  if (error) throw error;
+
+  const [profileA, profileB] = await Promise.all([
+    getProfileById(userA),
+    getProfileById(userB)
+  ]);
+
+  const authA = onlineUsers.get(
+    publicProfile(profileA, { id: userA }).username
+  )?.authUser;
+  const authB = onlineUsers.get(
+    publicProfile(profileB, { id: userB }).username
+  )?.authUser;
+
+  const publicA = publicProfile(profileA, authA || { id: userA });
+  const publicB = publicProfile(profileB, authB || { id: userB });
+
+  return (data || []).reverse().map(row => {
+    const senderIsA = row.sender_id === userA;
+    return toClientMessage(
+      row,
+      senderIsA ? publicA : publicB,
+      senderIsA ? publicB : publicA
+    );
+  });
+}
+
+async function sendPrivateMessage(socket, raw, kind = "text") {
+  const toUsername = cleanString(raw?.to, 160);
+  if (!toUsername) {
+    emitError(socket, "Chwazi moun k ap resevwa mesaj la.");
+    return;
+  }
+
+  if (toUsername === socket.userProfile.username) {
+    emitError(socket, "Ou pa ka voye yon mesaj bay tèt ou.");
+    return;
+  }
+
+  let text = typeof raw?.text === "string" ? raw.text : "";
+
+  if (kind === "text") {
+    text = text.trim();
+    if (!text || text.length > MAX_TEXT) {
+      emitError(socket, "Mesaj la vid oswa li depase limit 4000 karaktè.");
+      return;
+    }
+  } else {
+    const media = decodeMediaData(text);
+    if (!media || !mediaKindAllowed(kind, media.mime)) {
+      emitError(socket, "Fichye a pa valab oswa li twò gwo.");
+      return;
+    }
+  }
+
+  const recipient = await getProfileByUsername(toUsername);
+  if (!recipient?.id) {
+    emitError(socket, "Nou pa jwenn itilizatè sa a nan pwofil yo.");
+    return;
+  }
+
+  if (recipient.id === socket.user.id) {
+    emitError(socket, "Ou pa ka voye yon mesaj bay tèt ou.");
+    return;
+  }
+
+  const conversation = await getOrCreateDirectConversation(
+    socket.user.id,
+    recipient.id
+  );
+
+  // Verifikasyon an fèt sou sèvè a anvan chak ekriti.
+  const senderIsMember = await ensureConversationMember(
+    conversation.id,
+    socket.user.id
+  );
+  const recipientIsMember = await ensureConversationMember(
+    conversation.id,
+    recipient.id
+  );
+
+  if (!senderIsMember || !recipientIsMember) {
+    emitError(socket, "Ou pa otorize voye mesaj nan konvèsasyon sa a.");
+    return;
+  }
+
+  const messageId = crypto.randomUUID();
+  const body = JSON.stringify({ kind, text });
+
+  const { data: row, error } = await db
+    .from("messages")
+    .insert({
+      id: messageId,
+      conversation_id: String(conversation.id),
+      sender_id: socket.user.id,
+      body
+    })
+    .select("id,conversation_id,sender_id,body,created_at")
+    .single();
+
+  if (error) throw error;
+
+  const recipientProfile = publicProfile(recipient);
+  const message = toClientMessage(row, socket.userProfile, recipientProfile);
+
+  // Tout aparèy ki konekte sou kont sa yo resevwa sèlman DM pa yo.
+  io.to(`user:${socket.user.id}`).emit("private-message", message);
+  io.to(`user:${recipient.id}`).emit(
+    kind === "text" ? "private-message" : "media-message",
+    message
+  );
+}
+
+async function sendHistory(socket, raw) {
+  const otherUsername = cleanString(raw?.with, 160);
+  if (!otherUsername || otherUsername === socket.userProfile.username) {
+    emitError(socket, "Chwazi yon lòt itilizatè pou istwa konvèsasyon an.");
+    return;
+  }
+
+  const other = await getProfileByUsername(otherUsername);
+  if (!other?.id) {
+    emitError(socket, "Nou pa jwenn pwofil sa a.");
+    return;
+  }
+
+  const conversation = await getDirectConversation(socket.user.id, other.id);
+  if (!conversation) {
+    // Pa kreye yon konvèsasyon jis paske yon moun mande istwa a.
+    socket.emit("history", { with: otherUsername, messages: [] });
+    return;
+  }
+
+  const messages = await loadConversationHistory(
+    conversation,
+    socket.user.id,
+    other.id
+  );
+
+  socket.emit("history", {
+    with: otherUsername,
+    messages
+  });
+}
+
+async function searchUsers(socket, raw) {
+  const query = cleanString(raw?.query || raw?.q, 80);
+
+  if (!query) {
+    socket.emit("search-results", []);
+    return;
+  }
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("id,username,display_name,status,avatar_url")
+    .or(`username.ilike.%${query.replace(/[%_,().]/g, "")}%,display_name.ilike.%${query.replace(/[%_,().]/g, "")}%`)
+    .neq("id", socket.user.id)
+    .limit(30);
+
+  if (error) throw error;
+
+  socket.emit(
+    "search-results",
+    (data || []).map(profile => publicProfile(profile))
+  );
+}
+
+async function updateProfile(socket, raw) {
+  const display_name = cleanString(raw?.display_name, 80);
+  const status = cleanString(raw?.status, MAX_STATUS);
+  const avatar = typeof raw?.avatar === "string" ? raw.avatar : "";
+
+  if (!display_name) {
+    emitError(socket, "Non pwofil la pa dwe vid.");
+    return;
+  }
+
+  if (avatar) {
+    if (avatar.length > MAX_AVATAR * 1.4) {
+      emitError(socket, "Foto pwofil la twò gwo.");
+      return;
+    }
+    if (!/^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(avatar)) {
+      emitError(socket, "Fòma foto pwofil la pa valab.");
+      return;
+    }
+  }
+
+  const updates = {
+    display_name,
+    status,
+    avatar_url: avatar || null
+  };
+
+  const { data, error } = await db
+    .from("profiles")
+    .update(updates)
+    .eq("id", socket.user.id)
+    .select("id,username,display_name,status,avatar_url")
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (!data) {
+    emitError(
+      socket,
+      "Pwofil ou pa egziste nan tablo profiles la. Kreye pwofil la anvan."
+    );
+    return;
+  }
+
+  socket.userProfile = publicProfile(data, socket.user);
+  const entry = onlineUsers.get(socket.userProfile.username);
+
+  if (entry) entry.profile = socket.userProfile;
+
+  io.emit("profile-updated", socket.userProfile);
+}
+
+app.get("/health", (_req, res) => {
+  res.json({
+    ok: true,
+    app: "ZIQVONA",
+    timestamp: new Date().toISOString(),
+    online: onlineUsers.size
+  });
+});
+
+app.get("/config", (_req, res) => {
+  res.json({
+    app: "ZIQVONA",
+    auth: "supabase",
+    realtime: true
+  });
+});
+
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/socket.io/")) return next();
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 io.use(async (socket, next) => {
   try {
     const token = socket.handshake.auth?.accessToken;
 
-    if (typeof token !== "string" || !token) {
-      return next(
-        new Error("Konekte ak Supabase anvan ou antre.")
-      );
+    if (!token || typeof token !== "string") {
+      return next(new Error("Token koneksyon an manke."));
     }
 
     const { data, error } = await authClient.auth.getUser(token);
-
-    if (error || !data?.user?.id) {
-      return next(
-        new Error("Sesyon an pa valab. Rekonekte.")
-      );
+    if (error || !data?.user) {
+      return next(new Error("Sesyon an pa valab. Konekte ankò."));
     }
 
-    socket.data.authUserId = data.user.id;
-    socket.data.authUser = data.user;
+    socket.user = data.user;
+    socket.userProfile = await getUserProfile(data.user);
+
+    if (!socket.userProfile.username) {
+      return next(new Error("Kont lan pa gen username valab."));
+    }
+
     next();
   } catch (error) {
-    console.error("Socket authentication error:", error.message);
-    next(new Error("Nou pa kapab verifye kont lan kounye a."));
+    console.error("Socket authentication failed:", error?.message || error);
+    next(new Error("Pa t kapab verifye kont lan."));
   }
 });
 
-io.on("connection", async socket => {
-  const authUser = socket.data.authUser;
-  const authUserId = socket.data.authUserId;
-  const metadata = authUser.user_metadata || {};
+io.on("connection", socket => {
+  const userId = socket.user.id;
+  const username = socket.userProfile.username;
 
-  try {
-    // Use the database profile when the server-only key is configured.
-    let row = null;
+  if (onlineUsers.size >= MAX_USERS && !onlineUsers.has(username)) {
+    socket.emit("force-disconnect", { message: "Sèvè a rive nan kapasite li." });
+    socket.disconnect(true);
+    return;
+  }
 
-    if (adminClient) {
-      const result = await adminClient
-        .from("profiles")
-        .select("id,username,display_name,status,avatar")
-        .eq("id", authUserId)
-        .maybeSingle();
+  socket.join(`user:${userId}`);
 
-      if (result.error) {
-        console.error("Profile lookup failed:", result.error.message);
-      } else {
-        row = result.data;
-      }
-    }
+  const entry = onlineUsers.get(username) || {
+    userId,
+    profile: socket.userProfile,
+    authUser: socket.user,
+    sockets: new Set()
+  };
 
-    const fallback = clean(
-      metadata.username ||
-      metadata.user_name ||
-      authUser.email ||
-      authUser.phone ||
-      authUser.id,
-      80
-    );
+  entry.sockets.add(socket.id);
+  entry.profile = socket.userProfile;
+  entry.authUser = socket.user;
+  onlineUsers.set(username, entry);
 
-    const username = clean(row?.username || fallback, 80);
+  socket.emit("registered", {
+    me: socket.userProfile,
+    profiles: allOnlineProfiles(),
+    online: currentOnlineList()
+  });
 
-    if (!username || !validUsername(username)) {
-      socket.emit("error-message", {
-        message: "Non itilizatè a pa valab. Mete yon username ki kòrèk."
-      });
-      socket.disconnect(true);
+  io.emit("presence", { online: currentOnlineList() });
+
+  socket.on("register", () => {
+    socket.emit("registered", {
+      me: socket.userProfile,
+      profiles: allOnlineProfiles(),
+      online: currentOnlineList()
+    });
+  });
+
+  socket.on("search-users", raw => {
+    if (!rateLimit(socket)) {
+      emitError(socket, "Ou ap voye twòp demann. Tann yon ti moman.");
       return;
     }
 
-    // Do not allow two different authenticated accounts to share a username.
-    const existingSocketId = byName.get(username);
+    searchUsers(socket, raw).catch(error => {
+      safeError(error);
+      emitError(socket, "Rechèch la pa t reyisi.");
+    });
+  });
 
-    if (existingSocketId) {
-      const existingUser = users.get(existingSocketId);
+  socket.on("get-history", raw => {
+    if (!rateLimit(socket)) {
+      emitError(socket, "Ou ap voye twòp demann.");
+      return;
+    }
 
-      if (existingUser && existingUser.id !== authUserId) {
-        socket.emit("error-message", {
-          message: "Username sa deja itilize. Chwazi yon username diferan."
+    sendHistory(socket, raw).catch(error => {
+      safeError(error);
+      emitError(
+        socket,
+        error.code === "CONTACT_REQUIRED"
+          ? "Ou pa gen pèmisyon pou konvèsasyon sa a."
+          : "Nou pa t kapab chaje istwa mesaj yo."
+      );
+    });
+  });
+
+  socket.on("private-message", raw => {
+    if (!rateLimit(socket)) {
+      emitError(socket, "Ou ap voye twòp mesaj. Tann yon ti moman.");
+      return;
+    }
+
+    sendPrivateMessage(socket, raw, "text").catch(error => {
+      safeError(error);
+      emitError(
+        socket,
+        error.code === "CONTACT_REQUIRED"
+          ? "Pou kòmanse nouvo konvèsasyon, toude moun yo dwe nan kontak youn lòt."
+          : "Mesaj la pa t kapab voye."
+      );
+    });
+  });
+
+  socket.on("media-message", raw => {
+    if (!rateLimit(socket)) {
+      emitError(socket, "Ou ap voye twòp fichye.");
+      return;
+    }
+
+    const kind = cleanString(raw?.kind || raw?.type, 20);
+    if (!["image", "video", "voice"].includes(kind)) {
+      emitError(socket, "Kalite medya sa a pa sipòte.");
+      return;
+    }
+
+    sendPrivateMessage(socket, raw, kind).catch(error => {
+      safeError(error);
+      emitError(
+        socket,
+        error.code === "CONTACT_REQUIRED"
+          ? "Ou pa gen pèmisyon pou voye medya nan konvèsasyon sa a."
+          : "Medya a pa t kapab voye."
+      );
+    });
+  });
+
+  socket.on("update-profile", raw => {
+    if (!rateLimit(socket)) {
+      emitError(socket, "Ou ap voye twòp demann.");
+      return;
+    }
+
+    updateProfile(socket, raw).catch(error => {
+      safeError(error);
+      emitError(socket, "Pwofil la pa t kapab sove.");
+    });
+  });
+
+  socket.on("typing", raw => {
+    if (!rateLimit(socket)) return;
+
+    const toUsername = cleanString(raw?.to, 160);
+    const recipient = onlineUsers.get(toUsername);
+    if (!recipient || recipient.userId === userId) return;
+
+    // Pa relè typing si pa gen DM ki otorize deja.
+    getDirectConversation(userId, recipient.userId)
+      .then(conversation => {
+        if (!conversation) return;
+
+        io.to(`user:${recipient.userId}`).emit("typing", {
+          from: username
         });
-        socket.disconnect(true);
+      })
+      .catch(error => safeError(error));
+  });
+
+  /*
+   * Relè siyal WebRTC yo sèlman lè gen yon konvèsasyon DM otorize.
+   * Tout siyal yo pase nan menm verifikasyon manm yo.
+   */
+  const callEvents = [
+    "call-offer",
+    "call-answer",
+    "call-ice-candidate",
+    "call-end"
+  ];
+
+  for (const eventName of callEvents) {
+    socket.on(eventName, raw => {
+      if (!rateLimit(socket)) {
+        emitError(socket, "Twòp aktivite apèl.");
         return;
       }
 
-      if (existingSocketId !== socket.id) {
-        const previousSocket = io.sockets.sockets.get(existingSocketId);
+      const toUsername = cleanString(raw?.to, 160);
+      const recipient = onlineUsers.get(toUsername);
 
-        if (previousSocket) {
-          previousSocket.emit("force-disconnect", {
-            message: "Kont sa a konekte sou yon lòt aparèy."
-          });
-          previousSocket.disconnect(true);
+      if (!recipient || recipient.userId === userId) {
+        if (eventName === "call-offer") {
+          socket.emit("call-error", { message: "Moun nan pa konekte." });
         }
-      }
-    }
-
-    if (users.size >= MAX_USERS && !users.has(socket.id)) {
-      socket.emit("error-message", {
-        message: "ZIQVONA beta a plen pou kounye a."
-      });
-      socket.disconnect(true);
-      return;
-    }
-
-    socket.data.username = username;
-
-    profiles.set(
-      username,
-      profileFromRow(row, metadata, username)
-    );
-
-    users.set(socket.id, {
-      id: authUserId,
-      username
-    });
-
-    byName.set(username, socket.id);
-
-    socket.emit("registered", {
-      me: publicProfile(username),
-      profiles: allProfiles(),
-      online: [...byName.keys()]
-    });
-
-    presence();
-
-    socket.on("register", () => {
-      socket.emit("registered", {
-        me: publicProfile(username),
-        profiles: allProfiles(),
-        online: [...byName.keys()]
-      });
-    });
-
-    socket.on("update-profile", async raw => {
-      if (rateLimited(socket)) {
-        return reportError(
-          socket,
-          "error-message",
-          "Twòp demann. Tann yon ti moman."
-        );
+        return;
       }
 
-      const old = profiles.get(username) || {};
-
-      const nextProfile = {
-        displayName: clean(
-          raw?.displayName ?? old.displayName,
-          50
-        ),
-        status: clean(
-          raw?.status ?? old.status,
-          MAX_STATUS
-        ),
-        avatar: clean(
-          raw?.avatar ?? old.avatar,
-          MAX_AVATAR
-        )
-      };
-
-      if (Buffer.byteLength(nextProfile.avatar, "utf8") > MAX_AVATAR) {
-        return reportError(
-          socket,
-          "error-message",
-          "Foto pwofil la twò gwo."
-        );
-      }
-
-      if (adminClient) {
-        const { error } = await adminClient
-          .from("profiles")
-          .update({
-            display_name: nextProfile.displayName,
-            status: nextProfile.status,
-            avatar: nextProfile.avatar
-          })
-          .eq("id", authUserId);
-
-        if (error) {
-          console.error("Profile update failed:", error.message);
-          return reportError(
-            socket,
-            "error-message",
-            "Nou pa kapab sove pwofil la."
-          );
-        }
-      }
-
-      profiles.set(username, nextProfile);
-      socket.emit("profile-updated", publicProfile(username));
-      presence();
-    });
-
-    socket.on("search-users", raw => {
-      if (rateLimited(socket)) return;
-
-      const query = clean(raw?.query, 50).toLowerCase();
-
-      const results = [...profiles.keys()]
-        .filter(name => name !== username)
-        .map(publicProfile)
-        .filter(profile =>
-          !query ||
-          profile.username.toLowerCase().includes(query) ||
-          profile.displayName.toLowerCase().includes(query)
-        )
-        .slice(0, 100);
-
-      socket.emit("search-results", results);
-    });
-
-    socket.on("get-history", raw => {
-      if (rateLimited(socket)) return;
-
-      const other = clean(raw?.with, 80);
-
-      if (!other || other === username) return;
-
-      socket.emit("history", {
-        with: other,
-        messages: privateHistory(username, other)
-      });
-    });
-
-    socket.on("private-message", raw => {
-      if (rateLimited(socket)) {
-        return reportError(
-          socket,
-          "message-error",
-          "Twòp mesaj. Tann yon ti moman."
-        );
-      }
-
-      const to = clean(raw?.to, 80);
-      const text = clean(raw?.text, MAX_TEXT);
-
-      if (!to || to === username || !text) return;
-
-      if (!byName.has(to)) {
-        return reportError(
-          socket,
-          "message-error",
-          "Kontak la pa online."
-        );
-      }
-
-      const message = {
-        id: randomUUID(),
-        kind: "text",
-        type: "text",
-        from: username,
-        to,
-        text,
-        time: new Date().toISOString()
-      };
-
-      messages.push(message);
-
-      if (messages.length > MAX_HISTORY) {
-        messages.shift();
-      }
-
-      socket.emit("private-message", message);
-      sendToUser(to, "private-message", message);
-    });
-
-    socket.on("media-message", raw => {
-      if (rateLimited(socket)) {
-        return reportError(
-          socket,
-          "message-error",
-          "Twòp demann medya."
-        );
-      }
-
-      const to = clean(raw?.to, 80);
-
-      // Support both old and new client property names.
-      const requestedKind = raw?.kind || raw?.type;
-      const kind = ["image", "video", "voice"].includes(requestedKind)
-        ? requestedKind
-        : null;
-
-      const data = typeof raw?.data === "string"
-        ? raw.data
-        : "";
-
-      if (!to || to === username || !kind || !data) {
-        return reportError(
-          socket,
-          "message-error",
-          "Medya a pa valab."
-        );
-      }
-
-      if (!byName.has(to)) {
-        return reportError(
-          socket,
-          "message-error",
-          "Kontak la pa online."
-        );
-      }
-
-      if (Buffer.byteLength(data, "utf8") > MAX_MEDIA) {
-        return reportError(
-          socket,
-          "message-error",
-          "Fichye a twò gwo. Eseye yon fichye ki pi piti."
-        );
-      }
-
-      const message = {
-        id: randomUUID(),
-        kind,
-        type: kind,
-        from: username,
-        to,
-        data,
-        duration: Math.max(0, Number(raw?.duration) || 0),
-        time: new Date().toISOString()
-      };
-
-      messages.push(message);
-
-      if (messages.length > MAX_HISTORY) {
-        messages.shift();
-      }
-
-      socket.emit("private-message", message);
-      sendToUser(to, "private-message", message);
-    });
-
-    for (const event of ["typing", "stop-typing"]) {
-      socket.on(event, raw => {
-        if (rateLimited(socket)) return;
-
-        const to = clean(raw?.to, 80);
-
-        if (!to || to === username) return;
-
-        sendToUser(to, event, { from: username });
-      });
-    }
-
-    for (const event of [
-      "call-offer",
-      "call-answer",
-      "ice-candidate",
-      "call-reject",
-      "call-end"
-    ]) {
-      socket.on(event, raw => {
-        if (rateLimited(socket)) return;
-
-        const to = clean(raw?.to, 80);
-
-        if (!to || to === username || !byName.has(to)) {
-          if (event === "call-offer") {
-            reportError(
-              socket,
-              "call-error",
-              "Kontak la pa online."
-            );
+      getDirectConversation(userId, recipient.userId)
+        .then(conversation => {
+          if (!conversation) {
+            socket.emit("call-error", {
+              message: "Pa gen konvèsasyon otorize ant kont sa yo."
+            });
+            return;
           }
-          return;
-        }
 
-        // Never trust the sender identity supplied by the browser.
-        sendToUser(to, event, {
-          ...raw,
-          from: username,
-          to
+          const payload = {
+            ...raw,
+            from: username,
+            to: toUsername
+          };
+
+          io.to(`user:${recipient.userId}`).emit(eventName, payload);
+        })
+        .catch(error => {
+          safeError(error);
+          socket.emit("call-error", { message: "Apèl la pa t kapab konekte." });
         });
-      });
+    });
+  }
+
+  socket.on("disconnect", () => {
+    eventCounters.delete(socket.id);
+
+    const current = onlineUsers.get(username);
+    if (current) {
+      current.sockets.delete(socket.id);
+
+      if (current.sockets.size === 0) {
+        onlineUsers.delete(username);
+      }
     }
 
-    socket.on("disconnect", () => {
-      limits.delete(socket.id);
-
-      if (byName.get(username) === socket.id) {
-        byName.delete(username);
-      }
-
-      users.delete(socket.id);
-      presence();
-    });
-  } catch (error) {
-    console.error("Socket setup error:", error.message);
-    socket.disconnect(true);
-  }
+    io.emit("presence", { online: currentOnlineList() });
+  });
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`ZIQVONA running on port ${PORT}`);
+server.listen(PORT, () => {
+  console.log(`ZIQVONA ap koute sou pò ${PORT}`);
 });
